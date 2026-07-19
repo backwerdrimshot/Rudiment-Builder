@@ -99,6 +99,19 @@ function getCases(core) {
     });
   }},
 
+  { name: "educational lineage: every rudiment carries its PAS number and NARD heritage", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      assert.ok(Number.isInteger(r.pas) && r.pas >= 1 && r.pas <= 40, r.id + " has a PAS 40 number");
+      assert.ok(typeof r.heritage === "string" && r.heritage.length > 0, r.id + " has a heritage chip");
+    });
+    // Five Stroke Roll and Flam Accent sat in N.A.R.D.'s original "13 Essential
+    // Rudiments" (1933); the Single Paradiddle arrived with the second thirteen
+    // that completed the Standard 26 (1936).
+    assert.equal(MAP["five-stroke-roll"].heritage, "NARD essential 13", "five stroke roll");
+    assert.equal(MAP["flam-accent"].heritage, "NARD essential 13", "flam accent");
+    assert.equal(MAP["single-paradiddle"].heritage, "NARD standard 26", "single paradiddle");
+  }},
+
   { name: "registry: definitions are deep-frozen (transforms must copy)", fn: function (assert) {
     assert.ok(threw(function () { MAP["single-paradiddle"].strokes[0].hand = "L"; }),
       "mutating a frozen stroke throws in strict mode");
@@ -119,6 +132,7 @@ function getCases(core) {
     expectInvalid(assert, function (r) { r.tempo.defaultBpm = 150; }, "suggested range");
     expectInvalid(assert, function (r) { r.strokes[0].velocity = 2; }, "velocity");
     expectInvalid(assert, function (r) { r.leadingHand = "either"; }, "leadingHand");
+    expectInvalid(assert, function (r) { r.heritage = 26; }, "heritage");
   }},
 
   { name: "invalid diddle structures fail clearly", fn: function (assert) {

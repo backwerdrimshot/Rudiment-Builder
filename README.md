@@ -27,10 +27,10 @@ No account. No backend. No notation software feel.
 | Flam Accent | 21 | Flam | Triplet eighths, 2-beat cycle |
 | Five Stroke Roll | 7 | Roll | Sixteenths, 4-beat cycle |
 
-Pattern facts follow the Percussive Arts Society's 40 International Drum
-Rudiments; the data model, prose, and rendering are original to this app.
 Every rudiment is structured data in `js/rudiment-data.js` — nothing is
-hard-coded into the page, and there are no per-rudiment audio files.
+hard-coded into the page, and there are no per-rudiment audio files. Each
+record carries its PAS number and its N.A.R.D. heritage, shown as chips in
+the app (see *Sources & educational lineage* below).
 
 ## Features
 
@@ -96,6 +96,29 @@ timestamped visual queue drives the display at hear-time.
 Static site; `.github/workflows/pages.yml` deploys to GitHub Pages on push to
 `main` (same setup as the sibling apps). Custom-subdomain setup happens in
 Cloudflare + repo CNAME when the app is ready to publish.
+
+## Sources & educational lineage
+
+Rudiment Builder is an educational tool, and it teaches the *named, standard*
+rudiments — so it wears its sources openly:
+
+- **N.A.R.D.** — the National Association of Rudimental Drummers (formed at
+  the 1932 American Legion national convention) published **"The 13 Essential
+  Rudiments"** in 1933 and a second thirteen in 1936, completing the
+  **26 Standard American Drum Rudiments** that defined American rudimental
+  drumming for half a century.
+- **PAS** — the Percussive Arts Society extended that lineage in 1984 with
+  the **40 International Drum Rudiments**, today's standard reference and the
+  source of the numbering shown in this app.
+
+Each rudiment's chips show both: its PAS number and where it sat in the
+N.A.R.D. tradition (essential 13 vs. standard 26). Sticking, accents, and
+grace-note structures are verified against the published PAS chart; the data
+model, prose, teaching notes, and all rendering are original to this app —
+no publisher's notation images are copied or traced.
+
+Rudiment Builder is an independent Backwerd Rhythm Shop project and is not
+affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
 ## Family
 

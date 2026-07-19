@@ -80,6 +80,8 @@ function validateRudiment(r) {
   if (r.aliases !== undefined &&
       (!Array.isArray(r.aliases) || !r.aliases.every(function (a) { return typeof a === "string"; })))
     errs.push("aliases must be an array of strings");
+  if (r.heritage !== undefined && typeof r.heritage !== "string")
+    errs.push("heritage must be a string");
 
   if (!gridOk) return errs; // the checks below all need a sane grid
   const slots = r.cycleBeats * r.slotsPerBeat;

@@ -455,6 +455,7 @@ function renderRudimentInfo() {
   $("rudChips").innerHTML =
     '<span class="chip family">' + r.family + " rudiment</span>" +
     '<span class="chip">PAS #' + r.pas + "</span>" +
+    (r.heritage ? '<span class="chip">' + r.heritage + "</span>" : "") +
     '<span class="chip">' + r.level + "</span>";
   $("teachingNote").textContent = r.teachingNote;
   $("tempoHint").textContent = "Suggested tempo: start near " + r.tempo.suggestedLo +

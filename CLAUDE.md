@@ -68,6 +68,12 @@ per slot. Velocity tiers: accent 1.0 / normal 0.62 / grace 0.2 (per-stroke
 `velocity` overrides). Invalid data must fail loudly: `assertValidRegistry`
 throws one error naming every problem, and the app disables itself at boot.
 
+Educational lineage: every record carries `pas` (1–40) and a short `heritage`
+chip ("NARD essential 13" / "NARD standard 26" / for post-NARD rudiments, a
+sensible equivalent like "PAS addition (1984)"). When expanding the catalog,
+verify sticking against the published PAS chart and the NARD grouping before
+encoding — the tests pin the shipped values.
+
 ## Validation expectations for changes
 
 - Any core change: add/extend a case in `tests/cases.js`, run `tests/test.html`

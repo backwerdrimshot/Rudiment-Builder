@@ -16,6 +16,9 @@
      tempo         { defaultBpm, suggestedLo, suggestedHi }  quarter-note BPM
      leadingHand   "mirror" (left lead = hand-swapped copy) | "fixed"
      teachingNote  one or two sentences of guidance
+     heritage      short lineage chip, e.g. "NARD essential 13" — the rudiment's
+                   place in N.A.R.D.'s Standard 26 (1933/1936), which the PAS 40
+                   International Drum Rudiments (1984) later built on
      counting      one label per grid slot across the whole cycle
      aliases       extra search terms for the future catalog
      strokes       ordered stroke events:
@@ -48,6 +51,7 @@ const RUDIMENTS = [
     subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 140 },
     leadingHand: "mirror",
+    heritage: "NARD standard 26",
     teachingNote:
       "One accent, then let the hand relax — the single strokes and the double should all match in sound. The sticking trades the lead hand every four notes by itself.",
     counting: ["1", "e", "&", "a", "2", "e", "&", "a"],
@@ -78,6 +82,7 @@ const RUDIMENTS = [
     subdivision: "Triplet eighth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 },
     leadingHand: "mirror",
+    heritage: "NARD essential 13",
     teachingNote:
       "One flam starts each triplet. Keep the grace note low and soft, tucked just ahead of the accented primary stroke, and let the two singles after it stay light.",
     counting: ["1", "trip", "let", "2", "trip", "let"],
@@ -107,6 +112,7 @@ const RUDIMENTS = [
     subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 76, suggestedLo: 60, suggestedHi: 132 },
     leadingHand: "mirror",
+    heritage: "NARD essential 13",
     teachingNote:
       "Two doubles flow into one accented release on the beat: rr–ll–R. Play the doubles open and even at slow tempos, and let them close up naturally as the tempo rises.",
     counting: ["1", "e", "&", "a", "2", "e", "&", "a", "3", "e", "&", "a", "4", "e", "&", "a"],
