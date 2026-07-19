@@ -42,7 +42,12 @@ the app (see *Sources & educational lineage* below).
 - Four-beat count-in in the family's soft "listen" voice
 - Right and left strokes distinguishable by pitch **and** gentle stereo
   placement; accents brighter and louder; grace notes tucked underneath
-- Optional soft downbeat cue on beat one of every cycle
+- Optional **pulse under the sticking** (a soft click on every beat, so the
+  grid never disappears through rests and ringing releases) or a lighter
+  downbeat-only cue
+- **Mute** for visual-only practice — the highlight, pips, and status keep
+  running while a class plays to the teacher's count
+- One-tap **"Start at N"** applies each rudiment's suggested starting tempo
 - Live status: current BPM, phase, rep, step, and the next tempo — with a
   clear indication before every tempo change
 - Pause = frozen audio clock (no duplicate events, exact resume); Reset always

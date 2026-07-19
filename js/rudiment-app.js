@@ -17,6 +17,8 @@ var DEFAULTS = {
   lead: "R",
   mode: "fixed",
   cue: true,
+  pulse: false,
+  muted: false,
   bpm: 80,
   ladder: { startBpm: 60, endBpm: 100, stepBpm: 5, repsPerStep: 4 },
   oco: { startBpm: 60, peakBpm: 100, stepBpm: 5, repsPerStep: 2 },
@@ -32,7 +34,7 @@ function initAudio() {
   audio = new AC();
   canPan = typeof audio.createStereoPanner === "function";
   master = audio.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = masterLevel();
   master.connect(audio.destination);
   // iOS/Android may suspend the context when the tab hides mid-play. Reflect
   // that as a real pause so the UI stays honest and Resume works. A suspend
@@ -67,8 +69,28 @@ function killPending() {
   if (!master) return;
   master.disconnect();
   master = audio.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = masterLevel();
   master.connect(audio.destination);
+}
+
+/* Mute = visual-only practice: the scheduler, highlight, pips, and status all
+   keep running; only the master gain drops. Never carried by share links — a
+   shared drill must not arrive silent. */
+function masterLevel() { return settings.muted ? 0 : 0.9; }
+function toggleMute() {
+  settings.muted = !settings.muted;
+  persistSettings();
+  if (master && audio) {
+    if (audio.state === "running") master.gain.setTargetAtTime(masterLevel(), audio.currentTime, 0.015);
+    else master.gain.value = masterLevel();
+  }
+  updateMuteBtn();
+}
+function updateMuteBtn() {
+  var b = $("btnMute");
+  b.setAttribute("aria-pressed", settings.muted ? "true" : "false");
+  b.textContent = settings.muted ? "Muted" : "Sound on";
+  b.classList.toggle("muted", settings.muted);
 }
 
 /* Stroke voices: right and left take different pitches and a gentle opposite
@@ -104,6 +126,21 @@ function strokeSound(time, hand, velocity, accent) {
 }
 function listenClick(time, isDown) {
   var s = isDown ? { f: 1319, g: 0.6, d: 0.075 } : { f: 880, g: 0.42, d: 0.05 };
+  var osc = audio.createOscillator();
+  var g = audio.createGain();
+  osc.frequency.value = s.f;
+  osc.type = "sine";
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(s.g, time + 0.001);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + s.d);
+  osc.connect(g); g.connect(master);
+  osc.start(time); osc.stop(time + s.d + 0.02);
+}
+// Optional soft pulse under played cycles — the family listen voice tucked
+// low, so the sticking stays on top and the student never loses the beat
+// through rests and ringing releases. Beat one slightly stronger.
+function pulseClick(time, isDown) {
+  var s = isDown ? { f: 1319, g: 0.3, d: 0.05 } : { f: 880, g: 0.2, d: 0.04 };
   var osc = audio.createOscillator();
   var g = audio.createGain();
   osc.frequency.value = s.f;
@@ -169,9 +206,15 @@ function buildEntries() {
   if (st.kind !== "play") {
     for (var b = 0; b < st.beatsPerBlock; b++) list.push({ tBeats: b, type: "beat", beat: b });
   } else {
-    if (settings.cue) list.push({ tBeats: 0, type: "cue" });
+    if (settings.pulse) {
+      // The pulse covers every beat (including the downbeat), so it supersedes
+      // the lighter downbeat-only cue.
+      for (var p = 0; p < st.beatsPerBlock; p++) list.push({ tBeats: p, type: "pulse", beat: p });
+    } else if (settings.cue) {
+      list.push({ tBeats: 0, type: "cue" });
+    }
     live.events.forEach(function (e) { list.push({ tBeats: e.beatPos, type: "stroke", ev: e }); });
-    list.sort(function (a, b) { return a.tBeats - b.tBeats || (a.type === "cue" ? -1 : 1); });
+    list.sort(function (a, b) { return a.tBeats - b.tBeats || (a.type !== "stroke" ? -1 : 1); });
   }
   live.entries = list;
   live.entryIndex = 0;
@@ -230,6 +273,9 @@ function scheduleEntry(en, t, st, pb) {
   if (en.type === "beat") {
     listenClick(t, en.beat === 0);
     live.visualQ.push(Object.assign({ t: t, type: "beat", beat: en.beat }, snap));
+  } else if (en.type === "pulse") {
+    pulseClick(t, en.beat === 0);
+    // no visual event — the stroke highlights and pips already carry the beat
   } else if (en.type === "cue") {
     cueClick(t);
     // no visual event — the downbeat pip lights from the strokes themselves
@@ -460,6 +506,8 @@ function renderRudimentInfo() {
   $("teachingNote").textContent = r.teachingNote;
   $("tempoHint").textContent = "Suggested tempo: start near " + r.tempo.suggestedLo +
     "–" + r.tempo.suggestedHi + " BPM.";
+  $("suggestedText").textContent = "Suggested " + r.tempo.suggestedLo + "–" + r.tempo.suggestedHi + " BPM";
+  $("btnSuggested").textContent = "Start at " + r.tempo.suggestedLo;
   var leadDisabled = r.leadingHand === "fixed";
   var leadBtns = $("segLead").querySelectorAll("button");
   for (var i = 0; i < leadBtns.length; i++) leadBtns[i].disabled = leadDisabled;
@@ -776,6 +824,8 @@ function coerceSettings(raw) {
   if (raw.lead === "R" || raw.lead === "L") settings.lead = raw.lead;
   if (raw.mode === "fixed" || raw.mode === "ladder" || raw.mode === "oco") settings.mode = raw.mode;
   if (typeof raw.cue === "boolean") settings.cue = raw.cue;
+  if (typeof raw.pulse === "boolean") settings.pulse = raw.pulse;
+  if (typeof raw.muted === "boolean") settings.muted = raw.muted;
   var n;
   if ((n = toInt(raw.bpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.bpm = n;
   var lad = raw.ladder || {}, oco = raw.oco || {};
@@ -794,6 +844,8 @@ function queryToRaw() {
   return {
     rudimentId: q.get("r"), lead: q.get("lead"), mode: q.get("mode"),
     cue: q.get("cue") === null ? undefined : q.get("cue") === "1",
+    pulse: q.get("pulse") === null ? undefined : q.get("pulse") === "1",
+    // muted is deliberately NOT read from links — a shared drill never arrives silent
     bpm: q.get("bpm"),
     ladder: { startBpm: q.get("ls"), endBpm: q.get("le"), stepBpm: q.get("lst"), repsPerStep: q.get("lr") },
     oco: { startBpm: q.get("os"), peakBpm: q.get("op"), stepBpm: q.get("ost"), repsPerStep: q.get("or") },
@@ -805,6 +857,7 @@ function shareUrl() {
   p.set("lead", settings.lead);
   p.set("mode", settings.mode);
   p.set("cue", settings.cue ? "1" : "0");
+  p.set("pulse", settings.pulse ? "1" : "0");
   if (settings.mode === "fixed") p.set("bpm", settings.bpm);
   if (settings.mode === "ladder") {
     p.set("ls", settings.ladder.startBpm); p.set("le", settings.ladder.endBpm);
@@ -841,6 +894,8 @@ function flashShare(msg) {
   shareTimer = setTimeout(function () { b.textContent = "Copy link"; }, 1600);
 }
 
+function updateCueEnabled() { $("cueToggle").disabled = settings.pulse; }
+
 function hydrateControls() {
   $("bpm").value = settings.bpm;
   $("ladStart").value = settings.ladder.startBpm;
@@ -852,6 +907,9 @@ function hydrateControls() {
   $("ocoStep").value = settings.oco.stepBpm;
   $("ocoReps").value = settings.oco.repsPerStep;
   $("cueToggle").checked = settings.cue;
+  $("pulseToggle").checked = settings.pulse;
+  updateCueEnabled();
+  updateMuteBtn();
   setSeg("segLead", settings.lead);
   setSeg("segMode", settings.mode);
   $("settingsFixed").hidden = settings.mode !== "fixed";
@@ -886,11 +944,22 @@ function wireEvents() {
   ["ladStart", "ladEnd", "ladStep", "ladReps", "ocoStart", "ocoPeak", "ocoStep", "ocoReps"]
     .forEach(function (id) { $(id).addEventListener("change", onModeFieldChanged); });
 
-  // The downbeat cue is not structural: toggling it applies from the next
-  // cycle without stopping playback.
+  // The pulse and downbeat cue are not structural: toggling them applies from
+  // the next cycle without stopping playback. Mute only moves the master gain.
   $("cueToggle").addEventListener("change", function (e) {
     settings.cue = e.target.checked;
     persistSettings();
+  });
+  $("pulseToggle").addEventListener("change", function (e) {
+    settings.pulse = e.target.checked;
+    persistSettings();
+    updateCueEnabled();
+  });
+  $("btnMute").addEventListener("click", toggleMute);
+  $("btnSuggested").addEventListener("click", function () {
+    var r = Core.RUDIMENT_MAP[settings.rudimentId];
+    $("bpm").value = r.tempo.suggestedLo;
+    onBpmChanged();
   });
 
   // Keyboard: Space starts/pauses, R resets — but never steal Space from a

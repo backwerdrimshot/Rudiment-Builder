@@ -253,6 +253,10 @@
   .cue-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
   .cue-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--orange-deep)}
   .cue-row label{font-weight:700;font-size:.9rem}
+  .cue-row input[type=checkbox]:disabled+label{opacity:.5}
+  .btn.muted{border-color:var(--orange-deep);color:var(--orange-deep)}
+  .suggested-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .btn.mini{padding:8px 14px;font-size:.82rem}
   .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
 
   footer.foot{margin-top:26px;text-align:center;color:var(--ink-faint);font-size:.76rem;line-height:1.6}
@@ -349,6 +353,7 @@
       <div class="transport">
         <button class="btn big primary" id="btnStart" type="button">Start</button>
         <button class="btn big ghost" id="btnReset" type="button">Reset</button>
+        <button class="btn ghost" id="btnMute" type="button" aria-pressed="false">Sound on</button>
       </div>
       <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
     </section>
@@ -374,6 +379,10 @@
               <button class="step" type="button" data-target="bpm" data-d="1" aria-label="Raise tempo by 1">+</button>
               <button class="step" type="button" data-target="bpm" data-d="5" aria-label="Raise tempo by 5">+5</button>
             </div>
+          </div>
+          <div class="suggested-row wide">
+            <span class="hint" id="suggestedText"></span>
+            <button class="btn ghost mini" id="btnSuggested" type="button"></button>
           </div>
         </div>
       </div>
@@ -456,8 +465,12 @@
       <p class="plan-meta" id="planMeta"></p>
 
       <div class="cue-row">
+        <input type="checkbox" id="pulseToggle" />
+        <label for="pulseToggle">Pulse under the sticking — a soft click on every beat</label>
+      </div>
+      <div class="cue-row">
         <input type="checkbox" id="cueToggle" checked />
-        <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle</label>
+        <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle (covered while the pulse is on)</label>
       </div>
 
       <div class="share-row">

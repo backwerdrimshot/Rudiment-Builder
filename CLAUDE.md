@@ -48,8 +48,9 @@ machine advanced by the scheduler **only at block boundaries**.
   stop/reset = `killPending()` (orphan the master gain) + state reset.
   `startPlayback` is idempotent: it tears down timers and orphans scheduled
   audio first. Structural changes during playback (rudiment/lead/mode/ladder
-  numbers) call `stopIfActive()`; only fixed-mode BPM and the downbeat-cue
-  toggle apply without stopping.
+  numbers) call `stopIfActive()`; only fixed-mode BPM, the pulse/downbeat-cue
+  toggles (picked up at the next block), and mute (master gain only; never in
+  share links) apply without stopping.
 - Scheduling: 25 ms tick, 0.12 s horizon, absolute times accumulated exactly
   from `AudioContext.currentTime` — never schedule audio off `setInterval`
   time. Visuals ride a timestamped queue flushed from BOTH rAF and the tick.
