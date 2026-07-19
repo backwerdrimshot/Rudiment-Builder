@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Choose the rudiment. See the sticking. Build the hands. Control the tempo. A forever-free rudiment trainer for percussion students." />
+<meta name="theme-color" content="#142a36" />
+<title>Rudiment Builder — Backwerd Rhythm Shop</title>
+<style>
+  /* Rudiment Builder — Grid Board visual language:
+     navy ink · warm cream paper · burnt-orange energy · sage selections. */
+  :root{
+    --paper:#f8e9d8;        /* warm cream page */
+    --paper-2:#fffdf8;      /* raised cream / panels */
+    --card:#fbf7ef;         /* panel paper */
+    --ink:#142a36;          /* deep navy ink */
+    --ink-soft:#58707b;     /* steel-blue muted text */
+    --ink-faint:#8ca1aa;
+    --orange:#f36f3d;       /* burnt orange */
+    --orange-deep:#c94b20;
+    --sage:#cfe1d4;         /* muted sage — selected states */
+    --sage-deep:#a9d8c0;
+    --sage-tint:#eef4ee;    /* faint left-hand cell tint */
+    --stone:#d8d0c3;        /* soft stone borders */
+    --cyan:#58a6c3;
+    --good:#1d6b3c;
+    --serif:'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif;
+    --radius:12px;
+    --shadow:5px 5px 0 rgba(20,42,54,.14);
+    font-synthesis:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,#faf0e0,#f4e6d1);
+    color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    padding:26px 16px 56px;
+  }
+  .wrap{max-width:1160px;margin:0 auto}
+  [hidden]{display:none !important}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* Brand header */
+  header.brand{
+    display:flex;align-items:center;gap:16px;margin-bottom:8px;
+    padding-bottom:16px;border-bottom:3px double var(--ink);flex-wrap:wrap;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:14px;flex:0 0 auto;
+    background:var(--orange);border:2px solid var(--ink);
+    display:grid;place-items:center;box-shadow:3px 3px 0 var(--ink);
+  }
+  .logo svg{width:36px;height:36px;display:block}
+  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:var(--serif)}
+  .brand h1 span{color:var(--orange)}
+  .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+  .brand .fs{margin-left:auto}
+  .tagline{color:var(--ink-soft);font-size:.92rem;margin:10px 0 20px;font-family:var(--serif);font-style:italic}
+
+  /* Layout: one column on phones; practice display leads on big screens */
+  .layout{display:flex;flex-direction:column;gap:18px}
+  @media(min-width:980px){
+    .layout{
+      display:grid;gap:20px;align-items:start;
+      grid-template-columns:1.45fr 1fr;
+      grid-template-areas:"sticking rudiment" "status rudiment" "status practice" ". practice";
+    }
+    .area-rudiment{grid-area:rudiment}
+    .area-sticking{grid-area:sticking}
+    .area-status{grid-area:status}
+    .area-practice{grid-area:practice}
+  }
+
+  .panel{
+    background:var(--card);border:2px solid var(--ink);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow);
+  }
+  .panel h2{
+    margin:0 0 14px;font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;
+    color:var(--ink-soft);font-weight:800;
+    border-bottom:1px solid var(--stone);padding-bottom:9px;
+  }
+  .hint{color:var(--ink-soft);font-size:.85rem;margin:2px 0 0}
+  .err{color:var(--orange-deep);font-weight:700;font-size:.9rem}
+
+  /* Buttons + segmented controls (family components) */
+  .btn{
+    font-family:inherit;font-weight:800;cursor:pointer;border:2px solid var(--ink);border-radius:10px;
+    box-shadow:3px 3px 0 var(--ink);transition:transform .06s ease,box-shadow .06s ease,background .12s ease;
+    background:var(--paper-2);color:var(--ink);
+  }
+  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:2px 2px 0 var(--ink)}
+  .btn.primary{background:var(--orange);color:var(--paper-2);font-size:1.05rem;padding:14px 30px;text-transform:uppercase;letter-spacing:.06em}
+  .btn.primary:hover:not(:disabled){background:var(--orange-deep)}
+  .btn.ghost{padding:12px 22px;font-size:.95rem}
+  .btn.ghost:hover:not(:disabled){background:var(--sage)}
+  .btn.big{font-size:1.05rem;padding:15px 34px;min-width:150px}
+  .btn.play{background:var(--ink);color:var(--paper-2)}
+  .btn.play:hover:not(:disabled){background:#0d1e28}
+
+  .seg{display:flex;gap:0;border:2px solid var(--ink);border-radius:9px;overflow:hidden;box-shadow:2px 2px 0 var(--ink)}
+  .seg button{
+    flex:1;padding:12px 8px;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;
+    background:var(--paper-2);color:var(--ink);border:none;border-right:2px solid var(--ink);
+    transition:background .12s ease;min-height:44px;
+  }
+  .seg button:last-child{border-right:none}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
+  .seg button:hover:not([aria-pressed="true"]){background:var(--sage)}
+
+  .field label,.field .lbl{display:block;font-weight:700;font-size:.9rem;margin-bottom:7px}
+  .num-row{display:flex;align-items:stretch;gap:8px}
+  .num-row input[type=number]{
+    flex:1;min-width:0;font-family:inherit;font-size:1.35rem;font-weight:800;
+    text-align:center;padding:8px 6px;border:2px solid var(--ink);border-radius:8px;
+    background:var(--paper-2);color:var(--ink);font-variant-numeric:tabular-nums;
+    -moz-appearance:textfield;
+  }
+  .num-row input[type=number]::-webkit-outer-spin-button,
+  .num-row input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  button.step{
+    width:44px;flex:0 0 auto;font-size:1.3rem;font-weight:800;cursor:pointer;
+    background:var(--paper-2);color:var(--ink);border:2px solid var(--ink);border-radius:8px;
+    box-shadow:2px 2px 0 var(--ink);transition:transform .06s ease,box-shadow .06s ease;
+  }
+  button.step:hover{background:var(--sage)}
+  button.step:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+
+  /* Rudiment cards */
+  .rud-cards{display:flex;flex-direction:column;gap:10px}
+  .rud-card{
+    text-align:left;font-family:inherit;cursor:pointer;padding:12px 14px;
+    border:2px solid var(--ink);border-radius:10px;background:var(--paper-2);
+    box-shadow:2px 2px 0 var(--ink);transition:background .12s ease;
+  }
+  .rud-card:hover{background:var(--sage)}
+  .rud-card[aria-pressed="true"]{background:var(--sage-deep)}
+  .rud-card .rname{font-family:var(--serif);font-weight:700;font-size:1.12rem}
+  .rud-card .rmeta{color:var(--ink-soft);font-size:.78rem;margin-top:3px;font-weight:700}
+  .rud-card[aria-pressed="true"] .rmeta{color:var(--ink)}
+  .rud-card .rmeta .dot{color:var(--ink-faint);padding:0 4px}
+
+  .rud-info{margin-top:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+  .chip{
+    border:2px solid var(--ink);border-radius:999px;background:var(--paper-2);
+    font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    padding:4px 12px;color:var(--ink);
+  }
+  .chip.family{background:var(--sage)}
+  .teaching{font-family:var(--serif);font-size:1rem;line-height:1.5;margin:0;color:var(--ink)}
+
+  .lead-row{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+  .lead-row .lbl{margin:0;font-weight:700;font-size:.9rem}
+  .lead-row .seg{flex:1;min-width:170px;max-width:240px}
+
+  /* Sticking display */
+  .stick-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .stick-title{font-family:var(--serif);font-weight:700;font-size:1.35rem;margin:0 0 2px}
+  .stick-sub{color:var(--ink-soft);font-size:.82rem;font-weight:700}
+  .stick-rows{display:flex;flex-direction:column;gap:16px;margin:16px 0 4px}
+  .stick-row{display:flex;gap:16px}
+  .beat-group{flex:1;min-width:0;display:grid;grid-template-columns:repeat(var(--slots),1fr);gap:6px;align-content:start;row-gap:2px}
+  .count{
+    text-align:center;font-size:.68rem;font-weight:800;letter-spacing:.04em;
+    color:var(--ink-soft);text-transform:uppercase;padding-bottom:3px;align-self:end;
+    font-variant-numeric:tabular-nums;
+  }
+  .count.on-stroke{color:var(--ink)}
+  .cell{
+    position:relative;border:2px solid var(--ink);border-radius:9px;background:var(--paper-2);
+    min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:2px 2px 0 rgba(20,42,54,.18);padding:4px 2px 8px;
+    transition:background .08s linear,transform .08s linear;
+  }
+  .cell .acc{height:15px;font-weight:900;font-size:1.05rem;line-height:1;color:var(--orange-deep)}
+  .cell .face{display:flex;align-items:flex-start;justify-content:center;gap:1px;line-height:1}
+  .cell .letter{font-weight:900;font-size:clamp(1.45rem,6.5vw,2.1rem);letter-spacing:.02em}
+  .cell .grace{font-weight:800;font-size:.85rem;margin-top:2px;color:var(--ink-soft);border-bottom:2px solid currentColor;padding:0 1px}
+  .cell.hand-l{background:var(--sage-tint)}
+  .cell.rest{border-style:dashed;border-color:var(--stone);box-shadow:none;background:transparent}
+  .cell.rest .letter{color:var(--ink-faint);font-size:1.1rem;font-weight:700}
+  .cell.diddle-a::after,.cell.diddle-b::after{
+    content:"";position:absolute;bottom:-9px;height:4px;background:var(--ink-soft);
+  }
+  .cell.diddle-a::after{left:20%;right:-4px;border-radius:3px 0 0 3px}
+  .cell.diddle-b::after{left:-4px;right:20%;border-radius:0 3px 3px 0}
+  .cell.current{background:var(--orange);border-color:var(--orange-deep);transform:scale(1.06);z-index:1}
+  .cell.current .letter,.cell.current .acc{color:var(--paper-2)}
+  .cell.current .grace{color:var(--paper-2)}
+  .cell.current.rest{background:var(--sage);transform:none}
+  #sticking.listening{opacity:.45}
+  #sticking{transition:opacity .15s ease}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;color:var(--ink-soft);font-size:.78rem;font-weight:700}
+  .legend .key{display:inline-flex;align-items:center;gap:6px}
+  .legend .k-acc{color:var(--orange-deep);font-weight:900}
+  .legend .k-grace{border-bottom:2px solid var(--ink-soft);padding:0 1px}
+  .legend .k-diddle{border-bottom:4px solid var(--ink-soft);padding:0 3px;border-radius:0 0 3px 3px}
+  .legend .k-rest{color:var(--ink-faint)}
+
+  /* Status + transport */
+  .status-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+  @media(max-width:560px){.status-grid{grid-template-columns:1fr;text-align:center}}
+  .bpm-huge{font-size:clamp(3.4rem,13vw,7rem);font-weight:800;line-height:.92;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .bpm-huge small{font-size:.24em;color:var(--ink-soft);font-weight:800;letter-spacing:.1em;vertical-align:.7em;margin-left:.15em}
+  .phase-word{font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,3.6vw,1.7rem);color:var(--ink-soft);min-height:1.3em}
+  .phase-word.peak{color:var(--orange-deep);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
+  .next-chip{
+    justify-self:end;text-align:center;border:2px solid var(--ink);border-radius:12px;
+    padding:10px 18px;background:var(--paper-2);box-shadow:var(--shadow);min-width:112px;
+  }
+  @media(max-width:560px){.next-chip{justify-self:center}}
+  .next-chip .lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-soft);font-weight:800}
+  .next-chip .val{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+  .next-chip .val small{font-size:.85rem;color:var(--ink-soft)}
+
+  .beats{display:flex;gap:12px;justify-content:center;margin:18px 0 2px;min-height:24px}
+  .pip{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);background:var(--paper-2);transition:background .05s linear}
+  .pip.one{border-width:3px}
+  .pip.on{background:var(--cyan)}
+  .pip.one.on{background:var(--orange)}
+
+  .banner{
+    margin:14px 0 4px;padding:13px 18px;border-radius:10px;border:2px solid var(--ink);
+    font-weight:800;text-align:center;font-size:1.02rem;
+    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+  }
+  .banner.listen{background:var(--orange-deep);color:var(--paper-2)}
+  .banner.warn{background:var(--sage-deep);color:var(--ink)}
+  .banner.countin{background:var(--sage);color:var(--ink)}
+  .banner.complete{background:var(--good);color:var(--paper-2)}
+  .banner.hidden{visibility:hidden}
+
+  .status-line{text-align:center;color:var(--ink-soft);font-size:1rem;margin:10px 0 4px;font-variant-numeric:tabular-nums;min-height:1.4em}
+  .status-line strong{color:var(--ink)}
+
+  .transport{display:flex;gap:14px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+
+  /* Practice settings */
+  .mode-hint{margin:10px 0 0}
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  @media(max-width:420px){.settings-grid{grid-template-columns:1fr}}
+  .settings-grid .wide{grid-column:1 / -1}
+  .plan-preview{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-top:16px;font-variant-numeric:tabular-nums}
+  .plan-preview .rung{font-weight:800;font-size:1.02rem}
+  .plan-preview .arrow{color:var(--ink-faint)}
+  .plan-preview .peak{color:var(--orange-deep)}
+  .plan-meta{color:var(--ink-soft);font-size:.88rem;margin-top:8px;font-variant-numeric:tabular-nums}
+  .cue-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .cue-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--orange-deep)}
+  .cue-row label{font-weight:700;font-size:.9rem}
+  .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+
+  footer.foot{margin-top:26px;text-align:center;color:var(--ink-faint);font-size:.76rem;line-height:1.6}
+  footer.foot a{color:var(--ink-soft)}
+
+  :focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+  body:fullscreen,body:-webkit-full-screen{padding-top:20px}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+    .cell.current{transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="brand">
+    <span class="logo" aria-hidden="true">
+      <!-- crossed sticks over an accent -->
+      <svg viewBox="0 0 32 32" fill="none" stroke="#fffdf8" stroke-width="3" stroke-linecap="round">
+        <path d="M7 25 L25 7" />
+        <path d="M7 7 L25 25" />
+        <path d="M10 29 L16 26.4 L22 29" stroke-width="2.4" opacity=".85" />
+      </svg>
+    </span>
+    <div>
+      <h1>Rudiment <span>Builder</span></h1>
+      <p>Backwerd Rhythm Shop</p>
+    </div>
+    <button class="btn ghost fs" id="btnFull" type="button" title="Full screen">⛶ Full screen</button>
+  </header>
+  <p class="tagline">Choose the rudiment. See the sticking. Build the hands. Control the tempo.</p>
+
+  <main class="layout">
+
+    <!-- ============ RUDIMENT ============ -->
+    <section class="panel area-rudiment" aria-labelledby="hRudiment">
+      <h2 id="hRudiment">Choose the rudiment</h2>
+      <div class="rud-cards" role="group" aria-label="Rudiment" id="rudCards"></div>
+      <div class="rud-info">
+        <div class="chips" id="rudChips"></div>
+        <p class="teaching" id="teachingNote"></p>
+        <p class="hint" id="tempoHint"></p>
+      </div>
+      <div class="lead-row">
+        <span class="lbl" id="leadLbl">Leading hand</span>
+        <div class="seg" role="group" aria-labelledby="leadLbl" id="segLead">
+          <button type="button" data-val="R" aria-pressed="true">Right lead</button>
+          <button type="button" data-val="L" aria-pressed="false">Left lead</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STICKING ============ -->
+    <section class="panel area-sticking" aria-labelledby="hSticking">
+      <h2 id="hSticking">The sticking</h2>
+      <div class="stick-head">
+        <div>
+          <p class="stick-title" id="stickName"></p>
+          <span class="stick-sub" id="stickSub"></span>
+        </div>
+      </div>
+      <p class="sr-only" id="stickingDesc"></p>
+      <div id="sticking" role="img" aria-describedby="stickingDesc" aria-label="Sticking pattern"></div>
+      <div class="legend" aria-hidden="true">
+        <span class="key"><span class="k-acc">&gt;</span> accent</span>
+        <span class="key"><span class="k-grace">L</span>R flam grace</span>
+        <span class="key"><span class="k-diddle">R R</span> diddle</span>
+        <span class="key"><span class="k-rest">·</span> rest / ring</span>
+      </div>
+    </section>
+
+    <!-- ============ STATUS + TRANSPORT ============ -->
+    <section class="panel area-status" aria-labelledby="hPractice">
+      <h2 id="hPractice">Practice</h2>
+      <div class="status-grid">
+        <div>
+          <div class="bpm-huge" id="curBpm" aria-live="off">80<small>BPM</small></div>
+          <div class="phase-word" id="phaseWord">Ready</div>
+        </div>
+        <div class="next-chip">
+          <div class="lbl">Next tempo</div>
+          <div class="val" id="nextBpm">—</div>
+        </div>
+      </div>
+
+      <div class="beats" id="beats" aria-hidden="true"></div>
+
+      <div class="banner hidden" id="banner" aria-live="assertive"></div>
+      <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
+
+      <div class="transport">
+        <button class="btn big primary" id="btnStart" type="button">Start</button>
+        <button class="btn big ghost" id="btnReset" type="button">Reset</button>
+      </div>
+      <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
+    </section>
+
+    <!-- ============ MODE + SETTINGS ============ -->
+    <section class="panel area-practice" aria-labelledby="hMode">
+      <h2 id="hMode">Practice mode</h2>
+      <div class="seg" role="group" aria-label="Practice mode" id="segMode">
+        <button type="button" data-val="fixed" aria-pressed="true">Fixed</button>
+        <button type="button" data-val="ladder" aria-pressed="false">Ladder</button>
+        <button type="button" data-val="oco" aria-pressed="false">Open‑Close‑Open</button>
+      </div>
+      <p class="hint mode-hint" id="modeHint"></p>
+
+      <div id="settingsFixed">
+        <div class="settings-grid">
+          <div class="field wide">
+            <label for="bpm">Tempo (BPM)</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="bpm" data-d="-5" aria-label="Lower tempo by 5">−5</button>
+              <button class="step" type="button" data-target="bpm" data-d="-1" aria-label="Lower tempo by 1">−</button>
+              <input id="bpm" type="number" min="30" max="300" step="1" value="80" inputmode="numeric" />
+              <button class="step" type="button" data-target="bpm" data-d="1" aria-label="Raise tempo by 1">+</button>
+              <button class="step" type="button" data-target="bpm" data-d="5" aria-label="Raise tempo by 5">+5</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsLadder" hidden>
+        <div class="settings-grid">
+          <div class="field">
+            <label for="ladStart">Starting BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladStart" data-d="-1" aria-label="Lower starting BPM">−</button>
+              <input id="ladStart" type="number" min="30" max="300" step="1" value="60" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladStart" data-d="1" aria-label="Raise starting BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ladEnd">Ending BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladEnd" data-d="-1" aria-label="Lower ending BPM">−</button>
+              <input id="ladEnd" type="number" min="30" max="300" step="1" value="100" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladEnd" data-d="1" aria-label="Raise ending BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ladStep">BPM step</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladStep" data-d="-1" aria-label="Lower BPM step">−</button>
+              <input id="ladStep" type="number" min="1" max="60" step="1" value="5" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladStep" data-d="1" aria-label="Raise BPM step">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ladReps">Reps per tempo</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladReps" data-d="-1" aria-label="Fewer reps per tempo">−</button>
+              <input id="ladReps" type="number" min="1" max="64" step="1" value="4" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladReps" data-d="1" aria-label="More reps per tempo">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsOco" hidden>
+        <div class="settings-grid">
+          <div class="field">
+            <label for="ocoStart">Starting BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoStart" data-d="-1" aria-label="Lower starting BPM">−</button>
+              <input id="ocoStart" type="number" min="30" max="300" step="1" value="60" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoStart" data-d="1" aria-label="Raise starting BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ocoPeak">Peak BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoPeak" data-d="-1" aria-label="Lower peak BPM">−</button>
+              <input id="ocoPeak" type="number" min="30" max="300" step="1" value="100" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoPeak" data-d="1" aria-label="Raise peak BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ocoStep">BPM step</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoStep" data-d="-1" aria-label="Lower BPM step">−</button>
+              <input id="ocoStep" type="number" min="1" max="60" step="1" value="5" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoStep" data-d="1" aria-label="Raise BPM step">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ocoReps">Reps per tempo</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoReps" data-d="-1" aria-label="Fewer reps per tempo">−</button>
+              <input id="ocoReps" type="number" min="1" max="64" step="1" value="2" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoReps" data-d="1" aria-label="More reps per tempo">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan-preview" id="planPreview" aria-live="polite"></div>
+      <p class="plan-meta" id="planMeta"></p>
+
+      <div class="cue-row">
+        <input type="checkbox" id="cueToggle" checked />
+        <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle</label>
+      </div>
+
+      <div class="share-row">
+        <button class="btn ghost" id="btnShare" type="button" title="Copy a link that opens these exact settings">Copy link</button>
+        <span class="hint">Share one exact drill with a student.</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <div>Learn the name. See the sticking. Build the hands.</div>
+    <div>Keyboard: <strong>Space</strong> starts and pauses · <strong>R</strong> resets · forever free, no account</div>
+    <div>Rudiment Builder · <a href="https://backwerdrhythmshop.com">Backwerd Rhythm Shop</a> · © Backwerd Rimshot, LLC</div>
+  </footer>
+</div>
+
+<script src="js/rudiment-data.js"></script>
+<script src="js/rudiment-core.js"></script>
+<script src="js/rudiment-app.js"></script>
+</body>
+</html>
