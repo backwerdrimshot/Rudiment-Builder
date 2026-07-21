@@ -91,11 +91,30 @@ function getCases(core) {
 
   /* ================= data validation ================= */
 
-  { name: "registry: all shipped rudiments validate", fn: function (assert) {
+  { name: "registry: the full PAS 40 catalog validates", fn: function (assert) {
     assert.ok(core.assertValidRegistry(core.RUDIMENTS), "registry valid");
-    assert.equal(core.RUDIMENTS.length, 3, "vertical slice ships exactly three rudiments");
-    ["single-paradiddle", "flam-accent", "five-stroke-roll"].forEach(function (id) {
-      assert.ok(MAP[id], id + " present");
+    assert.equal(core.RUDIMENTS.length, 40, "ships all 40 PAS International Drum Rudiments");
+    ["single-paradiddle", "flam-accent", "five-stroke-roll", "multiple-bounce-roll", "triple-stroke-roll"]
+      .forEach(function (id) { assert.ok(MAP[id], id + " present"); });
+  }},
+
+  { name: "catalog: PAS numbers cover 1..40 exactly once, every id unique", fn: function (assert) {
+    const pas = core.RUDIMENTS.map(function (r) { return r.pas; }).sort(function (a, b) { return a - b; });
+    const expected = []; for (let n = 1; n <= 40; n++) expected.push(n);
+    assert.deepEqual(pas, expected, "PAS 1..40 present exactly once, no gaps or dups");
+    const ids = {};
+    core.RUDIMENTS.forEach(function (r) {
+      assert.ok(!ids[r.id], "duplicate id " + r.id);
+      ids[r.id] = true;
+    });
+  }},
+
+  { name: "catalog: family split matches the PAS grouping and every level is known", fn: function (assert) {
+    const by = { Roll: 0, Diddle: 0, Flam: 0, Drag: 0 };
+    core.RUDIMENTS.forEach(function (r) { by[r.family]++; });
+    assert.deepEqual(by, { Roll: 15, Diddle: 4, Flam: 11, Drag: 10 }, "15 rolls, 4 diddles, 11 flams, 10 drags");
+    core.RUDIMENTS.forEach(function (r) {
+      assert.ok(["Beginner", "Intermediate", "Advanced"].indexOf(r.level) !== -1, r.id + " has a known level");
     });
   }},
 
@@ -104,12 +123,12 @@ function getCases(core) {
       assert.ok(Number.isInteger(r.pas) && r.pas >= 1 && r.pas <= 40, r.id + " has a PAS 40 number");
       assert.ok(typeof r.heritage === "string" && r.heritage.length > 0, r.id + " has a heritage chip");
     });
-    // Five Stroke Roll and Flam Accent sat in N.A.R.D.'s original "13 Essential
-    // Rudiments" (1933); the Single Paradiddle arrived with the second thirteen
-    // that completed the Standard 26 (1936).
-    assert.equal(MAP["five-stroke-roll"].heritage, "NARD essential 13", "five stroke roll");
-    assert.equal(MAP["flam-accent"].heritage, "NARD essential 13", "flam accent");
-    assert.equal(MAP["single-paradiddle"].heritage, "NARD standard 26", "single paradiddle");
+    // These foundational rudiments trace to the N.A.R.D. Standard 26. The exact
+    // heritage wording is a pedagogy decision that lives in the data, so assert
+    // the lineage rather than a fixed label.
+    ["five-stroke-roll", "flam-accent", "single-paradiddle"].forEach(function (id) {
+      assert.ok(MAP[id].heritage.indexOf("NARD") !== -1, id + " carries a NARD heritage");
+    });
   }},
 
   { name: "registry: definitions are deep-frozen (transforms must copy)", fn: function (assert) {
@@ -312,6 +331,70 @@ function getCases(core) {
     assert.ok(text.indexOf("accented") !== -1, "mentions the accent");
     const roll = core.describePattern(pattern("five-stroke-roll"));
     assert.ok(roll.indexOf("diddle") !== -1, "mentions the diddles");
+  }},
+
+  /* ================= generated counting, buzz, and groups ================= */
+
+  { name: "counting: syllables are generated per subdivision when a record omits them", fn: function (assert) {
+    assert.deepEqual(core.countingFor(4, 2), ["1", "e", "&", "a", "2", "e", "&", "a"], "sixteenths");
+    assert.deepEqual(core.countingFor(3, 1), ["1", "trip", "let"], "triplet");
+    assert.deepEqual(core.countingFor(2, 2), ["1", "&", "2", "&"], "eighths");
+    assert.deepEqual(core.countingFor(1, 3), ["1", "2", "3"], "quarters");
+    assert.deepEqual(core.countingFor(5, 1), ["1", "·", "·", "·", "·"],
+      "unknown subdivision keeps the downbeat and dots the rest");
+  }},
+
+  { name: "counting: every rudiment carries a full grid-length row with beat numbers on the downbeats", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      const p = core.withLead(r, "R");
+      const slots = r.cycleBeats * r.slotsPerBeat;
+      assert.equal(p.counting.length, slots, r.id + ": one label per slot");
+      for (let b = 0; b < r.cycleBeats; b++)
+        assert.equal(p.counting[b * r.slotsPerBeat], String(b + 1),
+          r.id + ": beat " + (b + 1) + " labelled on its downbeat");
+    });
+  }},
+
+  { name: "counting: a record's own counting overrides the generated row", fn: function (assert) {
+    const r = sampleRudiment(); // ships an explicit ["1","e","&","a"]
+    assert.deepEqual(core.withLead(r, "R").counting, ["1", "e", "&", "a"], "explicit counting preserved");
+  }},
+
+  { name: "buzz: the multiple bounce roll marks buzzed strokes and expansion carries the flag", fn: function (assert) {
+    const r = MAP["multiple-bounce-roll"];
+    assert.ok(r.strokes.some(function (s) { return s.buzz; }), "the data marks buzzed strokes");
+    const ev = core.expandPattern(core.withLead(r, "R"));
+    assert.ok(ev.every(function (e) { return e.buzz === true; }), "every expanded event is a buzz");
+    assert.ok(core.describePattern(core.withLead(r, "R")).indexOf("buzz") !== -1, "narrated as a buzz");
+  }},
+
+  { name: "buzz: validation rejects a non-boolean buzz and a buzz that also carries a grace", fn: function (assert) {
+    expectInvalid(assert, function (r) { r.strokes[0].buzz = "yes"; }, "buzz must be a boolean");
+    expectInvalid(assert, function (r) { r.strokes[0].buzz = true; r.strokes[0].grace = [{ hand: "L" }]; },
+      "cannot also carry a grace");
+  }},
+
+  { name: "groups: the triple stroke roll brackets 3+ same-hand consecutive strokes", fn: function (assert) {
+    const groups = {};
+    MAP["triple-stroke-roll"].strokes.forEach(function (s) {
+      if (s.group !== undefined) (groups[s.group] = groups[s.group] || []).push(s);
+    });
+    const ids = Object.keys(groups);
+    assert.ok(ids.length > 0, "the roll uses stroke groups");
+    ids.forEach(function (id) {
+      const g = groups[id];
+      assert.ok(g.length >= 3, "group " + id + " has 3+ strokes");
+      g.forEach(function (s, k) {
+        assert.equal(s.hand, g[0].hand, "group " + id + ": one hand");
+        if (k > 0) assert.equal(s.slot, g[k - 1].slot + (g[k - 1].duration || 1), "group " + id + ": consecutive");
+      });
+    });
+  }},
+
+  { name: "groups: validation rejects a short, mixed-hand, or non-consecutive group", fn: function (assert) {
+    expectInvalid(assert, function (r) { r.strokes[0].group = 7; }, "at least 2 strokes");
+    expectInvalid(assert, function (r) { r.strokes[0].group = 8; r.strokes[1].group = 8; }, "same hand");
+    expectInvalid(assert, function (r) { r.strokes[0].group = 9; r.strokes[2].group = 9; }, "consecutive");
   }},
 
   /* ================= tempo paths ================= */

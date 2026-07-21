@@ -129,8 +129,37 @@
   button.step:hover{background:var(--sage)}
   button.step:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
 
-  /* Rudiment cards */
-  .rud-cards{display:flex;flex-direction:column;gap:10px}
+  /* Rudiment filters — search + family/level chips */
+  .rud-filters{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+  #rudSearch{
+    width:100%;font-family:inherit;font-size:1rem;font-weight:600;
+    padding:11px 14px;border:2px solid var(--ink);border-radius:10px;
+    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+  }
+  #rudSearch::placeholder{color:var(--ink-faint);font-weight:600}
+  .filter-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .filter-chips button{
+    font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;letter-spacing:.02em;
+    padding:7px 14px;border:2px solid var(--ink);border-radius:999px;
+    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+    transition:background .12s ease,transform .06s ease,box-shadow .06s ease;
+  }
+  .filter-chips button:hover:not([aria-pressed="true"]){background:var(--sage)}
+  .filter-chips button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
+  .filter-chips button:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+  .filter-count{margin:0;color:var(--ink-soft);font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .rud-empty{color:var(--ink-soft);font-family:var(--serif);font-style:italic;margin:8px 2px}
+
+  /* Rudiment cards — grouped by family, scrollable so 40 stay compact */
+  .rud-cards{display:flex;flex-direction:column;gap:16px;max-height:44vh;overflow-y:auto;padding:2px 4px 4px 2px}
+  @media(min-width:980px){.rud-cards{max-height:520px}}
+  .rud-group-head{
+    display:flex;align-items:baseline;gap:8px;margin:0 0 9px;padding:5px 0 6px;
+    font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:var(--ink-soft);
+    border-bottom:1px solid var(--stone);position:sticky;top:0;background:var(--card);z-index:1;
+  }
+  .rud-group-head .gcount{color:var(--ink-faint);letter-spacing:.04em}
+  .rud-group-cards{display:flex;flex-direction:column;gap:10px}
   .rud-card{
     text-align:left;font-family:inherit;cursor:pointer;padding:12px 14px;
     border:2px solid var(--ink);border-radius:10px;background:var(--paper-2);
@@ -297,7 +326,25 @@
     <!-- ============ RUDIMENT ============ -->
     <section class="panel area-rudiment" aria-labelledby="hRudiment">
       <h2 id="hRudiment">Choose the rudiment</h2>
+      <div class="rud-filters">
+        <input id="rudSearch" type="search" placeholder="Search all 40 rudiments…" aria-label="Search rudiments" autocomplete="off" />
+        <div class="filter-chips" id="familyFilter" role="group" aria-label="Filter by family">
+          <button type="button" data-fam="all" aria-pressed="true">All</button>
+          <button type="button" data-fam="Roll">Rolls</button>
+          <button type="button" data-fam="Diddle">Diddles</button>
+          <button type="button" data-fam="Flam">Flams</button>
+          <button type="button" data-fam="Drag">Drags</button>
+        </div>
+        <div class="filter-chips" id="levelFilter" role="group" aria-label="Filter by level">
+          <button type="button" data-lvl="all" aria-pressed="true">All levels</button>
+          <button type="button" data-lvl="Beginner">Beginner</button>
+          <button type="button" data-lvl="Intermediate">Intermediate</button>
+          <button type="button" data-lvl="Advanced">Advanced</button>
+        </div>
+        <p class="filter-count" id="filterCount" aria-live="polite"></p>
+      </div>
       <div class="rud-cards" role="group" aria-label="Rudiment" id="rudCards"></div>
+      <p class="rud-empty" id="rudEmpty" hidden>No rudiments match. Try clearing the search or filters.</p>
       <div class="rud-info">
         <div class="chips" id="rudChips"></div>
         <p class="teaching" id="teachingNote"></p>

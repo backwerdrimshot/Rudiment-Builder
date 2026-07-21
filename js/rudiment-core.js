@@ -86,21 +86,27 @@ function validateRudiment(r) {
   if (!gridOk) return errs; // the checks below all need a sane grid
   const slots = r.cycleBeats * r.slotsPerBeat;
 
-  if (!Array.isArray(r.counting) || r.counting.length !== slots ||
-      !r.counting.every(function (c) { return typeof c === "string"; }))
-    errs.push("counting must be an array of " + slots + " labels (one per grid slot)");
+  // counting is optional — the renderer generates syllables from slotsPerBeat
+  // when it is absent. When present it must match the grid exactly.
+  if (r.counting !== undefined &&
+      (!Array.isArray(r.counting) || r.counting.length !== slots ||
+       !r.counting.every(function (c) { return typeof c === "string"; })))
+    errs.push("counting, when given, must be an array of " + slots + " labels (one per grid slot)");
 
   if (!Array.isArray(r.strokes) || r.strokes.length === 0) {
     errs.push("strokes must be a non-empty array");
     return errs;
   }
 
-  const diddles = {}; // id -> [{index, slot, duration, hand}]
+  const diddles = {}; // id -> [{index, slot, duration, hand}]  (measured doubles: exactly 2)
+  const groups = {};  // id -> [...]                            (repeated-stroke brackets: 2+, e.g. triple stroke)
   let prevEnd = 0;
   r.strokes.forEach(function (s, i) {
     const at = "stroke " + i + ": ";
     if (!s || typeof s !== "object") { errs.push(at + "not an object"); return; }
     if (!HANDS[s.hand]) errs.push(at + 'hand must be "R" or "L"');
+    if (s.buzz !== undefined && typeof s.buzz !== "boolean") errs.push(at + "buzz must be a boolean");
+    if (s.buzz && s.grace) errs.push(at + "a buzz (multiple-bounce) stroke cannot also carry a grace note");
     const dur = s.duration === undefined ? 1 : s.duration;
     if (!Number.isInteger(s.slot) || s.slot < 0 || s.slot >= slots)
       errs.push(at + "slot must be an integer from 0 to " + (slots - 1));
@@ -130,14 +136,29 @@ function validateRudiment(r) {
     if (s.diddle !== undefined) {
       (diddles[s.diddle] = diddles[s.diddle] || []).push({ index: i, slot: s.slot, duration: dur, hand: s.hand });
     }
+    if (s.group !== undefined) {
+      (groups[s.group] = groups[s.group] || []).push({ index: i, slot: s.slot, duration: dur, hand: s.hand });
+    }
   });
 
+  // A diddle is a measured double: exactly two same-hand strokes on consecutive slots.
   Object.keys(diddles).forEach(function (id) {
     const g = diddles[id];
     const at = "diddle group " + id + ": ";
     if (g.length !== 2) { errs.push(at + "must contain exactly 2 strokes, has " + g.length); return; }
     if (g[0].hand !== g[1].hand) errs.push(at + "both strokes must use the same hand");
     if (g[1].slot !== g[0].slot + g[0].duration) errs.push(at + "strokes must be consecutive");
+  });
+
+  // A group brackets 2+ same-hand consecutive strokes (e.g. the triple stroke roll).
+  Object.keys(groups).forEach(function (id) {
+    const g = groups[id];
+    const at = "group " + id + ": ";
+    if (g.length < 2) { errs.push(at + "must contain at least 2 strokes"); return; }
+    for (let k = 0; k < g.length; k++) {
+      if (g[k].hand !== g[0].hand) errs.push(at + "all strokes must use the same hand");
+      if (k > 0 && g[k].slot !== g[k - 1].slot + g[k - 1].duration) errs.push(at + "strokes must be consecutive");
+    }
   });
 
   return errs;
@@ -172,9 +193,11 @@ function withLead(rudiment, lead) {
       hand: mirrored ? mirrorHand(s.hand) : s.hand,
       duration: s.duration === undefined ? 1 : s.duration,
       accent: !!s.accent,
+      buzz: !!s.buzz,
       velocity: s.velocity,
       label: s.label,
       diddle: s.diddle,
+      group: s.group,
       grace: (s.grace || []).map(function (g) {
         return { hand: mirrored ? mirrorHand(g.hand) : g.hand };
       }),
@@ -187,7 +210,8 @@ function withLead(rudiment, lead) {
     mirrored: mirrored,
     cycleBeats: rudiment.cycleBeats,
     slotsPerBeat: rudiment.slotsPerBeat,
-    counting: rudiment.counting.slice(),
+    counting: rudiment.counting ? rudiment.counting.slice()
+            : countingFor(rudiment.slotsPerBeat, rudiment.cycleBeats),
     strokes: strokes,
   };
 }
@@ -204,6 +228,7 @@ function expandPattern(pattern) {
       beatPos: s.slot / pattern.slotsPerBeat,
       hand: s.hand,
       accent: s.accent,
+      buzz: !!s.buzz,
       velocity: s.velocity !== undefined ? s.velocity
               : s.accent ? VELOCITY.accent : VELOCITY.normal,
       graces: (s.grace || []).map(function (g) {
@@ -218,12 +243,34 @@ function describePattern(pattern) {
   const words = { R: "Right", L: "Left" };
   return pattern.strokes.map(function (s, i) {
     let d = words[s.hand];
+    if (s.buzz) d += " buzz (multiple bounce)";
     if (s.grace.length === 1) d += " flam (grace on the " + words[s.grace[0].hand].toLowerCase() + ")";
     if (s.grace.length === 2) d += " drag (two " + words[s.grace[0].hand].toLowerCase() + " grace notes)";
     if (s.accent) d += ", accented";
     if (s.diddle !== undefined) d += ", diddle";
     return "Stroke " + (i + 1) + ": " + d;
   }).join(". ") + ".";
+}
+
+/* ---------------- counting syllables ----------------
+   Generate a counting label per grid slot from the subdivision, so rudiment
+   records don't each have to hand-maintain a counting row. A record may still
+   override with its own `counting` array (validated to the grid length). */
+const SUBDIV_COUNTS = {
+  1: [],
+  2: ["&"],
+  3: ["trip", "let"],
+  4: ["e", "&", "a"],
+  6: ["la", "li", "&", "la", "li"],
+  8: ["e", "&", "a", "ta", "&", "ta", "&"],
+};
+function countingFor(slotsPerBeat, cycleBeats) {
+  const labels = SUBDIV_COUNTS[slotsPerBeat] || [];
+  const out = [];
+  for (let b = 0; b < cycleBeats; b++)
+    for (let p = 0; p < slotsPerBeat; p++)
+      out.push(p === 0 ? String(b + 1) : (labels[p - 1] || "·"));
+  return out;
 }
 
 /* ---------------- timing helpers (pure) ---------------- */
@@ -486,6 +533,7 @@ const RudimentCore = {
   withLead: withLead,
   expandPattern: expandPattern,
   describePattern: describePattern,
+  countingFor: countingFor,
   beatSeconds: beatSeconds,
   cycleSeconds: cycleSeconds,
   graceLeadSeconds: graceLeadSeconds,

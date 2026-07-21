@@ -14,7 +14,7 @@ Pages as-is. This machine has **no Node or Python**.
 - Serve: `powershell -ExecutionPolicy Bypass -File serve.ps1` → http://localhost:8523/
   (Claude Code: `preview_start` name `rudiment-builder`, configured in the
   Pulse Pocket repo's `.claude/launch.json`.)
-- Tests: open `tests/test.html` in a browser (43 cases; summary in
+- Tests: open `tests/test.html` in a browser (53 cases; summary in
   `window.__TEST_RESULTS__`). With Node available: `node --test tests/`.
 - Do **not** create a remote repo, push, or configure domains without Taylor.
 
@@ -62,18 +62,24 @@ machine advanced by the scheduler **only at block boundaries**.
 
 One cycle covers both leads' halves. `slot` indexes a `cycleBeats ×
 slotsPerBeat` grid; `duration` (default 1) may not cross a beat boundary (MVP
-display constraint — the cell spans its beat group). Diddle = two same-hand
-strokes on consecutive slots sharing a `diddle` id. Grace hands must oppose
-the primary (`grace:[{hand}]`, 1 = flam, 2 = drag). `counting` needs one label
-per slot. Velocity tiers: accent 1.0 / normal 0.62 / grace 0.2 (per-stroke
-`velocity` overrides). Invalid data must fail loudly: `assertValidRegistry`
-throws one error naming every problem, and the app disables itself at boot.
+display constraint — the cell spans its beat group). Diddle = **exactly two**
+same-hand strokes on consecutive slots sharing a `diddle` id; `group` = a
+bracket of **2+** same-hand consecutive strokes (e.g. the triple stroke roll).
+`buzz:true` marks a multiple-bounce stroke (can't also carry a grace). Grace
+hands must oppose the primary (`grace:[{hand}]`, 1 = flam, 2 = drag). `counting`
+is **optional** — when omitted the core generates it from `slotsPerBeat`
+(`countingFor`); when present it must match the grid length. Velocity tiers:
+accent 1.0 / normal 0.62 / grace 0.2 (per-stroke `velocity` overrides). Invalid
+data must fail loudly: `assertValidRegistry` throws one error naming every
+problem, and the app disables itself at boot.
 
 Educational lineage: every record carries `pas` (1–40) and a short `heritage`
-chip ("NARD essential 13" / "NARD standard 26" / for post-NARD rudiments, a
-sensible equivalent like "PAS addition (1984)"). When expanding the catalog,
-verify sticking against the published PAS chart and the NARD grouping before
-encoding — the tests pin the shipped values.
+chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
+marker like "PAS addition (1984)". All 40 are encoded; sticking is verified
+against the published PAS chart, **except the ~19 hybrids tagged `// REVIEW:`
+in the data and tracked in `REVIEW.md`**, which carry source-varying notation
+and await Taylor's proofread. Tests pin the shipped values (catalog count,
+family split, PAS coverage), so changing data means updating `tests/cases.js`.
 
 ## Validation expectations for changes
 
@@ -96,6 +102,11 @@ Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 
+- **The 19 hybrid rudiments in [`REVIEW.md`](REVIEW.md)** — the priority items:
+  Inverted Flam Tap (alternating vs. same-hand pairs), Flamacue closing-flam
+  placement, and the Ratamacue family's inconsistent subdivisions/note counts.
+  Also flagged there: sticking errors in the Notion "Rudiment Mastery Program"
+  doc (not re-verified this pass; the app data does not inherit them).
 - Five Stroke Roll encoded PAS-card style: diddles on the beat, accented
   release ON beats 2/4 ringing through the beat (alternative: pickup placement
   releasing on the downbeat).

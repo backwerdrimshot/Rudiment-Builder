@@ -476,10 +476,33 @@ function renderSticking() {
     "-hand lead, " + r.subdivision.toLowerCase() + ". " + Core.describePattern(p);
 }
 
-/* ---------------- rudiment info + cards ---------------- */
+/* ---------------- rudiment info + cards ----------------
+   40 rudiments are grouped by family (PAS order within each) and filtered by
+   a search box + family/level chips, so the catalog stays scannable. */
+var FAMILY_ORDER = ["Roll", "Diddle", "Flam", "Drag"];
+var FAMILY_LABEL = { Roll: "Rolls", Diddle: "Diddles", Flam: "Flams", Drag: "Drags" };
+var cardIndex = [];   // [{ el, fam, level, hay }] — one per rudiment card
+var groupEls = {};    // family -> { wrap, cards, count }
+var filters = { q: "", family: "all", level: "all" };
+
 function buildCards() {
   var host = $("rudCards");
+  host.innerHTML = "";
+  cardIndex = [];
+  groupEls = {};
+  FAMILY_ORDER.forEach(function (fam) {
+    var wrap = el("div", "rud-group");
+    var head = el("div", "rud-group-head");
+    head.innerHTML = FAMILY_LABEL[fam] + ' <span class="gcount"></span>';
+    var cards = el("div", "rud-group-cards");
+    wrap.appendChild(head);
+    wrap.appendChild(cards);
+    host.appendChild(wrap);
+    groupEls[fam] = { wrap: wrap, cards: cards, count: head.querySelector(".gcount") };
+  });
   Core.RUDIMENTS.forEach(function (r) {
+    var g = groupEls[r.family];
+    if (!g) return; // unknown family — skip rather than drop a card into nowhere
     var b = el("button", "rud-card");
     b.type = "button";
     b.dataset.id = r.id;
@@ -487,13 +510,63 @@ function buildCards() {
       '<span class="rmeta">' + r.family + '<span class="dot">·</span>PAS #' + r.pas +
       '<span class="dot">·</span>' + r.level + "</span>";
     b.addEventListener("click", function () { selectRudiment(r.id); });
-    host.appendChild(b);
+    g.cards.appendChild(b);
+    var hay = (r.name + " " + r.family + " " + r.level + " pas " + r.pas + " #" + r.pas +
+      " " + (r.aliases ? r.aliases.join(" ") : "")).toLowerCase();
+    cardIndex.push({ el: b, fam: r.family, level: r.level, hay: hay });
   });
 }
+
+// Show/hide cards against the current search + family + level, hide empty
+// family groups, and keep the count + empty message honest.
+function applyFilters() {
+  var q = filters.q.trim().toLowerCase();
+  var total = cardIndex.length, shown = 0;
+  var perFam = { Roll: 0, Diddle: 0, Flam: 0, Drag: 0 };
+  cardIndex.forEach(function (c) {
+    var ok = (filters.family === "all" || c.fam === filters.family) &&
+             (filters.level === "all" || c.level === filters.level) &&
+             (q === "" || c.hay.indexOf(q) !== -1);
+    c.el.hidden = !ok;
+    if (ok) { shown++; perFam[c.fam]++; }
+  });
+  FAMILY_ORDER.forEach(function (fam) {
+    var g = groupEls[fam];
+    g.wrap.hidden = perFam[fam] === 0;
+    g.count.textContent = perFam[fam] ? "· " + perFam[fam] : "";
+  });
+  $("rudCards").hidden = shown === 0;
+  $("rudEmpty").hidden = shown !== 0;
+  var scope = [];
+  if (filters.family !== "all") scope.push(FAMILY_LABEL[filters.family]);
+  if (filters.level !== "all") scope.push(filters.level);
+  $("filterCount").textContent = "Showing " + shown + " of " + total +
+    (scope.length ? " · " + scope.join(" · ") : "");
+}
+
+function wireFilters() {
+  $("rudSearch").addEventListener("input", function (e) {
+    filters.q = e.target.value; applyFilters();
+  });
+  wireChipGroup("familyFilter", "fam", function (v) { filters.family = v; });
+  wireChipGroup("levelFilter", "lvl", function (v) { filters.level = v; });
+}
+function wireChipGroup(id, key, apply) {
+  $(id).addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn) return;
+    var kids = this.querySelectorAll("button");
+    for (var i = 0; i < kids.length; i++)
+      kids[i].setAttribute("aria-pressed", kids[i] === btn ? "true" : "false");
+    apply(btn.dataset[key]);
+    applyFilters();
+  });
+}
+
 function paintCards() {
-  var kids = $("rudCards").children;
-  for (var i = 0; i < kids.length; i++)
-    kids[i].setAttribute("aria-pressed", kids[i].dataset.id === settings.rudimentId ? "true" : "false");
+  var cards = $("rudCards").querySelectorAll(".rud-card");
+  for (var i = 0; i < cards.length; i++)
+    cards[i].setAttribute("aria-pressed", cards[i].dataset.id === settings.rudimentId ? "true" : "false");
 }
 function renderRudimentInfo() {
   var r = Core.RUDIMENT_MAP[settings.rudimentId];
@@ -996,8 +1069,10 @@ function wireEvents() {
   coerceSettings(loadSaved());
   coerceSettings(queryToRaw());
   buildCards();
+  applyFilters();
   hydrateControls();
   wireEvents();
+  wireFilters();
   renderRudimentInfo();
   renderSticking();
   syncPlanPreview();

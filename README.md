@@ -19,18 +19,31 @@ hears and watches the stroke sequence, and practices it three ways:
 
 No account. No backend. No notation software feel.
 
-## Current rudiments (proof slice)
+## The catalog
 
-| Rudiment | PAS # | Family | Grid |
-|---|---|---|---|
-| Single Paradiddle | 16 | Diddle | Sixteenths, 2-beat cycle |
-| Flam Accent | 21 | Flam | Triplet eighths, 2-beat cycle |
-| Five Stroke Roll | 7 | Roll | Sixteenths, 4-beat cycle |
+All **40 PAS International Drum Rudiments** are encoded, grouped by family:
+
+| Family | Count | PAS range |
+|---|---|---|
+| Rolls | 15 | 1–15 |
+| Diddles | 4 | 16–19 |
+| Flams | 11 | 20–30 |
+| Drags | 10 | 31–40 |
+
+The chooser opens with a **search box** (matches names and aliases across all
+40), **family** chips (Rolls / Diddles / Flams / Drags), and **level** chips
+(Beginner / Intermediate / Advanced) that combine; cards are grouped by family
+under sticky headers with live counts.
 
 Every rudiment is structured data in `js/rudiment-data.js` — nothing is
 hard-coded into the page, and there are no per-rudiment audio files. Each
 record carries its PAS number and its N.A.R.D. heritage, shown as chips in
 the app (see *Sources & educational lineage* below).
+
+> **Proofing note:** the ~28 core rudiments are high-confidence. About 19
+> hybrids (measured rolls, flam/drag hybrids, ratamacues) carry notation
+> choices that vary by source and await a musical proofread — each is tagged
+> `// REVIEW:` in the data and listed in [`REVIEW.md`](REVIEW.md).
 
 ## Features
 
@@ -71,10 +84,11 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 Runner-agnostic cases live in `tests/cases.js`:
 
-- **Browser (no tooling):** open `tests/test.html` — 43 cases covering data
-  validation, leading-hand transformation, stroke ordering, accents, grace
-  notes, diddles, tempo paths, plans, the playback position machine,
-  snapshot/restore, reset, and drift.
+- **Browser (no tooling):** open `tests/test.html` — 53 cases covering the full
+  40-rudiment catalog (PAS coverage, family split), data validation, generated
+  counting, buzz and grouped strokes, leading-hand transformation, stroke
+  ordering, accents, grace notes, diddles, tempo paths, plans, the playback
+  position machine, snapshot/restore, reset, and drift.
 - **Node (when available):** `node --test tests/`
 
 ## Architecture
@@ -116,11 +130,13 @@ rudiments — so it wears its sources openly:
   the **40 International Drum Rudiments**, today's standard reference and the
   source of the numbering shown in this app.
 
-Each rudiment's chips show both: its PAS number and where it sat in the
-N.A.R.D. tradition (essential 13 vs. standard 26). Sticking, accents, and
-grace-note structures are verified against the published PAS chart; the data
-model, prose, teaching notes, and all rendering are original to this app —
-no publisher's notation images are copied or traced.
+Each rudiment's chips show both: its PAS number and its heritage — the
+N.A.R.D. Standard 26 lineage where it applies, or a "PAS addition (1984)"
+marker for the rudiments the Percussive Arts Society added. Sticking, accents,
+and grace-note structures follow the published PAS chart (with the ~19 hybrids
+in [`REVIEW.md`](REVIEW.md) still awaiting a proofread); the data model, prose,
+teaching notes, and all rendering are original to this app — no publisher's
+notation images are copied or traced.
 
 Rudiment Builder is an independent Backwerd Rhythm Shop project and is not
 affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
