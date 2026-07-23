@@ -19,6 +19,13 @@ hears and watches the stroke sequence, and practices it three ways:
 
 No account. No backend. No notation software feel.
 
+## Release status
+
+- **Status:** MVP built
+- **Public app:** <https://rudiment-builder.backwerdrhythmshop.com/>
+- **Privacy:** Settings stay in the browser's local storage; no account or backend is
+  required.
+
 ## The catalog
 
 All **40 PAS International Drum Rudiments** are encoded, grouped by family:
@@ -113,8 +120,16 @@ timestamped visual queue drives the display at hear-time.
 ## Deployment
 
 Static site; `.github/workflows/pages.yml` deploys to GitHub Pages on push to
-`main` (same setup as the sibling apps). Custom-subdomain setup happens in
-Cloudflare + repo CNAME when the app is ready to publish.
+`main` (same setup as the sibling apps). The public custom domain is
+`rudiment-builder.backwerdrhythmshop.com`.
+
+## Planned for v1.1 — support and feedback
+
+The next release will add separate **Support** and **Feedback / Feature Request**
+controls. They must be easy to find, keyboard accessible, usable on mobile, and include
+the app name and version where possible. Final destinations will be documented after the
+intake channels are confirmed and tested. These controls are planned and are not
+represented here as shipped in the current release.
 
 ## Sources & educational lineage
 
