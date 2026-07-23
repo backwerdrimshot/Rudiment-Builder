@@ -19,12 +19,14 @@ hears and watches the stroke sequence, and practices it three ways:
 
 No account. No backend. No notation software feel.
 
-## Release status
+## Release information
 
-- **Status:** MVP built
-- **Public app:** <https://rudiment-builder.backwerdrhythmshop.com/>
-- **Privacy:** Settings stay in the browser's local storage; no account or backend is
-  required.
+- **Build:** `2026.07.22`
+- **Status:** MVP built and publicly available
+- **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
+- **Repository:** <https://github.com/backwerdrimshot/Rudiment-Builder>
+
+Build identifiers use `YYYY.MM.DD`, based on the date the documented build was updated.
 
 ## The catalog
 
@@ -76,7 +78,7 @@ the app (see *Sources & educational lineage* below).
 - Keyboard: **Space** starts/pauses, **R** resets; visible focus states;
   respects reduced-motion preferences; screen wake lock while playing
 
-## Run it locally
+## Local development
 
 No Node or Python required.
 
@@ -87,7 +89,7 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 (Any static file server pointed at this folder also works.)
 
-## Tests
+## Testing
 
 Runner-agnostic cases live in `tests/cases.js`:
 
@@ -117,17 +119,26 @@ the Node test runner load the same file. Playback truth lives on the
 time, the pure position machine advances only at cycle boundaries, and a
 timestamped visual queue drives the display at hear-time.
 
+## Privacy and accessibility
+
+Rudiment Builder requires no account or backend. Settings stay in the browser's local
+storage. Keyboard controls, visible focus, reduced-motion support, responsive layouts,
+and screen wake lock support individual and classroom use.
+
 ## Deployment
 
 Static site; `.github/workflows/pages.yml` deploys to GitHub Pages on push to
 `main` (same setup as the sibling apps). The public custom domain is
 `rudiment-builder.backwerdrhythmshop.com`.
 
-## Planned for v1.1 — support and feedback
+## Support and feedback
 
-The next release will add separate **Support** and **Feedback / Feature Request**
+Support and feedback controls are planned for the next build. They are not shipped in
+build `2026.07.22`.
+
+A future build will add separate **Support** and **Feedback / Feature Request**
 controls. They must be easy to find, keyboard accessible, usable on mobile, and include
-the app name and version where possible. Final destinations will be documented after the
+the app name and build identifier where possible. Final destinations will be documented after the
 intake channels are confirmed and tested. These controls are planned and are not
 represented here as shipped in the current release.
 
@@ -160,5 +171,7 @@ affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Tempo Ladder · **Rudiment Builder**
+
+## Ownership
 
 © Backwerd Rimshot, LLC
