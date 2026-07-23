@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Choose the rudiment. See the sticking. Build the hands. Control the tempo. A forever-free rudiment trainer for percussion students." />
 <meta name="theme-color" content="#142a36" />
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+<link rel="manifest" href="./manifest.webmanifest" />
 <title>Rudiment Builder — Backwerd Rhythm Shop</title>
 <style>
   /* Rudiment Builder — Grid Board visual language:
@@ -49,10 +52,10 @@
   }
   .logo{
     width:56px;height:56px;border-radius:14px;flex:0 0 auto;
-    background:var(--orange);border:2px solid var(--ink);
-    display:grid;place-items:center;box-shadow:3px 3px 0 var(--ink);
+    border:2px solid var(--ink);overflow:hidden;
+    display:block;box-shadow:3px 3px 0 var(--ink);
   }
-  .logo svg{width:36px;height:36px;display:block}
+  .logo img{width:100%;height:100%;display:block;object-fit:cover}
   .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:var(--serif)}
   .brand h1 span{color:var(--orange)}
   .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
@@ -309,12 +312,7 @@
 
   <header class="brand">
     <span class="logo" aria-hidden="true">
-      <!-- crossed sticks over an accent -->
-      <svg viewBox="0 0 32 32" fill="none" stroke="#fffdf8" stroke-width="3" stroke-linecap="round">
-        <path d="M7 25 L25 7" />
-        <path d="M7 7 L25 25" />
-        <path d="M10 29 L16 26.4 L22 29" stroke-width="2.4" opacity=".85" />
-      </svg>
+      <img src="./icon-192.png" alt="" />
     </span>
     <div>
       <h1>Rudiment <span>Builder</span></h1>
