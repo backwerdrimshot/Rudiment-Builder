@@ -171,6 +171,17 @@ affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Tempo Ladder · **Rudiment Builder**
 
+## Visit counter
+
+The footer shows a running visit count next to the build stamp. It comes from our own
+Cloudflare Worker at `counter.backwerdrhythmshop.com`, which stores exactly one thing:
+an integer per app. No IP, no user agent, no cookie, no timestamp — nothing tied to a
+visitor. Counted once per browser session; localhost and file:// only read the number
+so development never inflates it.
+
+It is progressive enhancement. If the endpoint is offline, blocked, or not yet
+deployed, the footer renders exactly as it did before and the app is unaffected.
+
 ## Follow
 
 Backwerd Rhythm Shop posts practice ideas, new app releases, and classroom tips:
