@@ -171,6 +171,16 @@ affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Tempo Ladder · **Rudiment Builder**
 
+## Follow
+
+Backwerd Rhythm Shop posts practice ideas, new app releases, and classroom tips:
+
+- Facebook — <https://www.facebook.com/backwerdrhythmshop/>
+- Instagram — <https://www.instagram.com/backwerdrhythmshop/>
+- YouTube — <https://www.youtube.com/@backwerdrhythmshop>
+
+These three links also appear as icon buttons in the app footer.
+
 ## Ownership
 
 © Backwerd Rimshot, LLC
