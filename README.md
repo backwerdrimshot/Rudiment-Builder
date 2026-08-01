@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-08-01.10`
+- **Build:** `2026-08-01.11`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://backwerdrhythmshop.com/app-guides/rudiment-builder>
