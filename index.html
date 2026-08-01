@@ -203,6 +203,10 @@
      the card was selected and its ground turned --sage-deep: 3.73:1. It follows
      the meta line onto --ink now, like the rest of the line already did. */
   .rud-card[aria-pressed="true"] .rmeta .dot{color:var(--ink)}
+  /* Hovering does much the same thing to the ground that selecting does —
+     --sage is only a shade lighter than --sage-deep — so the meta line needs
+     the same treatment there. At --ink-soft it was 4.41:1 under the pointer. */
+  .rud-card:hover .rmeta,.rud-card:hover .rmeta .dot{color:var(--ink)}
 
   .rud-info{margin-top:14px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
@@ -621,7 +625,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.8";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.9";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
