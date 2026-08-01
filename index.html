@@ -28,10 +28,20 @@
     --paper-2:#fffdf8;      /* raised cream / panels */
     --card:#fbf7ef;         /* panel paper */
     --ink:#142a36;          /* deep navy ink */
-    --ink-soft:#58707b;     /* steel-blue muted text */
+    /* One notch deeper than the #58707b this used to be: on the cream page
+       wash that was 4.25:1, and the tagline and the brand line sit on it. */
+    --ink-soft:#4f6873;     /* steel-blue muted text */
+    /* KNOWN GAP: 2.5:1 on panel paper, and every use of it is text — the
+       footer, the group counts, the rest glyph, the separators, the search
+       placeholder. It cannot simply be darkened to the 4.5:1 floor, because
+       that lands it on top of --ink-soft: warm paper has room for only two
+       readable tiers under --ink, not three. Fixing it means either merging
+       this tier into --ink-soft or re-cutting all three, and that is a look
+       decision, not a token nudge. Left as found and reported. */
     --ink-faint:#8ca1aa;
     --orange:#f36f3d;       /* burnt orange */
-    --orange-deep:#c94b20;
+    --orange-deep:#c94b20;  /* orange as a FILL, under paper-coloured type */
+    --orange-ink:#ad3d0d;   /* orange as TEXT, on paper — --orange-deep is 4.36:1 there */
     --sage:#cfe1d4;         /* muted sage — selected states */
     --sage-deep:#a9d8c0;
     --sage-tint:#eef4ee;    /* faint left-hand cell tint */
@@ -97,7 +107,7 @@
     border-bottom:1px solid var(--stone);padding-bottom:9px;
   }
   .hint{color:var(--ink-soft);font-size:.85rem;margin:2px 0 0}
-  .err{color:var(--orange-deep);font-weight:700;font-size:.9rem}
+  .err{color:var(--orange-ink);font-weight:700;font-size:.9rem}
 
   /* Buttons + segmented controls (family components) */
   .btn{
@@ -231,7 +241,10 @@
   }
   .cell.diddle-a::after{left:20%;right:-4px;border-radius:3px 0 0 3px}
   .cell.diddle-b::after{left:-4px;right:20%;border-radius:0 3px 3px 0}
-  .cell.current{background:var(--orange);border-color:var(--orange-deep);transform:scale(1.06);z-index:1}
+  /* Deep, not Brand Orange: paper-coloured type on #f36f3d is 2.89:1, under
+     even the 3:1 large-text floor, and this is the app's most important state —
+     the stroke you are playing right now. On --orange-deep it is 4.58:1. */
+  .cell.current{background:var(--orange-deep);transform:scale(1.06);z-index:1}
   .cell.current .letter,.cell.current .acc{color:var(--paper-2)}
   .cell.current .grace{color:var(--paper-2)}
   .cell.current.rest{background:var(--sage);transform:none}
@@ -240,7 +253,7 @@
 
   .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;color:var(--ink-soft);font-size:.78rem;font-weight:700}
   .legend .key{display:inline-flex;align-items:center;gap:6px}
-  .legend .k-acc{color:var(--orange-deep);font-weight:900}
+  .legend .k-acc{color:var(--orange-ink);font-weight:900}
   .legend .k-grace{border-bottom:2px solid var(--ink-soft);padding:0 1px}
   .legend .k-diddle{border-bottom:4px solid var(--ink-soft);padding:0 3px;border-radius:0 0 3px 3px}
   .legend .k-rest{color:var(--ink-faint)}
@@ -291,7 +304,7 @@
   .plan-preview{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-top:16px;font-variant-numeric:tabular-nums}
   .plan-preview .rung{font-weight:800;font-size:1.02rem}
   .plan-preview .arrow{color:var(--ink-faint)}
-  .plan-preview .peak{color:var(--orange-deep)}
+  .plan-preview .peak{color:var(--orange-ink)}
   .plan-meta{color:var(--ink-soft);font-size:.88rem;margin-top:8px;font-variant-numeric:tabular-nums}
   .cue-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
   .cue-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--orange-deep)}
@@ -594,7 +607,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.4";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.5";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
