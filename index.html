@@ -107,7 +107,7 @@
   }
   .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
   .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:2px 2px 0 var(--ink)}
-  .btn.primary{background:var(--orange);color:var(--paper-2);font-size:1.05rem;padding:14px 30px;text-transform:uppercase;letter-spacing:.06em}
+  .btn.primary{background:var(--orange-deep);color:var(--paper-2);font-size:1.05rem;padding:14px 30px;text-transform:uppercase;letter-spacing:.06em}
   .btn.primary:hover:not(:disabled){background:var(--orange-deep)}
   .btn.ghost{padding:12px 22px;font-size:.95rem}
   .btn.ghost:hover:not(:disabled){background:var(--sage)}
@@ -594,7 +594,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.4";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
