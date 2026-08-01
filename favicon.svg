@@ -2,12 +2,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">Rudiment Builder</title>
   <desc id="desc">A flam: a small grace note in the accent ahead of a large main note</desc>
-  <!-- Sticking family: Tan ground, Ink symbol, Brick accent. The flam is the
+  <!-- Sticking family: Tan ground, Ink symbol, Deep Brick accent. The flam is the
        visual signature of the rudiment world and it survives 32px as a small
        dot ahead of a big one. The shipped PNG was a purple V of two beads,
-       which is neither a rudiment nor anything else in the set. -->
+       which is neither a rudiment nor anything else in the set.
+
+       The grace note is Deep Brick #8b3a3a. It was #6d2d2d, which reads better
+       on Tan (5.16:1 against 3.85:1) but is not one of the seven colours in the
+       brand identity system; it is a shade the site invented for its own
+       brick-deep token. 3.85:1 clears the 3:1 WCAG threshold for non-text
+       graphics, so the official colour costs contrast without costing
+       compliance. Ink is not available here: the main note already uses it, and
+       the two notes have to stay apart. -->
   <rect width="1024" height="1024" fill="#d2b48c"/>
-  <g fill="#6d2d2d" stroke="#6d2d2d">
+  <g fill="#8b3a3a" stroke="#8b3a3a">
     <ellipse cx="330" cy="566" rx="66" ry="52" transform="rotate(-18 330 566)" stroke="none"/>
     <rect x="384" y="318" width="36" height="258" stroke="none"/>
     <line x1="288" y1="472" x2="452" y2="378" stroke-width="34" stroke-linecap="round"/>
