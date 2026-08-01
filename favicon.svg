@@ -1,33 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">Rudiment Builder</title>
-  <desc id="desc">Refreshed app icon for Rudiment Builder</desc>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0.82" y2="1">
-      <stop offset="0" stop-color="#7444A8"/>
-      <stop offset="1" stop-color="#291642"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.25" cy="0.06" r="0.95">
-      <stop offset="0" stop-color="#C9A1FF" stop-opacity="0.26"/>
-      <stop offset="0.58" stop-color="#C9A1FF" stop-opacity="0.035"/>
-      <stop offset="1" stop-color="#C9A1FF" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="symbolShadow" x="-25%" y="-25%" width="150%" height="160%">
-      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#050A10" flood-opacity="0.28"/>
-    </filter>
-
-  </defs>
-  <rect width="1024" height="1024" fill="url(#bg)"/>
-  <rect width="1024" height="1024" fill="url(#glow)"/>
-  <circle cx="512" cy="494" r="356" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.035"/>
-  <circle cx="512" cy="494" r="306" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.022"/>
-  <g filter="url(#symbolShadow)">
-
-        <path d="M326 324 L512 716 L698 324" fill="none" stroke="#F6F0E5" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="326" cy="324" r="54" fill="#F6F0E5"/>
-        <circle cx="698" cy="324" r="54" fill="#F6F0E5"/>
-        <circle cx="512" cy="716" r="52" fill="#FF6B3D"/>
-        <circle cx="512" cy="716" r="18" fill="#F6F0E5"/>
-
+  <desc id="desc">A flam: a small grace note in the accent ahead of a large main note</desc>
+  <!-- Sticking family: Tan ground, Ink symbol, Brick accent. The flam is the
+       visual signature of the rudiment world and it survives 32px as a small
+       dot ahead of a big one. The shipped PNG was a purple V of two beads,
+       which is neither a rudiment nor anything else in the set. -->
+  <rect width="1024" height="1024" fill="#d2b48c"/>
+  <g fill="#6d2d2d" stroke="#6d2d2d">
+    <ellipse cx="330" cy="566" rx="66" ry="52" transform="rotate(-18 330 566)" stroke="none"/>
+    <rect x="384" y="318" width="36" height="258" stroke="none"/>
+    <line x1="288" y1="472" x2="452" y2="378" stroke-width="34" stroke-linecap="round"/>
+  </g>
+  <g fill="#171717">
+    <rect x="690" y="330" width="44" height="376"/>
+    <ellipse cx="600" cy="700" rx="110" ry="84" transform="rotate(-18 600 700)"/>
   </g>
 </svg>
