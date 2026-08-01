@@ -31,14 +31,13 @@
     /* One notch deeper than the #58707b this used to be: on the cream page
        wash that was 4.25:1, and the tagline and the brand line sit on it. */
     --ink-soft:#4f6873;     /* steel-blue muted text */
-    /* KNOWN GAP: 2.5:1 on panel paper, and every use of it is text — the
-       footer, the group counts, the rest glyph, the separators, the search
-       placeholder. It cannot simply be darkened to the 4.5:1 floor, because
-       that lands it on top of --ink-soft: warm paper has room for only two
-       readable tiers under --ink, not three. Fixing it means either merging
-       this tier into --ink-soft or re-cutting all three, and that is a look
-       decision, not a token nudge. Left as found and reported. */
-    --ink-faint:#8ca1aa;
+    /* There is no third text tier. --ink-faint was #8ca1aa and every use of it
+       was text — the footer, the group counts, the rest glyph, the separators,
+       the search placeholder — at 2.5:1. It could not be darkened to the 4.5:1
+       floor without landing on top of --ink-soft, because warm paper has room
+       for two readable tiers under --ink and not three, so the tier is gone
+       and all of it reads as --ink-soft. If something needs to recede, use
+       size, weight, or space; do not reach for a lighter ink. */
     --orange:#f36f3d;       /* burnt orange */
     --orange-deep:#c94b20;  /* orange as a FILL, under paper-coloured type */
     --orange-ink:#ad3d0d;   /* orange as TEXT, on paper — --orange-deep is 4.36:1 there */
@@ -160,7 +159,7 @@
     padding:11px 14px;border:2px solid var(--ink);border-radius:10px;
     background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
   }
-  #rudSearch::placeholder{color:var(--ink-faint);font-weight:600}
+  #rudSearch::placeholder{color:var(--ink-soft);font-weight:600}
   .filter-chips{display:flex;flex-wrap:wrap;gap:8px}
   .filter-chips button{
     font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;letter-spacing:.02em;
@@ -182,7 +181,7 @@
     font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:var(--ink-soft);
     border-bottom:1px solid var(--stone);position:sticky;top:0;background:var(--card);z-index:1;
   }
-  .rud-group-head .gcount{color:var(--ink-faint);letter-spacing:.04em}
+  .rud-group-head .gcount{color:var(--ink-soft);letter-spacing:.04em}
   .rud-group-cards{display:flex;flex-direction:column;gap:10px}
   .rud-card{
     text-align:left;font-family:inherit;cursor:pointer;padding:12px 14px;
@@ -194,7 +193,7 @@
   .rud-card .rname{font-family:var(--serif);font-weight:700;font-size:1.12rem}
   .rud-card .rmeta{color:var(--ink-soft);font-size:.78rem;margin-top:3px;font-weight:700}
   .rud-card[aria-pressed="true"] .rmeta{color:var(--ink)}
-  .rud-card .rmeta .dot{color:var(--ink-faint);padding:0 4px}
+  .rud-card .rmeta .dot{color:var(--ink-soft);padding:0 4px}
 
   .rud-info{margin-top:14px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
@@ -235,7 +234,7 @@
   .cell .grace{font-weight:800;font-size:.85rem;margin-top:2px;color:var(--ink-soft);border-bottom:2px solid currentColor;padding:0 1px}
   .cell.hand-l{background:var(--sage-tint)}
   .cell.rest{border-style:dashed;border-color:var(--stone);box-shadow:none;background:transparent}
-  .cell.rest .letter{color:var(--ink-faint);font-size:1.1rem;font-weight:700}
+  .cell.rest .letter{color:var(--ink-soft);font-size:1.1rem;font-weight:700}
   .cell.diddle-a::after,.cell.diddle-b::after{
     content:"";position:absolute;bottom:-9px;height:4px;background:var(--ink-soft);
   }
@@ -256,7 +255,7 @@
   .legend .k-acc{color:var(--orange-ink);font-weight:900}
   .legend .k-grace{border-bottom:2px solid var(--ink-soft);padding:0 1px}
   .legend .k-diddle{border-bottom:4px solid var(--ink-soft);padding:0 3px;border-radius:0 0 3px 3px}
-  .legend .k-rest{color:var(--ink-faint)}
+  .legend .k-rest{color:var(--ink-soft)}
 
   /* Status + transport */
   .status-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
@@ -303,7 +302,7 @@
   .settings-grid .wide{grid-column:1 / -1}
   .plan-preview{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-top:16px;font-variant-numeric:tabular-nums}
   .plan-preview .rung{font-weight:800;font-size:1.02rem}
-  .plan-preview .arrow{color:var(--ink-faint)}
+  .plan-preview .arrow{color:var(--ink-soft)}
   .plan-preview .peak{color:var(--orange-ink)}
   .plan-meta{color:var(--ink-soft);font-size:.88rem;margin-top:8px;font-variant-numeric:tabular-nums}
   .cue-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
@@ -315,7 +314,7 @@
   .btn.mini{padding:8px 14px;font-size:.82rem}
   .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
 
-  footer.foot{margin-top:26px;text-align:center;color:var(--ink-faint);font-size:.76rem;line-height:1.6}
+  footer.foot{margin-top:26px;text-align:center;color:var(--ink-soft);font-size:.76rem;line-height:1.6}
   footer.foot a{color:var(--ink-soft)}
   .foot-links{display:flex;justify-content:center;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
   footer.foot a.foot-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--paper-2);color:var(--ink);border:1.5px solid var(--stone);border-radius:6px;padding:6px 13px;font-size:.78rem;font-weight:700;font-family:var(--serif);transition:all .1s ease}
@@ -607,7 +606,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.5";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.6";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
