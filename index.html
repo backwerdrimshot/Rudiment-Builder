@@ -77,7 +77,10 @@
   }
   .logo img{width:100%;height:100%;display:block;object-fit:cover}
   .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:var(--serif)}
-  .brand h1 span{color:var(--orange)}
+  /* Brand Orange is 2.39:1 on the cream page — under the 3:1 large-text floor
+     even at 27px. The wordmark takes the fill orange, which clears it at 3.79:1
+     and still reads as the same mark. */
+  .brand h1 span{color:var(--orange-deep)}
   .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
   .brand .fs{margin-left:auto}
   .tagline{color:var(--ink-soft);font-size:.92rem;margin:10px 0 20px;font-family:var(--serif);font-style:italic}
@@ -196,6 +199,10 @@
   .rud-card .rmeta{display:block;color:var(--ink-soft);font-size:.78rem;margin-top:3px;font-weight:700}
   .rud-card[aria-pressed="true"] .rmeta{color:var(--ink)}
   .rud-card .rmeta .dot{color:var(--ink-soft);padding:0 4px}
+  /* The dot is more specific than the rule above it, so it kept --ink-soft when
+     the card was selected and its ground turned --sage-deep: 3.73:1. It follows
+     the meta line onto --ink now, like the rest of the line already did. */
+  .rud-card[aria-pressed="true"] .rmeta .dot{color:var(--ink)}
 
   .rud-info{margin-top:14px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
@@ -230,7 +237,10 @@
     box-shadow:2px 2px 0 rgba(20,42,54,.18);padding:4px 2px 8px;
     transition:background .08s linear,transform .08s linear;
   }
-  .cell .acc{height:15px;font-weight:900;font-size:1.05rem;line-height:1;color:var(--orange-deep)}
+  /* The accent is orange as TEXT, so it takes --orange-ink: the fill token was
+     4.17:1 on the --sage-tint cell, and is 5.45:1 here. .cell.current still
+     flips it to --paper-2 below, where the ground becomes the fill orange. */
+  .cell .acc{height:15px;font-weight:900;font-size:1.05rem;line-height:1;color:var(--orange-ink)}
   .cell .face{display:flex;align-items:flex-start;justify-content:center;gap:1px;line-height:1}
   .cell .letter{font-weight:900;font-size:clamp(1.45rem,6.5vw,2.1rem);letter-spacing:.02em}
   .cell .grace{font-weight:800;font-size:.85rem;margin-top:2px;color:var(--ink-soft);border-bottom:2px solid currentColor;padding:0 1px}
@@ -265,7 +275,10 @@
   .bpm-huge{font-size:clamp(3.4rem,13vw,7rem);font-weight:800;line-height:.92;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
   .bpm-huge small{font-size:.24em;color:var(--ink-soft);font-weight:800;letter-spacing:.1em;vertical-align:.7em;margin-left:.15em}
   .phase-word{font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,3.6vw,1.7rem);color:var(--ink-soft);min-height:1.3em}
-  .phase-word.peak{color:var(--orange-deep);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
+  /* Also orange as TEXT. This one only passed on a wide screen, where the clamp
+     caps at 27px and it scores as large text; below ~1.66rem it is body text at
+     4.36:1 on the panel. --orange-ink holds at every width the clamp reaches. */
+  .phase-word.peak{color:var(--orange-ink);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
   .next-chip{
     justify-self:end;text-align:center;border:2px solid var(--ink);border-radius:12px;
     padding:10px 18px;background:var(--paper-2);box-shadow:var(--shadow);min-width:112px;
@@ -608,7 +621,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.7";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.8";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
