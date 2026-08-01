@@ -101,7 +101,13 @@ Runner-agnostic cases live in `tests/cases.js`:
   counting, buzz and grouped strokes, leading-hand transformation, stroke
   ordering, accents, grace notes, diddles, tempo paths, plans, the playback
   position machine, snapshot/restore, reset, and drift.
-- **Node (when available):** `node --test tests/`
+- **Node (when available):** `node --test tests/core.test.cjs` — the same 53
+  cases, run headless.
+
+  Name the file, not the directory. `node --test tests/` resolves `tests/` as a
+  module path and fails with `Cannot find module .../tests` before running a
+  single case — and it exits `0` while doing it, so a script that only checks
+  the exit code reads that as a pass.
 
 ## Architecture
 
@@ -168,8 +174,12 @@ affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
 ## Family
 
+Twelve free apps, all listed at
+<https://apps.backwerdrhythmshop.com/>:
+
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
-Tempo Ladder · **Rudiment Builder**
+Tempo Ladder · Count It · Mallet Board · Mallet Map · Scale Trail ·
+Drum Map · **Rudiment Builder**
 
 ## Visit counter
 
@@ -194,4 +204,4 @@ These three links also appear as icon buttons in the app footer.
 
 ## Ownership
 
-© Backwerd Rimshot, LLC
+© 2026 Backwerd Rimshot, LLC. All rights reserved.
