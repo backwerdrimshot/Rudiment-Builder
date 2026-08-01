@@ -15,5 +15,5 @@ Describe what changed and why.
 - [ ] Support and feedback destinations are still correct.
 - [ ] Deployment and privacy/accessibility statements remain accurate.
 - [ ] The README and app footer link to the current public app guide.
-- [ ] The Notion README Tracker was updated.
+- [ ] A row exists in the Notion **🚀 App Releases & Builds** database for this release.
 - [ ] The Notion Public App Guide and published Squarespace guide were updated if user-facing behavior changed.
