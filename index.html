@@ -191,7 +191,9 @@
   .rud-card:hover{background:var(--sage)}
   .rud-card[aria-pressed="true"]{background:var(--sage-deep)}
   .rud-card .rname{font-family:var(--serif);font-weight:700;font-size:1.12rem}
-  .rud-card .rmeta{color:var(--ink-soft);font-size:.78rem;margin-top:3px;font-weight:700}
+  /* A span by default, so the margin-top below did nothing and the rudiment
+     name ran straight into its meta line. */
+  .rud-card .rmeta{display:block;color:var(--ink-soft);font-size:.78rem;margin-top:3px;font-weight:700}
   .rud-card[aria-pressed="true"] .rmeta{color:var(--ink)}
   .rud-card .rmeta .dot{color:var(--ink-soft);padding:0 4px}
 
@@ -606,7 +608,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.6";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-01.7";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
