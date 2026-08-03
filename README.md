@@ -21,10 +21,10 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-08-01.11`
+- **Build:** `2026-08-03`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
-- **Public app guide:** <https://backwerdrhythmshop.com/app-guides/rudiment-builder>
+- **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
 - **Repository:** <https://github.com/backwerdrimshot/Rudiment-Builder>
 
 Build identifiers use ISO `YYYY-MM-DD`, based on the date the shipped app update
