@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Practice all 40 PAS rudiments with visible sticking and guided tempo modes in Rudiment Builder, a free browser-based percussion trainer." />
-<meta name="theme-color" content="#142a36" />
+<meta name="theme-color" content="#171717" />
 <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
 <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
 <link rel="manifest" href="./manifest.webmanifest" />
@@ -24,41 +24,41 @@
 <style>
   /* Rudiment Builder — Grid Board visual language:
      navy ink · warm cream paper · burnt-orange energy · sage selections. */
+  /* Rudiment Builder — was an off-brand invented navy/cream/orange, matching
+     Tempo Ladder's pre-correction values exactly. Corrected to the real base
+     identity + the Train Your Hands category accent (Terra Cotta) — see
+     assets/brand/design-tokens.css in backwerd-rhythm-shop-site. Terra Cotta
+     itself is a light-mode limited accent (never a filled button with light
+     text), so --orange-deep becomes a derived "Terra Cotta Deep" rather than
+     raw Terra Cotta, following the same derivation the guide used for Brick
+     Deep. --serif is left untouched: secondary italic caption face, not
+     governed by the guide. */
   :root{
-    --paper:#f8e9d8;        /* warm cream page */
-    --paper-2:#fffdf8;      /* raised cream / panels */
-    --card:#fbf7ef;         /* panel paper */
-    --ink:#142a36;          /* deep navy ink */
-    /* One notch deeper than the #58707b this used to be: on the cream page
-       wash that was 4.25:1, and the tagline and the brand line sit on it. */
-    --ink-soft:#4f6873;     /* steel-blue muted text */
-    /* There is no third text tier. --ink-faint was #8ca1aa and every use of it
-       was text — the footer, the group counts, the rest glyph, the separators,
-       the search placeholder — at 2.5:1. It could not be darkened to the 4.5:1
-       floor without landing on top of --ink-soft, because warm paper has room
-       for two readable tiers under --ink and not three, so the tier is gone
-       and all of it reads as --ink-soft. If something needs to recede, use
-       size, weight, or space; do not reach for a lighter ink. */
-    --orange:#f36f3d;       /* burnt orange */
-    --orange-deep:#c94b20;  /* orange as a FILL, under paper-coloured type */
-    --orange-ink:#ad3d0d;   /* orange as TEXT, on paper — --orange-deep is 4.36:1 there */
-    --sage:#cfe1d4;         /* muted sage — selected states */
-    --sage-deep:#a9d8c0;
-    --sage-tint:#eef4ee;    /* faint left-hand cell tint */
-    --stone:#d8d0c3;        /* soft stone borders */
-    --cyan:#58a6c3;
-    --good:#1d6b3c;
+    --paper:#fafaf9;        /* was #f8e9d8 → Warm White */
+    --paper-2:#fafaf9;      /* was #fffdf8 → Warm White */
+    --card:#ffffff;         /* was #fbf7ef → white */
+    --ink:#171717;          /* was #142a36 → Ink */
+    --ink-soft:#4f4a47;     /* was #4f6873 → Ink Soft */
+    --orange:#e2725b;       /* was #f36f3d → Terra Cotta (Train Your Hands accent) */
+    --orange-deep:#b8492f;  /* was #c94b20 → derived Terra Cotta Deep, fill under paper-colored type */
+    --orange-ink:#b8492f;   /* was #ad3d0d → Terra Cotta Deep, as text on paper */
+    --sage:#d2b48c;         /* was #cfe1d4 → Tan, selected states */
+    --sage-deep:#bfa073;    /* was #a9d8c0 → Tan Line */
+    --sage-tint:#e8dbc8;    /* was #eef4ee → Tan Soft, faint left-hand cell tint */
+    --stone:#e2ded6;        /* was #d8d0c3 → shared hairline/divider */
+    --cyan:#567d46;         /* was #58a6c3 → Forest, the lit-indicator/focus accent */
+    --good:#567d46;         /* was #1d6b3c → Forest */
     --serif:'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif;
     --radius:12px;
-    --shadow:5px 5px 0 rgba(20,42,54,.14);
+    --shadow:5px 5px 0 rgba(23,23,23,.14);
     font-synthesis:none;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:linear-gradient(180deg,#faf0e0,#f4e6d1);
+    background:var(--paper);
     color:var(--ink);
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    font-family:"Barlow Condensed",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
     min-height:100vh;
     padding:26px 16px 56px;
   }
@@ -77,7 +77,7 @@
     display:block;box-shadow:3px 3px 0 var(--ink);
   }
   .logo img{width:100%;height:100%;display:block;object-fit:cover}
-  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:var(--serif)}
+  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:"Big Shoulders Display","Barlow Condensed",Oswald,Impact,sans-serif;font-weight:800}
   /* Brand Orange is 2.39:1 on the cream page — under the 3:1 large-text floor
      even at 27px. The wordmark takes the fill orange, which clears it at 3.79:1
      and still reads as the same mark. */
@@ -257,9 +257,10 @@
   }
   .cell.diddle-a::after{left:20%;right:-4px;border-radius:3px 0 0 3px}
   .cell.diddle-b::after{left:-4px;right:20%;border-radius:0 3px 3px 0}
-  /* Deep, not Brand Orange: paper-coloured type on #f36f3d is 2.89:1, under
-     even the 3:1 large-text floor, and this is the app's most important state —
-     the stroke you are playing right now. On --orange-deep it is 4.58:1. */
+  /* Deep, not Terra Cotta itself: paper-coloured type on raw Terra Cotta
+     #e2725b is under the 3:1 large-text floor, and this is the app's most
+     important state — the stroke you are playing right now. The derived
+     --orange-deep clears it. */
   .cell.current{background:var(--orange-deep);transform:scale(1.06);z-index:1}
   .cell.current .letter,.cell.current .acc{color:var(--paper-2)}
   .cell.current .grace{color:var(--paper-2)}
