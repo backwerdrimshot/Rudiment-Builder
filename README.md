@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-08-15`
+- **Build:** `2026-08-22`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -131,7 +131,11 @@ timestamped visual queue drives the display at hear-time.
 ## Privacy and accessibility
 
 Rudiment Builder requires no account or backend. Settings stay in the browser's local
-storage. Keyboard controls, visible focus, reduced-motion support, responsive layouts,
+storage. One script does load: a Cloudflare Web Analytics beacon that counts page views
+and nothing else — no cookies, no fingerprinting, no following anyone to another site.
+It carries the same site token as the rest of backwerdrhythmshop.com so this app's
+numbers land beside the page that describes it, and it never sees a rudiment, a tempo or
+a stored setting. The shop site's `/privacy/` describes it for visitors. Keyboard controls, visible focus, reduced-motion support, responsive layouts,
 and screen wake lock support individual and classroom use.
 
 ## Deployment
