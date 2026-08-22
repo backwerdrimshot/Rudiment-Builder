@@ -627,7 +627,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-15";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-22";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
@@ -768,5 +768,18 @@
     .catch(function () {});
 })();
 </script>
+<!-- Cloudflare Web Analytics.
+
+     The shop site's Worker injects this on every page it serves, but it does not
+     serve this host — rudiment-builder.backwerdrhythmshop.com is its own
+     deployment, so the tag has to live here. Same site token as the rest of
+     backwerdrhythmshop.com, so this app's numbers land beside
+     apps.backwerdrhythmshop.com/rudiment-builder/ rather than in a second
+     dashboard.
+
+     It counts page views: no cookies, no fingerprinting, no way to follow anyone
+     to another site. Settings still stay in local storage and nothing a player
+     does reaches it. -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "4c76fa6f3023401899bbeb30fa4eebd3"}'></script>
 </body>
 </html>

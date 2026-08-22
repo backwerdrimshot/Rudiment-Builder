@@ -16,6 +16,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Run tests
+        shell: bash
+        run: node --test tests/*.test.mjs
       - name: Validate README standard
         shell: bash
         run: |
