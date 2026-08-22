@@ -140,9 +140,40 @@ and screen wake lock support individual and classroom use.
 
 ## Deployment
 
-Static site; `.github/workflows/pages.yml` deploys to GitHub Pages on push to
-`main` (same setup as the sibling apps). The public custom domain is
-`rudiment-builder.backwerdrhythmshop.com`.
+Static site published as Cloudflare Workers static assets. `node build.mjs`
+copies the `SITE_ASSETS` allowlist into `dist/`, and `npx wrangler deploy` ships
+it. There is no deploy workflow, and none is wanted.
+
+It used to publish through GitHub Pages via `actions/deploy-pages`, and that
+stopped working on 15 August when Actions stopped running on this account. Every
+merge between then and 22 August sat on `main` without reaching the public site,
+which nothing announced — a deploy that never runs looks exactly like one that
+succeeded. The README also claimed Pages was "the same setup as the sibling
+apps"; it never was. The other twelve were on Workers the whole time.
+
+### The route, and why it is a route
+
+The public hostname is `rudiment-builder.backwerdrhythmshop.com`, served by a
+**Workers route** (`rudiment-builder.backwerdrhythmshop.com/*`), not by a Worker
+custom domain like every sibling app uses.
+
+That is a compromise, not a preference. A custom domain refuses to attach while
+another DNS record already claims the hostname — Cloudflare returns error 100117
+— and the record pointing at GitHub Pages is still there. A route needs no such
+thing: it intercepts matching requests ahead of the origin, over the existing
+proxied record.
+
+**The consequence is worth knowing before someone tidies up.** The GitHub Pages
+site still exists behind that DNS record, frozen at its last successful build in
+August. Delete the route and traffic silently falls back to it — an old copy of
+this app, served as though it were current, with `/CLAUDE.md`, `/REVIEW.md`,
+`/README.md` and `/serve.ps1` publicly readable again the way `path: '.'` left
+them.
+
+The clean end state is to delete the `rudiment-builder` DNS record in the
+`backwerdrhythmshop.com` zone and attach a proper custom domain, which puts this
+app on the same footing as the other twelve and removes the stale fallback. Until
+that happens, the route is load-bearing: do not remove it.
 
 ## Support and feedback
 
