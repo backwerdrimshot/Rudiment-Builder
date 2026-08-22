@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rudiment-builder.backwerdrhythmshop.com/sitemap.xml

@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rudiment-builder",
+  "compatibility_date": "2026-08-22",
+  // Static assets only: there is no Worker script here and none is wanted. The
+  // app is HTML and three JS files that run in the browser.
+  //
+  // This replaced GitHub Pages, which deployed through actions/deploy-pages and
+  // therefore stopped deploying entirely when Actions stopped running on this
+  // account. Every sibling app already published this way; this was the last one
+  // that did not, and the only one whose merges silently never shipped.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}

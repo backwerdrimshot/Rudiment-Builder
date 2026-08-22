@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Practice all 40 PAS rudiments with visible sticking and guided tempo modes in Rudiment Builder, a free browser-based percussion trainer." />
+<meta name="theme-color" content="#171717" />
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="canonical" href="https://rudiment-builder.backwerdrhythmshop.com/" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Rudiment Builder","url":"https://rudiment-builder.backwerdrhythmshop.com/","applicationCategory":"EducationalApplication","applicationSubCategory":"Music education","operatingSystem":"Any device with a modern web browser","isAccessibleForFree":true,"description":"Practice all 40 PAS rudiments with visible sticking and guided tempo modes in Rudiment Builder, a free browser-based percussion trainer.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"Backwerd Rhythm Shop","url":"https://backwerdrhythmshop.com/"}}</script>
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://rudiment-builder.backwerdrhythmshop.com/" />
+<meta property="og:site_name" content="Backwerd Rhythm Shop" />
+<meta property="og:title" content="Rudiment Builder — See the sticking. Build the hands." />
+<meta property="og:description" content="A forever-free rudiment trainer for percussion students, from Backwerd Rhythm Shop." />
+<!-- summary, not summary_large_image: there is no og:image yet. Add one
+     1200x630 image and switch the card type together, never separately. -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Rudiment Builder — See the sticking. Build the hands." />
+<meta name="twitter:description" content="A forever-free rudiment trainer for percussion students, from Backwerd Rhythm Shop." />
+<title>Rudiment Builder | Free Percussion Rudiment Trainer</title>
+<style>
+  /* Rudiment Builder — Grid Board visual language:
+     navy ink · warm cream paper · burnt-orange energy · sage selections. */
+  /* Rudiment Builder — was an off-brand invented navy/cream/orange, matching
+     Tempo Ladder's pre-correction values exactly. Corrected to the real base
+     identity + the Train Your Hands category accent (Terra Cotta) — see
+     assets/brand/design-tokens.css in backwerd-rhythm-shop-site. Terra Cotta
+     itself is a light-mode limited accent (never a filled button with light
+     text), so --orange-deep becomes a derived "Terra Cotta Deep" rather than
+     raw Terra Cotta, following the same derivation the guide used for Brick
+     Deep. --serif is left untouched: secondary italic caption face, not
+     governed by the guide. */
+  :root{
+    --paper:#fafaf9;        /* was #f8e9d8 → Warm White */
+    --paper-2:#fafaf9;      /* was #fffdf8 → Warm White */
+    --card:#ffffff;         /* was #fbf7ef → white */
+    --ink:#171717;          /* was #142a36 → Ink */
+    --ink-soft:#4f4a47;     /* was #4f6873 → Ink Soft */
+    --orange:#e2725b;       /* was #f36f3d → Terra Cotta (Train Your Hands accent) */
+    --orange-deep:#b8492f;  /* was #c94b20 → derived Terra Cotta Deep, fill under paper-colored type */
+    --orange-ink:#b8492f;   /* was #ad3d0d → Terra Cotta Deep, as text on paper */
+    --sage:#d2b48c;         /* was #cfe1d4 → Tan, selected states */
+    --sage-deep:#bfa073;    /* was #a9d8c0 → Tan Line */
+    --sage-tint:#e8dbc8;    /* was #eef4ee → Tan Soft, faint left-hand cell tint */
+    --stone:#e2ded6;        /* was #d8d0c3 → shared hairline/divider */
+    --cyan:#567d46;         /* was #58a6c3 → Forest, the lit-indicator/focus accent */
+    --good:#567d46;         /* was #1d6b3c → Forest */
+    --serif:'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif;
+    --radius:12px;
+    --shadow:5px 5px 0 rgba(23,23,23,.14);
+    font-synthesis:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Barlow Condensed",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    min-height:100vh;
+    padding:26px 16px 56px;
+  }
+  .wrap{max-width:1160px;margin:0 auto}
+  [hidden]{display:none !important}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* Brand header */
+  header.brand{
+    display:flex;align-items:center;gap:16px;margin-bottom:8px;
+    padding-bottom:16px;border-bottom:3px double var(--ink);flex-wrap:wrap;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:14px;flex:0 0 auto;
+    border:2px solid var(--ink);overflow:hidden;
+    display:block;box-shadow:3px 3px 0 var(--ink);
+  }
+  .logo img{width:100%;height:100%;display:block;object-fit:cover}
+  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:"Big Shoulders Display","Barlow Condensed",Oswald,Impact,sans-serif;font-weight:800}
+  /* Brand Orange is 2.39:1 on the cream page — under the 3:1 large-text floor
+     even at 27px. The wordmark takes the fill orange, which clears it at 3.79:1
+     and still reads as the same mark. */
+  .brand h1 span{color:var(--orange-deep)}
+  .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+  .brand .fs{margin-left:auto}
+  .tagline{color:var(--ink-soft);font-size:.92rem;margin:10px 0 20px;font-family:var(--serif);font-style:italic}
+
+  /* Layout: one column on phones; practice display leads on big screens */
+  .layout{display:flex;flex-direction:column;gap:18px}
+  @media(min-width:980px){
+    .layout{
+      display:grid;gap:20px;align-items:start;
+      grid-template-columns:1.45fr 1fr;
+      grid-template-areas:"sticking rudiment" "status rudiment" "status practice" ". practice";
+    }
+    .area-rudiment{grid-area:rudiment}
+    .area-sticking{grid-area:sticking}
+    .area-status{grid-area:status}
+    .area-practice{grid-area:practice}
+  }
+
+  .panel{
+    background:var(--card);border:2px solid var(--ink);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow);
+  }
+  .panel h2{
+    margin:0 0 14px;font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;
+    color:var(--ink-soft);font-weight:800;
+    border-bottom:1px solid var(--stone);padding-bottom:9px;
+  }
+  .hint{color:var(--ink-soft);font-size:.85rem;margin:2px 0 0}
+  .err{color:var(--orange-ink);font-weight:700;font-size:.9rem}
+
+  /* Buttons + segmented controls (family components) */
+  .btn{
+    font-family:inherit;font-weight:800;cursor:pointer;border:2px solid var(--ink);border-radius:10px;
+    box-shadow:3px 3px 0 var(--ink);transition:transform .06s ease,box-shadow .06s ease,background .12s ease;
+    background:var(--paper-2);color:var(--ink);
+  }
+  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:2px 2px 0 var(--ink)}
+  .btn.primary{background:var(--orange-deep);color:var(--paper-2);font-size:1.05rem;padding:14px 30px;text-transform:uppercase;letter-spacing:.06em}
+  .btn.primary:hover:not(:disabled){background:var(--orange-deep)}
+  .btn.ghost{padding:12px 22px;font-size:.95rem}
+  .btn.ghost:hover:not(:disabled){background:var(--sage)}
+  .btn.big{font-size:1.05rem;padding:15px 34px;min-width:150px}
+  .btn.play{background:var(--ink);color:var(--paper-2)}
+  .btn.play:hover:not(:disabled){background:#0d1e28}
+
+  .seg{display:flex;gap:0;border:2px solid var(--ink);border-radius:9px;overflow:hidden;box-shadow:2px 2px 0 var(--ink)}
+  .seg button{
+    flex:1;padding:12px 8px;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;
+    background:var(--paper-2);color:var(--ink);border:none;border-right:2px solid var(--ink);
+    transition:background .12s ease;min-height:44px;
+  }
+  .seg button:last-child{border-right:none}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
+  .seg button:hover:not([aria-pressed="true"]){background:var(--sage)}
+
+  .field label,.field .lbl{display:block;font-weight:700;font-size:.9rem;margin-bottom:7px}
+  .num-row{display:flex;align-items:stretch;gap:8px}
+  .num-row input[type=number]{
+    flex:1;min-width:0;font-family:inherit;font-size:1.35rem;font-weight:800;
+    text-align:center;padding:8px 6px;border:2px solid var(--ink);border-radius:8px;
+    background:var(--paper-2);color:var(--ink);font-variant-numeric:tabular-nums;
+    -moz-appearance:textfield;
+  }
+  .num-row input[type=number]::-webkit-outer-spin-button,
+  .num-row input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  button.step{
+    width:44px;flex:0 0 auto;font-size:1.3rem;font-weight:800;cursor:pointer;
+    background:var(--paper-2);color:var(--ink);border:2px solid var(--ink);border-radius:8px;
+    box-shadow:2px 2px 0 var(--ink);transition:transform .06s ease,box-shadow .06s ease;
+  }
+  button.step:hover{background:var(--sage)}
+  button.step:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+
+  /* Rudiment filters — search + family/level chips */
+  .rud-filters{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+  #rudSearch{
+    width:100%;font-family:inherit;font-size:1rem;font-weight:600;
+    padding:11px 14px;border:2px solid var(--ink);border-radius:10px;
+    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+  }
+  #rudSearch::placeholder{color:var(--ink-soft);font-weight:600}
+  .filter-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .filter-chips button{
+    font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;letter-spacing:.02em;
+    padding:7px 14px;border:2px solid var(--ink);border-radius:999px;
+    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+    transition:background .12s ease,transform .06s ease,box-shadow .06s ease;
+  }
+  .filter-chips button:hover:not([aria-pressed="true"]){background:var(--sage)}
+  .filter-chips button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
+  .filter-chips button:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+  .filter-count{margin:0;color:var(--ink-soft);font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .rud-empty{color:var(--ink-soft);font-family:var(--serif);font-style:italic;margin:8px 2px}
+
+  /* Rudiment cards — grouped by family, scrollable so 40 stay compact */
+  .rud-cards{display:flex;flex-direction:column;gap:16px;max-height:44vh;overflow-y:auto;padding:2px 4px 4px 2px}
+  @media(min-width:980px){.rud-cards{max-height:520px}}
+  .rud-group-head{
+    display:flex;align-items:baseline;gap:8px;margin:0 0 9px;padding:5px 0 6px;
+    font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:var(--ink-soft);
+    border-bottom:1px solid var(--stone);position:sticky;top:0;background:var(--card);z-index:1;
+  }
+  .rud-group-head .gcount{color:var(--ink-soft);letter-spacing:.04em}
+  .rud-group-cards{display:flex;flex-direction:column;gap:10px}
+  .rud-card{
+    text-align:left;font-family:inherit;cursor:pointer;padding:12px 14px;
+    border:2px solid var(--ink);border-radius:10px;background:var(--paper-2);
+    box-shadow:2px 2px 0 var(--ink);transition:background .12s ease;
+  }
+  .rud-card:hover{background:var(--sage)}
+  .rud-card[aria-pressed="true"]{background:var(--sage-deep)}
+  .rud-card .rname{font-family:var(--serif);font-weight:700;font-size:1.12rem}
+  /* A span by default, so the margin-top below did nothing and the rudiment
+     name ran straight into its meta line. */
+  .rud-card .rmeta{display:block;color:var(--ink-soft);font-size:.78rem;margin-top:3px;font-weight:700}
+  .rud-card[aria-pressed="true"] .rmeta{color:var(--ink)}
+  .rud-card .rmeta .dot{color:var(--ink-soft);padding:0 4px}
+  /* The dot is more specific than the rule above it, so it kept --ink-soft when
+     the card was selected and its ground turned --sage-deep: 3.73:1. It follows
+     the meta line onto --ink now, like the rest of the line already did. */
+  .rud-card[aria-pressed="true"] .rmeta .dot{color:var(--ink)}
+  /* Hovering does much the same thing to the ground that selecting does —
+     --sage is only a shade lighter than --sage-deep — so the meta line needs
+     the same treatment there. At --ink-soft it was 4.41:1 under the pointer. */
+  .rud-card:hover .rmeta,.rud-card:hover .rmeta .dot{color:var(--ink)}
+
+  .rud-info{margin-top:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+  .chip{
+    border:2px solid var(--ink);border-radius:999px;background:var(--paper-2);
+    font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    padding:4px 12px;color:var(--ink);
+  }
+  .chip.family{background:var(--sage)}
+  .teaching{font-family:var(--serif);font-size:1rem;line-height:1.5;margin:0;color:var(--ink)}
+
+  .lead-row{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+  .lead-row .lbl{margin:0;font-weight:700;font-size:.9rem}
+  .lead-row .seg{flex:1;min-width:170px;max-width:240px}
+
+  /* Sticking display */
+  .stick-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .stick-title{font-family:var(--serif);font-weight:700;font-size:1.35rem;margin:0 0 2px}
+  .stick-sub{color:var(--ink-soft);font-size:.82rem;font-weight:700}
+  .stick-rows{display:flex;flex-direction:column;gap:16px;margin:16px 0 4px}
+  .stick-row{display:flex;gap:16px}
+  .beat-group{flex:1;min-width:0;display:grid;grid-template-columns:repeat(var(--slots),1fr);gap:6px;align-content:start;row-gap:2px}
+  .count{
+    text-align:center;font-size:.68rem;font-weight:800;letter-spacing:.04em;
+    color:var(--ink-soft);text-transform:uppercase;padding-bottom:3px;align-self:end;
+    font-variant-numeric:tabular-nums;
+  }
+  .count.on-stroke{color:var(--ink)}
+  .cell{
+    position:relative;border:2px solid var(--ink);border-radius:9px;background:var(--paper-2);
+    min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:2px 2px 0 rgba(20,42,54,.18);padding:4px 2px 8px;
+    transition:background .08s linear,transform .08s linear;
+  }
+  /* The accent is orange as TEXT, so it takes --orange-ink: the fill token was
+     4.17:1 on the --sage-tint cell, and is 5.45:1 here. .cell.current still
+     flips it to --paper-2 below, where the ground becomes the fill orange. */
+  .cell .acc{height:15px;font-weight:900;font-size:1.05rem;line-height:1;color:var(--orange-ink)}
+  .cell .face{display:flex;align-items:flex-start;justify-content:center;gap:1px;line-height:1}
+  .cell .letter{font-weight:900;font-size:clamp(1.45rem,6.5vw,2.1rem);letter-spacing:.02em}
+  .cell .grace{font-weight:800;font-size:.85rem;margin-top:2px;color:var(--ink-soft);border-bottom:2px solid currentColor;padding:0 1px}
+  .cell.hand-l{background:var(--sage-tint)}
+  .cell.rest{border-style:dashed;border-color:var(--stone);box-shadow:none;background:transparent}
+  .cell.rest .letter{color:var(--ink-soft);font-size:1.1rem;font-weight:700}
+  .cell.diddle-a::after,.cell.diddle-b::after{
+    content:"";position:absolute;bottom:-9px;height:4px;background:var(--ink-soft);
+  }
+  .cell.diddle-a::after{left:20%;right:-4px;border-radius:3px 0 0 3px}
+  .cell.diddle-b::after{left:-4px;right:20%;border-radius:0 3px 3px 0}
+  /* Deep, not Terra Cotta itself: paper-coloured type on raw Terra Cotta
+     #e2725b is under the 3:1 large-text floor, and this is the app's most
+     important state — the stroke you are playing right now. The derived
+     --orange-deep clears it. */
+  .cell.current{background:var(--orange-deep);transform:scale(1.06);z-index:1}
+  .cell.current .letter,.cell.current .acc{color:var(--paper-2)}
+  .cell.current .grace{color:var(--paper-2)}
+  .cell.current.rest{background:var(--sage);transform:none}
+  #sticking.listening{opacity:.45}
+  #sticking{transition:opacity .15s ease}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;color:var(--ink-soft);font-size:.78rem;font-weight:700}
+  .legend .key{display:inline-flex;align-items:center;gap:6px}
+  .legend .k-acc{color:var(--orange-ink);font-weight:900}
+  .legend .k-grace{border-bottom:2px solid var(--ink-soft);padding:0 1px}
+  .legend .k-diddle{border-bottom:4px solid var(--ink-soft);padding:0 3px;border-radius:0 0 3px 3px}
+  .legend .k-rest{color:var(--ink-soft)}
+
+  /* Status + transport */
+  .status-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+  @media(max-width:560px){.status-grid{grid-template-columns:1fr;text-align:center}}
+  .bpm-huge{font-size:clamp(3.4rem,13vw,7rem);font-weight:800;line-height:.92;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .bpm-huge small{font-size:.24em;color:var(--ink-soft);font-weight:800;letter-spacing:.1em;vertical-align:.7em;margin-left:.15em}
+  .phase-word{font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,3.6vw,1.7rem);color:var(--ink-soft);min-height:1.3em}
+  /* Also orange as TEXT. This one only passed on a wide screen, where the clamp
+     caps at 27px and it scores as large text; below ~1.66rem it is body text at
+     4.36:1 on the panel. --orange-ink holds at every width the clamp reaches. */
+  .phase-word.peak{color:var(--orange-ink);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
+  .next-chip{
+    justify-self:end;text-align:center;border:2px solid var(--ink);border-radius:12px;
+    padding:10px 18px;background:var(--paper-2);box-shadow:var(--shadow);min-width:112px;
+  }
+  @media(max-width:560px){.next-chip{justify-self:center}}
+  .next-chip .lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-soft);font-weight:800}
+  .next-chip .val{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+  .next-chip .val small{font-size:.85rem;color:var(--ink-soft)}
+
+  .beats{display:flex;gap:12px;justify-content:center;margin:18px 0 2px;min-height:24px}
+  .pip{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);background:var(--paper-2);transition:background .05s linear}
+  .pip.one{border-width:3px}
+  .pip.on{background:var(--cyan)}
+  .pip.one.on{background:var(--orange)}
+
+  .banner{
+    margin:14px 0 4px;padding:13px 18px;border-radius:10px;border:2px solid var(--ink);
+    font-weight:800;text-align:center;font-size:1.02rem;
+    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+  }
+  .banner.listen{background:var(--orange-deep);color:var(--paper-2)}
+  .banner.warn{background:var(--sage-deep);color:var(--ink)}
+  .banner.countin{background:var(--sage);color:var(--ink)}
+  .banner.complete{background:var(--good);color:var(--paper-2)}
+  .banner.hidden{visibility:hidden}
+
+  .status-line{text-align:center;color:var(--ink-soft);font-size:1rem;margin:10px 0 4px;font-variant-numeric:tabular-nums;min-height:1.4em}
+  .status-line strong{color:var(--ink)}
+
+  .transport{display:flex;gap:14px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+
+  /* Practice settings */
+  .mode-hint{margin:10px 0 0}
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  @media(max-width:420px){.settings-grid{grid-template-columns:1fr}}
+  .settings-grid .wide{grid-column:1 / -1}
+  .plan-preview{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-top:16px;font-variant-numeric:tabular-nums}
+  .plan-preview .rung{font-weight:800;font-size:1.02rem}
+  .plan-preview .arrow{color:var(--ink-soft)}
+  .plan-preview .peak{color:var(--orange-ink)}
+  .plan-meta{color:var(--ink-soft);font-size:.88rem;margin-top:8px;font-variant-numeric:tabular-nums}
+  .cue-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .cue-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--orange-deep)}
+  .cue-row label{font-weight:700;font-size:.9rem}
+  .cue-row input[type=checkbox]:disabled+label{opacity:.5}
+  .btn.muted{border-color:var(--orange-deep);color:var(--orange-deep)}
+  .suggested-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .btn.mini{padding:8px 14px;font-size:.82rem}
+  .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+
+  footer.foot{margin-top:26px;text-align:center;color:var(--ink-soft);font-size:.76rem;line-height:1.6}
+  footer.foot a{color:var(--ink-soft)}
+  .foot-links{display:flex;justify-content:center;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
+  footer.foot a.foot-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--paper-2);color:var(--ink);border:1.5px solid var(--stone);border-radius:6px;padding:6px 13px;font-size:.78rem;font-weight:700;font-family:var(--serif);transition:all .1s ease}
+  footer.foot a.foot-btn:hover{border-color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+  footer.foot a.foot-btn.foot-ico{padding:8px;border-radius:50%;gap:0;line-height:0}
+  footer.foot a.foot-btn.foot-ico svg{width:16px;height:16px;display:block}
+
+  /* Support fallback panel. A bare mailto: fails silently on machines without a
+     registered email app, so the footer support links open this panel; the
+     mailto stays one click away and the message can be copied anywhere. */
+  .support-dialog{
+    width:min(560px,calc(100vw - 32px));border:2px solid var(--ink);border-radius:12px;
+    padding:20px;background:var(--paper-2);color:var(--ink);box-shadow:var(--shadow)
+  }
+  .support-dialog::backdrop{background:rgba(20,42,54,.45)}
+  .support-dialog h2{margin:0 0 8px;font-size:1.05rem}
+  .support-dialog .support-dialog-lede,
+  .support-dialog .support-dialog-hint{margin:0 0 12px;color:var(--ink-soft);font-size:.85rem}
+  .support-dialog .support-dialog-hint{margin:12px 0 0}
+  .support-dialog .support-dialog-label{display:block;font-size:.78rem;font-weight:700}
+  .support-dialog textarea{
+    display:block;width:100%;margin-top:6px;padding:10px;border:1.5px solid var(--stone);
+    border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;font-size:.85rem;resize:vertical
+  }
+  .support-dialog textarea:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+  .support-dialog .support-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .support-dialog .foot-btn{
+    display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--paper-2);
+    color:var(--ink);border:1.5px solid var(--stone);border-radius:6px;padding:6px 13px;
+    min-height:44px;font-size:.78rem;font-weight:700;font-family:var(--serif);
+    transition:all .1s ease;cursor:pointer
+  }
+  .support-dialog .foot-btn:hover{border-color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+
+  :focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+  body:fullscreen,body:-webkit-full-screen{padding-top:20px}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+    .cell.current{transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="brand">
+    <span class="logo" aria-hidden="true">
+      <img src="./icon-192.png" alt="" />
+    </span>
+    <div>
+      <h1>Rudiment <span>Builder</span></h1>
+      <p>Backwerd Rhythm Shop</p>
+    </div>
+    <button class="btn ghost fs" id="btnFull" type="button" title="Full screen">⛶ Full screen</button>
+  </header>
+  <p class="tagline">Choose the rudiment. See the sticking. Build the hands. Control the tempo.</p>
+
+  <main class="layout">
+
+    <!-- ============ RUDIMENT ============ -->
+    <section class="panel area-rudiment" aria-labelledby="hRudiment">
+      <h2 id="hRudiment">Choose the rudiment</h2>
+      <div class="rud-filters">
+        <input id="rudSearch" type="search" placeholder="Search all 40 rudiments…" aria-label="Search rudiments" autocomplete="off" />
+        <div class="filter-chips" id="familyFilter" role="group" aria-label="Filter by family">
+          <button type="button" data-fam="all" aria-pressed="true">All</button>
+          <button type="button" data-fam="Roll">Rolls</button>
+          <button type="button" data-fam="Diddle">Diddles</button>
+          <button type="button" data-fam="Flam">Flams</button>
+          <button type="button" data-fam="Drag">Drags</button>
+        </div>
+        <div class="filter-chips" id="levelFilter" role="group" aria-label="Filter by level">
+          <button type="button" data-lvl="all" aria-pressed="true">All levels</button>
+          <button type="button" data-lvl="Beginner">Beginner</button>
+          <button type="button" data-lvl="Intermediate">Intermediate</button>
+          <button type="button" data-lvl="Advanced">Advanced</button>
+        </div>
+        <p class="filter-count" id="filterCount" aria-live="polite"></p>
+      </div>
+      <div class="rud-cards" role="group" aria-label="Rudiment" id="rudCards"></div>
+      <p class="rud-empty" id="rudEmpty" hidden>No rudiments match. Try clearing the search or filters.</p>
+      <div class="rud-info">
+        <div class="chips" id="rudChips"></div>
+        <p class="teaching" id="teachingNote"></p>
+        <p class="hint" id="tempoHint"></p>
+      </div>
+      <div class="lead-row">
+        <span class="lbl" id="leadLbl">Leading hand</span>
+        <div class="seg" role="group" aria-labelledby="leadLbl" id="segLead">
+          <button type="button" data-val="R" aria-pressed="true">Right lead</button>
+          <button type="button" data-val="L" aria-pressed="false">Left lead</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STICKING ============ -->
+    <section class="panel area-sticking" aria-labelledby="hSticking">
+      <h2 id="hSticking">The sticking</h2>
+      <div class="stick-head">
+        <div>
+          <p class="stick-title" id="stickName"></p>
+          <span class="stick-sub" id="stickSub"></span>
+        </div>
+      </div>
+      <p class="sr-only" id="stickingDesc"></p>
+      <div id="sticking" role="img" aria-describedby="stickingDesc" aria-label="Sticking pattern"></div>
+      <div class="legend" aria-hidden="true">
+        <span class="key"><span class="k-acc">&gt;</span> accent</span>
+        <span class="key"><span class="k-grace">L</span>R flam grace</span>
+        <span class="key"><span class="k-diddle">R R</span> diddle</span>
+        <span class="key"><span class="k-rest">·</span> rest / ring</span>
+      </div>
+    </section>
+
+    <!-- ============ STATUS + TRANSPORT ============ -->
+    <section class="panel area-status" aria-labelledby="hPractice">
+      <h2 id="hPractice">Practice</h2>
+      <div class="status-grid">
+        <div>
+          <div class="bpm-huge" id="curBpm" aria-live="off">80<small>BPM</small></div>
+          <div class="phase-word" id="phaseWord">Ready</div>
+        </div>
+        <div class="next-chip">
+          <div class="lbl">Next tempo</div>
+          <div class="val" id="nextBpm">—</div>
+        </div>
+      </div>
+
+      <div class="beats" id="beats" aria-hidden="true"></div>
+
+      <div class="banner hidden" id="banner" aria-live="assertive"></div>
+      <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
+
+      <div class="transport">
+        <button class="btn big primary" id="btnStart" type="button">Start</button>
+        <button class="btn big ghost" id="btnReset" type="button">Reset</button>
+        <button class="btn ghost" id="btnMute" type="button" aria-pressed="false">Sound on</button>
+      </div>
+      <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
+    </section>
+
+    <!-- ============ MODE + SETTINGS ============ -->
+    <section class="panel area-practice" aria-labelledby="hMode">
+      <h2 id="hMode">Practice mode</h2>
+      <div class="seg" role="group" aria-label="Practice mode" id="segMode">
+        <button type="button" data-val="fixed" aria-pressed="true">Fixed</button>
+        <button type="button" data-val="ladder" aria-pressed="false">Ladder</button>
+        <button type="button" data-val="oco" aria-pressed="false">Open‑Close‑Open</button>
+      </div>
+      <p class="hint mode-hint" id="modeHint"></p>
+
+      <div id="settingsFixed">
+        <div class="settings-grid">
+          <div class="field wide">
+            <label for="bpm">Tempo (BPM)</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="bpm" data-d="-5" aria-label="Lower tempo by 5">−5</button>
+              <button class="step" type="button" data-target="bpm" data-d="-1" aria-label="Lower tempo by 1">−</button>
+              <input id="bpm" type="number" min="30" max="300" step="1" value="80" inputmode="numeric" />
+              <button class="step" type="button" data-target="bpm" data-d="1" aria-label="Raise tempo by 1">+</button>
+              <button class="step" type="button" data-target="bpm" data-d="5" aria-label="Raise tempo by 5">+5</button>
+            </div>
+          </div>
+          <div class="suggested-row wide">
+            <span class="hint" id="suggestedText"></span>
+            <button class="btn ghost mini" id="btnSuggested" type="button"></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsLadder" hidden>
+        <div class="settings-grid">
+          <div class="field">
+            <label for="ladStart">Starting BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladStart" data-d="-1" aria-label="Lower starting BPM">−</button>
+              <input id="ladStart" type="number" min="30" max="300" step="1" value="60" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladStart" data-d="1" aria-label="Raise starting BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ladEnd">Ending BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladEnd" data-d="-1" aria-label="Lower ending BPM">−</button>
+              <input id="ladEnd" type="number" min="30" max="300" step="1" value="100" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladEnd" data-d="1" aria-label="Raise ending BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ladStep">BPM step</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladStep" data-d="-1" aria-label="Lower BPM step">−</button>
+              <input id="ladStep" type="number" min="1" max="60" step="1" value="5" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladStep" data-d="1" aria-label="Raise BPM step">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ladReps">Reps per tempo</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ladReps" data-d="-1" aria-label="Fewer reps per tempo">−</button>
+              <input id="ladReps" type="number" min="1" max="64" step="1" value="4" inputmode="numeric" />
+              <button class="step" type="button" data-target="ladReps" data-d="1" aria-label="More reps per tempo">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsOco" hidden>
+        <div class="settings-grid">
+          <div class="field">
+            <label for="ocoStart">Starting BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoStart" data-d="-1" aria-label="Lower starting BPM">−</button>
+              <input id="ocoStart" type="number" min="30" max="300" step="1" value="60" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoStart" data-d="1" aria-label="Raise starting BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ocoPeak">Peak BPM</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoPeak" data-d="-1" aria-label="Lower peak BPM">−</button>
+              <input id="ocoPeak" type="number" min="30" max="300" step="1" value="100" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoPeak" data-d="1" aria-label="Raise peak BPM">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ocoStep">BPM step</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoStep" data-d="-1" aria-label="Lower BPM step">−</button>
+              <input id="ocoStep" type="number" min="1" max="60" step="1" value="5" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoStep" data-d="1" aria-label="Raise BPM step">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ocoReps">Reps per tempo</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="ocoReps" data-d="-1" aria-label="Fewer reps per tempo">−</button>
+              <input id="ocoReps" type="number" min="1" max="64" step="1" value="2" inputmode="numeric" />
+              <button class="step" type="button" data-target="ocoReps" data-d="1" aria-label="More reps per tempo">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan-preview" id="planPreview" aria-live="polite"></div>
+      <p class="plan-meta" id="planMeta"></p>
+
+      <div class="cue-row">
+        <input type="checkbox" id="pulseToggle" />
+        <label for="pulseToggle">Pulse under the sticking — a soft click on every beat</label>
+      </div>
+      <div class="cue-row">
+        <input type="checkbox" id="cueToggle" checked />
+        <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle (covered while the pulse is on)</label>
+      </div>
+
+      <div class="share-row">
+        <button class="btn ghost" id="btnShare" type="button" title="Copy a link that opens these exact settings">Copy link</button>
+        <span class="hint">Share one exact drill with a student.</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <div>Learn the name. See the sticking. Build the hands.</div>
+    <div>Definitions follow the PAS 40 International Drum Rudiments (1984), rooted in the N.A.R.D. Standard 26 (1933)</div>
+    <div>Keyboard: <strong>Space</strong> starts and pauses · <strong>R</strong> resets · forever free, no account</div>
+    <div>Rudiment Builder · <a href="https://backwerdrhythmshop.com">Backwerd Rhythm Shop</a> · © 2026 Backwerd Rimshot, LLC. All rights reserved.</div>
+    <div class="foot-links">
+      <a class="foot-btn" href="https://apps.backwerdrhythmshop.com/">All free apps</a>
+        <a class="foot-btn" href="https://guides.backwerdrhythmshop.com/rudiment-builder/">App guide</a>
+      <a class="foot-btn" href="mailto:support@backwerdrhythmshop.com?subject=Rudiment%20Builder%20%E2%80%94%20Support%20request">Report a problem</a>
+      <a class="foot-btn" href="mailto:feedback@backwerdrhythmshop.com?subject=Rudiment%20Builder%20%E2%80%94%20Feature%20request">Request a feature</a>
+      <a class="foot-btn foot-ico" href="https://www.facebook.com/backwerdrhythmshop/" target="_blank" rel="noopener noreferrer" aria-label="Backwerd Rhythm Shop on Facebook" title="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></a>
+      <a class="foot-btn foot-ico" href="https://www.instagram.com/backwerdrhythmshop/" target="_blank" rel="noopener noreferrer" aria-label="Backwerd Rhythm Shop on Instagram" title="Instagram"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm7.846-10.405a1.441 1.441 0 01-2.88 0 1.44 1.44 0 012.88 0z"/></svg></a>
+      <a class="foot-btn foot-ico" href="https://www.youtube.com/@backwerdrhythmshop" target="_blank" rel="noopener noreferrer" aria-label="Backwerd Rhythm Shop on YouTube" title="YouTube"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    </div>
+  </footer>
+</div>
+
+<script src="js/rudiment-data.js"></script>
+<script src="js/rudiment-core.js"></script>
+<script src="js/rudiment-app.js"></script>
+<script>
+/* Build stamp + self-documenting support/feedback emails. Progressive enhancement:
+   if this script fails, the plain mailto links still work. */
+(function () {
+  // Update this ISO date whenever the shipped app changes.
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-08-22";
+
+  var footer = document.querySelector("footer");
+  if (footer && build && !footer.querySelector(".build-stamp")) {
+    var s = document.createElement("div");
+    s.className = "build-stamp";
+    s.style.cssText = "margin-top:8px;opacity:.55;font-size:11px";
+    s.textContent = "Build " + build;
+    footer.appendChild(s);
+  }
+
+  document.querySelectorAll('a[href^="mailto:"]').forEach(function (a) {
+    var href = a.getAttribute("href") || "";
+    if (!/support@|feedback@/.test(href) || /[?&]body=/.test(href)) return;
+    var m = href.match(/[?&]subject=([^&]*)/);
+    var subject = m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
+    var app = (subject.split(/\s[—-]\s/)[0] || document.title || "this app").trim();
+    var body = (/support@/.test(href)
+        ? "Describe what went wrong — what you did, what you expected, and what actually happened:"
+        : "Describe your idea or request:")
+      + "\n\n\n\n─── details below help with troubleshooting ───\n"
+      + "App: " + app + "\nBuild: " + (build || "unknown")
+      + "\nPage: " + location.href + "\nBrowser: " + navigator.userAgent;
+    a.setAttribute("href", href + "&body=" + encodeURIComponent(body));
+  });
+})();
+</script>
+<script>
+/* Support fallback panel. Progressive enhancement: without native dialog support,
+   the rewritten mailto links above retain their normal behavior. */
+(function () {
+  if (!("HTMLDialogElement" in window)) return;
+
+  var dialog = document.createElement("dialog");
+  dialog.className = "support-dialog";
+  dialog.setAttribute("aria-labelledby", "support-dialog-title");
+  dialog.innerHTML =
+    '<h2 id="support-dialog-title"></h2>' +
+    '<p class="support-dialog-lede">' +
+      'Open your email app below — or copy the message and paste it into any ' +
+      'email (webmail included) addressed to ' +
+      '<strong class="support-dialog-address"></strong>.' +
+    '</p>' +
+    '<label class="support-dialog-label">Message' +
+      '<textarea class="support-dialog-body" rows="9" spellcheck="false"></textarea>' +
+    '</label>' +
+    '<div class="support-dialog-actions">' +
+      '<a class="foot-btn support-dialog-open" href="#">Open in my email app</a>' +
+      '<button type="button" class="foot-btn support-dialog-copy">Copy details</button>' +
+      '<button type="button" class="foot-btn support-dialog-close">Close</button>' +
+    '</div>' +
+    '<p class="support-dialog-hint">' +
+      'Nothing opens? This device has no email app set up — use ' +
+      '“Copy details” and paste into the email service you use.' +
+    '</p>';
+  document.body.appendChild(dialog);
+
+  var dialogTitle = dialog.querySelector("#support-dialog-title");
+  var addressEl = dialog.querySelector(".support-dialog-address");
+  var bodyField = dialog.querySelector(".support-dialog-body");
+  var openLink = dialog.querySelector(".support-dialog-open");
+  var copyButton = dialog.querySelector(".support-dialog-copy");
+  var closeButton = dialog.querySelector(".support-dialog-close");
+
+  var address = "";
+  var subject = "";
+
+  function currentMailto() {
+    return "mailto:" + address + "?subject=" + encodeURIComponent(subject)
+      + "&body=" + encodeURIComponent(bodyField.value);
+  }
+
+  closeButton.addEventListener("click", function () { dialog.close(); });
+  dialog.addEventListener("click", function (event) {
+    if (event.target === dialog) dialog.close();
+  });
+  openLink.addEventListener("click", function () {
+    openLink.setAttribute("href", currentMailto());
+  });
+  copyButton.addEventListener("click", async function () {
+    var text = "To: " + address + "\nSubject: " + subject + "\n\n" + bodyField.value;
+    try {
+      await navigator.clipboard.writeText(text);
+      copyButton.textContent = "Copied ✓";
+    } catch (error) {
+      bodyField.select();
+      copyButton.textContent = "Press Ctrl+C to copy";
+    }
+    window.setTimeout(function () {
+      copyButton.textContent = "Copy details";
+    }, 2000);
+  });
+
+  document.querySelectorAll('a[href^="mailto:"]').forEach(function (link) {
+    if (!/support@|feedback@/.test(link.getAttribute("href") || "")) return;
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      var url = new URL(link.getAttribute("href") || "");
+      address = url.pathname;
+      subject = url.searchParams.get("subject") || "";
+      bodyField.value = url.searchParams.get("body") || "";
+      dialogTitle.textContent = link.textContent.trim() || "Contact us";
+      addressEl.textContent = address;
+      openLink.setAttribute("href", currentMailto());
+      dialog.showModal();
+      bodyField.setSelectionRange(0, 0);
+      bodyField.scrollTop = 0;
+    });
+  });
+})();
+</script>
+<script>
+/* Visit counter (progressive enhancement). Counts once per browser session via the
+   shared Backwerd counter Worker. Dev machines only read, so local testing never
+   inflates the number. If the endpoint is unreachable — offline, blocked, or not
+   deployed yet — the footer is left exactly as it was. */
+(function () {
+  var APP = "rudiment-builder";
+  var API = "https://counter.backwerdrhythmshop.com";
+
+  var dev = /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname)
+    || location.protocol === "file:";
+  var counted = false;
+  try { counted = sessionStorage.getItem("brs-counted") === "1"; } catch (e) {}
+
+  fetch(API + ((dev || counted) ? "/count" : "/hit") + "?app=" + APP, { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || typeof d.count !== "number" || d.count < 1) return;
+      if (!dev) { try { sessionStorage.setItem("brs-counted", "1"); } catch (e) {} }
+      var host = document.querySelector("footer .build-stamp");
+      if (!host || host.querySelector(".visit-count")) return;
+      var span = document.createElement("span");
+      span.className = "visit-count";
+      span.textContent = " \u00b7 " + d.count.toLocaleString()
+        + " visit" + (d.count === 1 ? "" : "s");
+      host.appendChild(span);
+    })
+    .catch(function () {});
+})();
+</script>
+<!-- Cloudflare Web Analytics.
+
+     The shop site's Worker injects this on every page it serves, but it does not
+     serve this host — rudiment-builder.backwerdrhythmshop.com is its own
+     deployment, so the tag has to live here. Same site token as the rest of
+     backwerdrhythmshop.com, so this app's numbers land beside
+     apps.backwerdrhythmshop.com/rudiment-builder/ rather than in a second
+     dashboard.
+
+     It counts page views: no cookies, no fingerprinting, no way to follow anyone
+     to another site. Settings still stay in local storage and nothing a player
+     does reaches it. -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "4c76fa6f3023401899bbeb30fa4eebd3"}'></script>
+</body>
+</html>
