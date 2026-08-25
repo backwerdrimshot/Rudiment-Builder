@@ -54,9 +54,9 @@ rudiment, then clear the tag.
 Also open, from `CLAUDE.md` (not chart contradictions, chart-consistent
 expansions to confirm):
 
-- ☐ Lead-marker accents the chart doesn't print: first strokes of **#1, #5,
-  #6** and both strokes of **#20 Flam** and **#31 Drag** are encoded accented.
-  Drop for chart fidelity or keep as a lead cue.
+- ☑ ~~Lead-marker accents the chart doesn't print~~ — **decided by Taylor
+  2026-08-25: dropped.** #1, #2, #3, #5, #6, #20, #31 now carry no accents,
+  matching the chart.
 - ☐ **#4 Multiple Bounce Roll** — chart: one sustained buzzed note; encoded as
   four alternating buzz strokes (classroom expansion).
 - ☐ **#7 Five Stroke Roll** release placement (diddles on the beat, release on

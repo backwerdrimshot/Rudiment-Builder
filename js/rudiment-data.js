@@ -84,11 +84,11 @@ var RUDIMENTS = [
     teachingNote: "The foundation: even, alternating single strokes. Keep both hands matched in height and sound from slow to fast.",
     aliases: ["single stroke", "singles"],
     strokes: [
-      { slot: 0, hand: R, accent: true }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
+      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
       { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R }, { slot: 7, hand: L },
     ] },
 
-  /* 2 — Single Stroke Four */ // REVIEW: official PAS chart writes a triplet + release with NO accent; encoded here as an accented 4-note sixteenth burst — Taylor to pick
+  /* 2 — Single Stroke Four */ // REVIEW: official PAS chart writes a triplet + release; encoded here as an even sixteenth burst (accent dropped per chart 2026-08-25) — rhythm is Taylor's pick
   { id: "single-stroke-four", name: "Single Stroke Four", pas: 2, family: "Roll",
     level: "Beginner", cycleBeats: 1, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 150 }, leadingHand: "mirror",
@@ -96,19 +96,19 @@ var RUDIMENTS = [
     teachingNote: "A short burst of four single strokes leading into the next accent. Start slow and keep all four even.",
     aliases: ["single stroke 4"],
     strokes: [
-      { slot: 0, hand: R, accent: true }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
+      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
     ] },
 
-  /* 3 — Single Stroke Seven */ // REVIEW: official PAS chart writes a sextuplet + release with NO accent; encoded here as accented sixteenths — Taylor to pick
+  /* 3 — Single Stroke Seven */ // REVIEW: official PAS chart writes a sextuplet + release; encoded here as even sixteenths (accent dropped per chart 2026-08-25) — rhythm is Taylor's pick
   { id: "single-stroke-seven", name: "Single Stroke Seven", pas: 3, family: "Roll",
     level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 144 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "Seven single strokes flowing into an accented arrival. Keep the run even and let the last note ring.",
+    teachingNote: "Seven single strokes flowing into the arrival. Keep the run even and let the last note ring.",
     aliases: ["single stroke 7"],
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
-      { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R, accent: true, duration: 2 },
+      { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R, duration: 2 },
     ] },
 
   /* 4 — Multiple Bounce Roll (buzz) */
@@ -131,7 +131,7 @@ var RUDIMENTS = [
     teachingNote: "Three even strokes per hand: RRR LLL. Let the second and third strokes rebound naturally without losing evenness.",
     aliases: ["triple stroke", "french roll"],
     strokes: [
-      { slot: 0, hand: R, accent: true, group: 1 }, { slot: 1, hand: R, group: 1 }, { slot: 2, hand: R, group: 1 },
+      { slot: 0, hand: R, group: 1 }, { slot: 1, hand: R, group: 1 }, { slot: 2, hand: R, group: 1 },
       { slot: 3, hand: L, group: 2 }, { slot: 4, hand: L, group: 2 }, { slot: 5, hand: L, group: 2 },
     ] },
 
@@ -143,7 +143,7 @@ var RUDIMENTS = [
     teachingNote: "The long roll: clean, even double strokes. Match the two strokes of each hand in height and volume before adding speed.",
     aliases: ["long roll", "open roll", "double stroke roll"],
     strokes: [
-      { slot: 0, hand: R, accent: true, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
+      { slot: 0, hand: R, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
       { slot: 2, hand: L, diddle: 2 }, { slot: 3, hand: L, diddle: 2 },
       { slot: 4, hand: R, diddle: 3 }, { slot: 5, hand: R, diddle: 3 },
       { slot: 6, hand: L, diddle: 4 }, { slot: 7, hand: L, diddle: 4 },
@@ -304,8 +304,8 @@ var RUDIMENTS = [
     teachingNote: "One soft grace note tucked just ahead of the main stroke, so they sound almost as one thick note. Keep the grace low and the primary full.",
     aliases: ["flams"],
     strokes: [
-      { slot: 0, hand: R, accent: true, grace: [{ hand: L }] },
-      { slot: 1, hand: L, accent: true, grace: [{ hand: R }] },
+      { slot: 0, hand: R, grace: [{ hand: L }] },
+      { slot: 1, hand: L, grace: [{ hand: R }] },
     ] },
 
   /* 21 — Flam Accent */
@@ -453,8 +453,8 @@ var RUDIMENTS = [
     teachingNote: "Two quick grace notes tucked ahead of the main stroke: ll–R, rr–L. Keep the two graces low, even, and close to the primary.",
     aliases: ["ruff", "half drag", "drag ruff"],
     strokes: [
-      { slot: 0, hand: R, accent: true, grace: [{ hand: L }, { hand: L }] },
-      { slot: 1, hand: L, accent: true, grace: [{ hand: R }, { hand: R }] },
+      { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] },
+      { slot: 1, hand: L, grace: [{ hand: R }, { hand: R }] },
     ] },
 
   /* 32 — Single Drag Tap */ // verified vs the official PAS chart 2026-08-25: the accent is on the TAP, not the dragged note
