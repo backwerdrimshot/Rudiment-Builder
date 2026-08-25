@@ -204,6 +204,38 @@ function getCases(core) {
     assert.equal(hands(pattern("five-stroke-roll", "L")), "LLRRLRRLLR", "left lead");
   }},
 
+  { name: "PAS chart proofing 2026-08-25: corrected hybrids match the official chart", fn: function (assert) {
+    // Pinned against the official 1984 PAS International Drum Rudiments chart
+    // (Taylor's reference). hands = primary strokes in order, right lead;
+    // accents/graced = stroke indices carrying an accent / grace notes.
+    [
+      { id: "flamacue",            hands: "RLRL",         accents: [1],     graced: [0] },
+      { id: "swiss-army-triplet",  hands: "RRL",          accents: [0],     graced: [0] },
+      { id: "inverted-flam-tap",   hands: "RLLR",         accents: [0, 2],  graced: [0, 2] },
+      { id: "flam-drag",           hands: "RLLRLRRL",     accents: [0, 4],  graced: [0, 4] },
+      { id: "single-drag-tap",     hands: "RLLR",         accents: [1, 3],  graced: [0, 2] },
+      { id: "double-drag-tap",     hands: "RRLLLR",       accents: [2, 5],  graced: [0, 1, 3, 4] },
+      { id: "lesson-25",           hands: "RLR",          accents: [2],     graced: [0] },
+      { id: "single-dragadiddle",  hands: "RRLRRLLRLL",   accents: [0, 5],  graced: [] },
+      { id: "drag-paradiddle-1",   hands: "RRLRRLLRLL",   accents: [0, 5],  graced: [1, 6] },
+      { id: "drag-paradiddle-2",   hands: "RRRLRRLLLRLL", accents: [0, 6],  graced: [1, 2, 7, 8] },
+      { id: "single-ratamacue",    hands: "RLRLLRLR",     accents: [3, 7],  graced: [0, 4] },
+      { id: "double-ratamacue",    hands: "RRLRLLLRLR",   accents: [4, 9],  graced: [0, 1, 5, 6] },
+      { id: "triple-ratamacue",    hands: "RRRLRLLLLRLR", accents: [5, 11], graced: [0, 1, 2, 6, 7, 8] },
+    ].forEach(function (t) {
+      const r = MAP[t.id];
+      assert.ok(r, t.id + " exists");
+      assert.equal(hands(r), t.hands, t.id + ": sticking matches the chart");
+      const accents = [], graced = [];
+      r.strokes.forEach(function (s, i) {
+        if (s.accent) accents.push(i);
+        if (s.grace) graced.push(i);
+      });
+      assert.deepEqual(accents, t.accents, t.id + ": accents on the chart's strokes");
+      assert.deepEqual(graced, t.graced, t.id + ": grace notes on the chart's strokes");
+    });
+  }},
+
   { name: "withLead never mutates the source definition", fn: function (assert) {
     const before = JSON.stringify(core.RUDIMENTS);
     ["single-paradiddle", "flam-accent", "five-stroke-roll"].forEach(function (id) {
