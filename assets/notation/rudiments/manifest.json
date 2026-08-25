@@ -143,7 +143,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 3,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-12-eleven-stroke-roll.svg",
@@ -192,7 +192,7 @@
       "family": "Roll",
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
+      "heritage": "PAS addition (1984)",
       "cycleBeats": 10,
       "slotsPerBeat": 4,
       "review": false
@@ -231,7 +231,7 @@
       "family": "Diddle",
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
+      "heritage": "PAS addition (1984)",
       "cycleBeats": 4,
       "slotsPerBeat": 4,
       "review": false
@@ -299,7 +299,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 1,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-24-flam-paradiddle.svg",
@@ -322,10 +322,10 @@
       "family": "Flam",
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
+      "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-26-flam-paradiddle-diddle.svg",
@@ -351,7 +351,7 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-28-swiss-army-triplet.svg",
@@ -362,9 +362,9 @@
       "level": "Advanced",
       "subdivision": "Triplet eighth notes",
       "heritage": "PAS addition (1984)",
-      "cycleBeats": 2,
+      "cycleBeats": 1,
       "slotsPerBeat": 3,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-29-inverted-flam-tap.svg",
@@ -377,7 +377,7 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-30-flam-drag.svg",
@@ -386,11 +386,11 @@
       "name": "Flam Drag",
       "family": "Flam",
       "level": "Advanced",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Triplet feel; the drag written out as sixteenths",
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-31-drag.svg",
@@ -416,7 +416,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-33-double-drag-tap.svg",
@@ -429,7 +429,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-34-lesson-25.svg",
@@ -438,11 +438,11 @@
       "name": "Lesson 25",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "cycleBeats": 1,
+      "slotsPerBeat": 4,
+      "review": false
     },
     {
       "file": "rudiment-35-single-dragadiddle.svg",
@@ -451,11 +451,11 @@
       "name": "Single Dragadiddle",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Sextuplet",
-      "heritage": "NARD Standard 26",
-      "cycleBeats": 1,
-      "slotsPerBeat": 6,
-      "review": true
+      "subdivision": "Sixteenth notes; the diddled lead written as thirty-seconds",
+      "heritage": "PAS addition (1984)",
+      "cycleBeats": 2,
+      "slotsPerBeat": 8,
+      "review": false
     },
     {
       "file": "rudiment-36-drag-paradiddle-1.svg",
@@ -464,11 +464,11 @@
       "name": "Drag Paradiddle #1",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "An eighth, then sixteenths (compound feel)",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
-      "slotsPerBeat": 4,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-37-drag-paradiddle-2.svg",
@@ -477,11 +477,11 @@
       "name": "Drag Paradiddle #2",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Eighths into sixteenths",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
+      "cycleBeats": 4,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-38-single-ratamacue.svg",
@@ -490,11 +490,11 @@
       "name": "Single Ratamacue",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Sixteenth-note triplet into an eighth release",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-39-double-ratamacue.svg",
@@ -503,11 +503,11 @@
       "name": "Double Ratamacue",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "A dragged eighth, then triplet sixteenths into the release",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
-      "slotsPerBeat": 4,
-      "review": true
+      "cycleBeats": 3,
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-40-triple-ratamacue.svg",
@@ -516,11 +516,11 @@
       "name": "Triple Ratamacue",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Two dragged eighths, then triplet sixteenths into the release",
       "heritage": "NARD Standard 26",
       "cycleBeats": 4,
-      "slotsPerBeat": 3,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     }
   ]
 }
