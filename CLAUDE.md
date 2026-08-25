@@ -75,11 +75,12 @@ problem, and the app disables itself at boot.
 
 Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
-marker like "PAS addition (1984)". All 40 are encoded; sticking is verified
-against the published PAS chart, **except the ~19 hybrids tagged `// REVIEW:`
-in the data and tracked in `REVIEW.md`**, which carry source-varying notation
-and await Taylor's proofread. Tests pin the shipped values (catalog count,
-family split, PAS coverage), so changing data means updating `tests/cases.js`.
+marker like "PAS addition (1984)". All 40 are encoded and were proofed
+against the official 1984 PAS chart on 2026-08-25 (13 hybrids corrected —
+see `REVIEW.md`), **except the 3 still tagged `// REVIEW:`** (2, 3, 8 —
+deliberate rhythm variants awaiting Taylor's pick). Tests pin the shipped
+values (catalog count, family split, PAS coverage, and the corrected
+hybrid patterns), so changing data means updating `tests/cases.js`.
 
 ## Validation expectations for changes
 
@@ -102,11 +103,11 @@ Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 
-- **The 19 hybrid rudiments in [`REVIEW.md`](REVIEW.md)** — the priority items:
-  Inverted Flam Tap (alternating vs. same-hand pairs), Flamacue closing-flam
-  placement, and the Ratamacue family's inconsistent subdivisions/note counts.
-  Also flagged there: sticking errors in the Notion "Rudiment Mastery Program"
-  doc (not re-verified this pass; the app data does not inherit them).
+- **[`REVIEW.md`](REVIEW.md), post-proofread:** 13 hybrids were corrected
+  against the official PAS chart on 2026-08-25 and most flags cleared. Still
+  open there: #2/#3/#8 rhythm variants, the lead-marker accents the chart
+  doesn't print, and the sticking errors in the Notion "Rudiment Mastery
+  Program" doc (not re-verified; the app data does not inherit them).
 - Five Stroke Roll encoded PAS-card style: diddles on the beat, accented
   release ON beats 2/4 ringing through the beat (alternative: pickup placement
   releasing on the downbeat).

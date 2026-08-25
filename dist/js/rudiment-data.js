@@ -8,11 +8,10 @@
    Percussive Arts Society's 40 International Drum Rudiments and standard
    rudimental pedagogy. The data model, prose, and rendering are original.
 
-   ACCURACY NOTE: the ~28 core rudiments are high-confidence. About a dozen
-   hybrids (marked "REVIEW" in comments and listed in REVIEW.md) carry
-   notation choices that vary between sources and need Taylor's proofread
-   before publishing — especially measured-roll release placement, the
-   flam/drag hybrids, and the ratamacues.
+   ACCURACY NOTE: proofed against the official 1984 PAS International Drum
+   Rudiments chart on 2026-08-25 (see REVIEW.md) — 13 hybrids corrected,
+   flags cleared where verified. Three rudiments still carry "// REVIEW"
+   (2, 3, 8): deliberate rhythm variants awaiting Taylor's pick.
 
    Record + stroke shape are documented in js/rudiment-core.js (validateRudiment).
    `counting` is omitted here and generated from the subdivision by the core.
