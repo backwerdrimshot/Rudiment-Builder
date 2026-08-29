@@ -13,6 +13,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -26,6 +28,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
       "review": true
     },
     {
@@ -39,6 +43,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
       "review": true
     },
     {
@@ -52,6 +58,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -65,6 +73,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -78,6 +88,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -89,8 +101,10 @@
       "level": "Beginner",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 4,
+      "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -104,6 +118,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 6,
+      "altSticking": true,
+      "halved": false,
       "review": true
     },
     {
@@ -115,8 +131,10 @@
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 4,
+      "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -128,8 +146,10 @@
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 6,
+      "cycleBeats": 3,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -143,6 +163,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 3,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
       "review": false
     },
     {
@@ -154,8 +176,10 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 6,
+      "cycleBeats": 3,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -167,8 +191,10 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 8,
+      "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -180,8 +206,10 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 8,
+      "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -193,8 +221,10 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "PAS addition (1984)",
-      "cycleBeats": 10,
+      "cycleBeats": 5,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
       "review": false
     },
     {
@@ -208,6 +238,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -221,6 +253,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -234,6 +268,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -247,6 +283,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -260,6 +298,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 1,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -273,6 +313,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -286,6 +328,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -299,6 +343,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 1,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
       "review": false
     },
     {
@@ -312,6 +358,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -325,6 +373,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -338,6 +388,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -351,6 +403,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -364,6 +418,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 3,
+      "altSticking": true,
+      "halved": false,
       "review": false
     },
     {
@@ -377,6 +433,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -390,6 +448,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -403,6 +463,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 1,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -416,6 +478,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -429,6 +493,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -442,6 +508,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 1,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
       "review": false
     },
     {
@@ -455,6 +523,8 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 8,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -468,6 +538,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -481,6 +553,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -494,6 +568,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -507,6 +583,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 3,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     },
     {
@@ -520,6 +598,8 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 4,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
       "review": false
     }
   ]
