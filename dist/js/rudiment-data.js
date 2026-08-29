@@ -10,8 +10,8 @@
 
    ACCURACY NOTE: proofed against the official 1984 PAS International Drum
    Rudiments chart on 2026-08-25 (see REVIEW.md) — 13 hybrids corrected,
-   flags cleared where verified. Three rudiments still carry "// REVIEW"
-   (2, 3, 8): deliberate rhythm variants awaiting Taylor's pick.
+   flags cleared where verified. Taylor settled the #2 and #3 rhythms on
+   2026-08-29; #8 (Six Stroke Roll) is the last one carrying "// REVIEW".
 
    Record + stroke shape are documented in js/rudiment-core.js (validateRudiment).
    `counting` is omitted here and generated from the subdivision by the core.
@@ -78,7 +78,7 @@ var RUDIMENTS = [
 
   /* 1 — Single Stroke Roll */
   { id: "single-stroke-roll", name: "Single Stroke Roll", pas: 1, family: "Roll",
-    level: "Beginner", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Beginner", cycleBeats: 2, slotsPerBeat: 8, subdivision: "Thirty-second notes",
     tempo: { defaultBpm: 90, suggestedLo: 60, suggestedHi: 160 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "The foundation: even, alternating single strokes. Keep both hands matched in height and sound from slow to fast.",
@@ -86,29 +86,33 @@ var RUDIMENTS = [
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
       { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R }, { slot: 7, hand: L },
+      { slot: 8, hand: R }, { slot: 9, hand: L }, { slot: 10, hand: R }, { slot: 11, hand: L },
+      { slot: 12, hand: R }, { slot: 13, hand: L }, { slot: 14, hand: R }, { slot: 15, hand: L },
     ] },
 
-  /* 2 — Single Stroke Four */ // REVIEW: official PAS chart writes a triplet + release; encoded here as an even sixteenth burst (accent dropped per chart 2026-08-25) — rhythm is Taylor's pick
+  /* 2 — Single Stroke Four */ // rhythm chosen by Taylor 2026-08-29: the ratamacue figure — a sixteenth-note triplet into an eighth release, matching the official PAS chart
   { id: "single-stroke-four", name: "Single Stroke Four", pas: 2, family: "Roll",
-    level: "Beginner", cycleBeats: 1, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Beginner", cycleBeats: 1, slotsPerBeat: 6, subdivision: "Sixteenth-note triplet into an eighth release",
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 150 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "A short burst of four single strokes leading into the next accent. Start slow and keep all four even.",
+    teachingNote: "Four single strokes in the ratamacue's rhythm: three quick strokes into a longer fourth. Keep the first three even and let the fourth land.",
     aliases: ["single stroke 4"],
     strokes: [
-      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
+      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R },
+      { slot: 3, duration: 3, hand: L },
     ] },
 
-  /* 3 — Single Stroke Seven */ // REVIEW: official PAS chart writes a sextuplet + release; encoded here as even sixteenths (accent dropped per chart 2026-08-25) — rhythm is Taylor's pick
+  /* 3 — Single Stroke Seven */ // rhythm chosen by Taylor 2026-08-29: a sextuplet with a quarter at the end, matching the official PAS chart
   { id: "single-stroke-seven", name: "Single Stroke Seven", pas: 3, family: "Roll",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Sextuplet into a quarter",
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 144 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "Seven single strokes flowing into the arrival. Keep the run even and let the last note ring.",
+    teachingNote: "A sextuplet of six single strokes arriving on a seventh: the run is even, the arrival rings.",
     aliases: ["single stroke 7"],
     strokes: [
-      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
-      { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R, duration: 2 },
+      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R },
+      { slot: 3, hand: L }, { slot: 4, hand: R }, { slot: 5, hand: L },
+      { slot: 6, duration: 6, hand: R },
     ] },
 
   /* 4 — Multiple Bounce Roll (buzz) */

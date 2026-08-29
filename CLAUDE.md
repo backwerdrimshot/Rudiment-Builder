@@ -77,8 +77,9 @@ Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
 marker like "PAS addition (1984)". All 40 are encoded and were proofed
 against the official 1984 PAS chart on 2026-08-25 (13 hybrids corrected —
-see `REVIEW.md`), **except the 3 still tagged `// REVIEW:`** (2, 3, 8 —
-deliberate rhythm variants awaiting Taylor's pick). Tests pin the shipped
+see `REVIEW.md`), **except #8, still tagged `// REVIEW:`** (Six Stroke
+Roll — a deliberate rhythm variant awaiting Taylor's pick; #2 and #3 were
+settled 2026-08-29). Tests pin the shipped
 values (catalog count, family split, PAS coverage, and the corrected
 hybrid patterns), so changing data means updating `tests/cases.js`.
 

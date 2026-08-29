@@ -36,17 +36,17 @@ are pinned by the test case *"PAS chart proofing 2026-08-25"* in
 
 ---
 
-## Still open — Taylor's call (the last 3 `// REVIEW` tags)
+## Still open — Taylor's call (the last `// REVIEW` tag)
 
 These are the only rudiments still flagged. The encoding is a deliberate
 teaching variant; the official chart draws them differently. Pick one per
 rudiment, then clear the tag.
 
-- ☐ **#2 Single Stroke Four** — encoded: accented 4-note sixteenth burst
-  (`R> L R L`). Chart: eighth-note triplet + release on the beat, **no
-  accent**.
-- ☐ **#3 Single Stroke Seven** — encoded: accented sixteenths
-  (`R L R L R L R>`). Chart: sextuplet + release on the beat, **no accent**.
+- ☑ ~~#2 Single Stroke Four~~ — **decided 2026-08-29:** written in the
+  ratamacue's rhythm, a sixteenth-note triplet into an eighth release
+  (`R L R L`), which is what the chart draws.
+- ☑ ~~#3 Single Stroke Seven~~ — **decided 2026-08-29:** a sextuplet with a
+  quarter at the end (`R L R L R L R`), which is what the chart draws.
 - ☐ **#8 Six Stroke Roll** — sticking and both accents match the chart
   (`R> L= L= R= R= L>`). Encoded as an even sextuplet; the chart draws
   eighth – rolled body – eighth (unequal note values).
@@ -59,6 +59,8 @@ expansions to confirm):
   matching the chart.
 - ☐ **#4 Multiple Bounce Roll** — chart: one sustained buzzed note; encoded as
   four alternating buzz strokes (classroom expansion).
+- ☑ ~~#1 Single Stroke Roll subdivision~~ — **decided 2026-08-29:** written as
+  thirty-second notes rather than sixteenths.
 - ☐ **#7 Five Stroke Roll** release placement (diddles on the beat, release on
   beats 2/4) — unchanged from the earlier decision; the chart's slash
   abbreviation expands consistently with this.
