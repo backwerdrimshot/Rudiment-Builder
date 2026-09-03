@@ -22,6 +22,16 @@ export const SITE_ASSETS = [
   "sitemap.xml",
 ];
 
+/* Whole directories, copied recursively. The brand token file and the font
+   files have to be served, not just present in the repo: the token file so the
+   served copy matches the site's byte for byte, and the fonts because the
+   stylesheet names them and nothing else supplies them — before this pass they
+   were named and never shipped, so every visitor got a fallback face. The OFL
+   licence texts travel with the fonts, which is why this ships the directory
+   rather than four named files. assets/notation stays out: its library is
+   inlined where it is used, and the PAS rudiment cards are a source asset. */
+export const SITE_DIRECTORIES = ["assets/brand", "assets/fonts"];
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const output = path.join(here, "dist");
 
@@ -33,5 +43,12 @@ for (const asset of SITE_ASSETS) {
   fs.mkdirSync(path.dirname(to), { recursive: true });
   fs.copyFileSync(from, to);
 }
+for (const dir of SITE_DIRECTORIES) {
+  const from = path.join(here, dir);
+  if (!fs.existsSync(from)) throw new Error(`SITE_DIRECTORIES names ${dir}, which does not exist`);
+  fs.cpSync(from, path.join(output, dir), { recursive: true });
+}
 
-console.log(`Built ${SITE_ASSETS.length} site assets in dist.`);
+console.log(
+  `Built ${SITE_ASSETS.length} site assets and ${SITE_DIRECTORIES.length} asset directories in dist.`,
+);

@@ -8,6 +8,12 @@
 <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
 <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
 <link rel="manifest" href="./manifest.webmanifest" />
+<!-- The Backwerd Rhythm Shop token file, copied verbatim from
+     assets/brand/design-tokens.css in backwerd-rhythm-shop-site (its own
+     instruction is to copy the whole file, never retype values). Linked ahead
+     of the inline stylesheet so every colour below resolves from it, in light
+     and, under prefers-color-scheme, dark. -->
+<link rel="stylesheet" href="./assets/brand/design-tokens.css" />
 <link rel="canonical" href="https://rudiment-builder.backwerdrhythmshop.com/" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Rudiment Room","url":"https://rudiment-builder.backwerdrhythmshop.com/","applicationCategory":"EducationalApplication","applicationSubCategory":"Music education","operatingSystem":"Any device with a modern web browser","isAccessibleForFree":true,"description":"Practice all 40 PAS rudiments with visible sticking and guided tempo modes in Rudiment Room, a free browser-based percussion trainer.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"Backwerd Rhythm Shop","url":"https://backwerdrhythmshop.com/"}}</script>
 <meta property="og:type" content="website" />
@@ -22,43 +28,72 @@
 <meta name="twitter:description" content="A forever-free rudiment trainer for percussion students, from Backwerd Rhythm Shop." />
 <title>Rudiment Room | Free Percussion Rudiment Trainer</title>
 <style>
-  /* Rudiment Room — Grid Board visual language:
-     navy ink · warm cream paper · burnt-orange energy · sage selections. */
-  /* Rudiment Room — was an off-brand invented navy/cream/orange, matching
-     Tempo Ladder's pre-correction values exactly. Corrected to the real base
-     identity + the Train Your Hands category accent (Terra Cotta) — see
-     assets/brand/design-tokens.css in backwerd-rhythm-shop-site. Terra Cotta
-     itself is a light-mode limited accent (never a filled button with light
-     text), so --orange-deep becomes a derived "Terra Cotta Deep" rather than
-     raw Terra Cotta, following the same derivation the guide used for Brick
-     Deep. --serif is left untouched: secondary italic caption face, not
-     governed by the guide. */
+  /* Rudiment Room — Backwerd Rhythm Shop base identity + the Train Your Hands
+     category accent (Terra Cotta), per the Suite Visual Unification decisions
+     of 2026-08. Until 2026-08-15 this file carried an invented navy/cream/
+     orange palette, matching Tempo Ladder's pre-correction values exactly;
+     that pass corrected the values under the old names, and this one retires
+     the names for the shared ones and takes the brand faces too. Every hue now
+     comes from the linked design-tokens.css. The block below holds only this
+     app's category alias, the one surface the shared file has no name for, and
+     the furniture. Those shared names take dark values under
+     prefers-color-scheme in the token file, so nothing here needs a second
+     colour path. The letterpress furniture — 2px Ink borders, hard offset
+     shadows with no blur, Palatino italic captions — is the app's own and
+     stays. */
+
+  /* The brand faces, self-hosted from ./assets/fonts. No font service is
+     contacted. Licensed OFL 1.1 — the licence texts sit beside the files. */
+  @font-face{font-family:"Big Shoulders Display";font-style:normal;font-weight:800;font-display:swap;src:url("./assets/fonts/big-shoulders-display-800-latin.woff2") format("woff2")}
+  @font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:400;font-display:swap;src:url("./assets/fonts/barlow-condensed-400-latin.woff2") format("woff2")}
+  @font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:600;font-display:swap;src:url("./assets/fonts/barlow-condensed-600-latin.woff2") format("woff2")}
+  @font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:700;font-display:swap;src:url("./assets/fonts/barlow-condensed-700-latin.woff2") format("woff2")}
+
   :root{
-    --paper:#fafaf9;        /* was #f8e9d8 → Warm White */
-    --paper-2:#fafaf9;      /* was #fffdf8 → Warm White */
-    --card:#ffffff;         /* was #fbf7ef → white */
-    --ink:#171717;          /* was #142a36 → Ink */
-    --ink-soft:#4f4a47;     /* was #4f6873 → Ink Soft */
-    --orange:#e2725b;       /* was #f36f3d → Terra Cotta (Train Your Hands accent) */
-    --orange-deep:#b8492f;  /* was #c94b20 → derived Terra Cotta Deep, fill under paper-colored type */
-    --orange-ink:#b8492f;   /* was #ad3d0d → Terra Cotta Deep, as text on paper */
-    --sage:#d2b48c;         /* was #cfe1d4 → Tan, selected states */
-    --sage-deep:#bfa073;    /* was #a9d8c0 → Tan Line */
-    --sage-tint:#e8dbc8;    /* was #eef4ee → Tan Soft, faint left-hand cell tint */
-    --stone:#e2ded6;        /* was #d8d0c3 → shared hairline/divider */
-    --cyan:#567d46;         /* was #58a6c3 → Forest, the lit-indicator/focus accent */
-    --good:#567d46;         /* was #1d6b3c → Forest */
+    /* Terra Cotta is a limited accent: a mark or a ground, never type on Warm
+       White, where it is 2.82:1. Anything that carries type — or is a filled
+       control with type on it — takes --accent-ink, the derived Terra Cotta
+       Deep the token file publishes for exactly this, at 4.78:1. */
+    --accent:var(--accent-train-your-hands);
+    --accent-ink:var(--terra-deep);
+
+    /* The one surface the shared file has no name for: a faint tint marking a
+       left-hand cell, a step short of --tan so a left-hand cell reads as
+       tinted rather than as a selected panel. */
+    --tan-soft:#e8dbc8;
+
     --serif:'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif;
     --radius:12px;
     --shadow:5px 5px 0 rgba(23,23,23,.14);
+    --shadow-cell:2px 2px 0 rgba(23,23,23,.18);
     font-synthesis:none;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      /* On the Ink ground the derivation runs the other way: full Terra Cotta
+         reads 5.97:1 there while Terra Cotta Deep drops to 3.53:1 and fails as
+         type. The token file documents the same inversion for --forest-deep
+         and --stone-deep. Filled controls keep working without a second rule:
+         they are --accent-ink under var(--warm-white) type, and --warm-white
+         is Ink here, so the pair lands at 5.97:1 instead of 4.78:1. */
+      --accent-ink:var(--terra);
+      /* The same nominal step off the ground vanishes on Ink, so this sits
+         nearer --tan (Ink Raised) to hold roughly the step the light scheme
+         has: 1.22:1 off the ground here against 1.31:1 there. It is a tint,
+         not a signal — which hand plays is carried by the letter. */
+      --tan-soft:#2b2824;
+      /* An Ink-on-Ink offset shadow is invisible; these carry the letterpress
+         edge on the dark ground instead. */
+      --shadow:5px 5px 0 rgba(0,0,0,.5);
+      --shadow-cell:2px 2px 0 rgba(0,0,0,.55);
+    }
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:var(--paper);
+    background:var(--warm-white);
     color:var(--ink);
-    font-family:"Barlow Condensed",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-family:var(--body);
     min-height:100vh;
     padding:26px 16px 56px;
   }
@@ -77,11 +112,11 @@
     display:block;box-shadow:3px 3px 0 var(--ink);
   }
   .logo img{width:100%;height:100%;display:block;object-fit:cover}
-  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:"Big Shoulders Display","Barlow Condensed",Oswald,Impact,sans-serif;font-weight:800}
-  /* Brand Orange is 2.39:1 on the cream page — under the 3:1 large-text floor
-     even at 27px. The wordmark takes the fill orange, which clears it at 3.79:1
-     and still reads as the same mark. */
-  .brand h1 span{color:var(--orange-deep)}
+  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:var(--display);font-weight:800}
+  /* Terra Cotta is 2.82:1 on Warm White — under the 3:1 large-text floor even
+     at 27px — so the wordmark takes --accent-ink, which clears it at 4.78:1 and
+     still reads as the same mark. */
+  .brand h1 span{color:var(--accent-ink)}
   .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
   .brand .fs{margin-left:auto}
   .tagline{color:var(--ink-soft);font-size:.92rem;margin:10px 0 20px;font-family:var(--serif);font-style:italic}
@@ -101,59 +136,59 @@
   }
 
   .panel{
-    background:var(--card);border:2px solid var(--ink);border-radius:var(--radius);
+    background:var(--white);border:2px solid var(--ink);border-radius:var(--radius);
     padding:20px;box-shadow:var(--shadow);
   }
   .panel h2{
     margin:0 0 14px;font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;
     color:var(--ink-soft);font-weight:800;
-    border-bottom:1px solid var(--stone);padding-bottom:9px;
+    border-bottom:1px solid var(--line);padding-bottom:9px;
   }
   .hint{color:var(--ink-soft);font-size:.85rem;margin:2px 0 0}
-  .err{color:var(--orange-ink);font-weight:700;font-size:.9rem}
+  .err{color:var(--accent-ink);font-weight:700;font-size:.9rem}
 
   /* Buttons + segmented controls (family components) */
   .btn{
     font-family:inherit;font-weight:800;cursor:pointer;border:2px solid var(--ink);border-radius:10px;
     box-shadow:3px 3px 0 var(--ink);transition:transform .06s ease,box-shadow .06s ease,background .12s ease;
-    background:var(--paper-2);color:var(--ink);
+    background:var(--warm-white);color:var(--ink);
   }
   .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
   .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:2px 2px 0 var(--ink)}
-  .btn.primary{background:var(--orange-deep);color:var(--paper-2);font-size:1.05rem;padding:14px 30px;text-transform:uppercase;letter-spacing:.06em}
-  .btn.primary:hover:not(:disabled){background:var(--orange-deep)}
+  .btn.primary{background:var(--accent-ink);color:var(--warm-white);font-size:1.05rem;padding:14px 30px;text-transform:uppercase;letter-spacing:.06em}
+  .btn.primary:hover:not(:disabled){background:var(--accent-ink)}
   .btn.ghost{padding:12px 22px;font-size:.95rem}
-  .btn.ghost:hover:not(:disabled){background:var(--sage)}
+  .btn.ghost:hover:not(:disabled){background:var(--tan)}
   .btn.big{font-size:1.05rem;padding:15px 34px;min-width:150px}
-  .btn.play{background:var(--ink);color:var(--paper-2)}
+  .btn.play{background:var(--ink);color:var(--warm-white)}
   .btn.play:hover:not(:disabled){background:#0d1e28}
 
   .seg{display:flex;gap:0;border:2px solid var(--ink);border-radius:9px;overflow:hidden;box-shadow:2px 2px 0 var(--ink)}
   .seg button{
     flex:1;padding:12px 8px;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;
-    background:var(--paper-2);color:var(--ink);border:none;border-right:2px solid var(--ink);
+    background:var(--warm-white);color:var(--ink);border:none;border-right:2px solid var(--ink);
     transition:background .12s ease;min-height:44px;
   }
   .seg button:last-child{border-right:none}
-  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
-  .seg button:hover:not([aria-pressed="true"]){background:var(--sage)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--warm-white)}
+  .seg button:hover:not([aria-pressed="true"]){background:var(--tan)}
 
   .field label,.field .lbl{display:block;font-weight:700;font-size:.9rem;margin-bottom:7px}
   .num-row{display:flex;align-items:stretch;gap:8px}
   .num-row input[type=number]{
     flex:1;min-width:0;font-family:inherit;font-size:1.35rem;font-weight:800;
     text-align:center;padding:8px 6px;border:2px solid var(--ink);border-radius:8px;
-    background:var(--paper-2);color:var(--ink);font-variant-numeric:tabular-nums;
+    background:var(--warm-white);color:var(--ink);font-variant-numeric:tabular-nums;
     -moz-appearance:textfield;
   }
   .num-row input[type=number]::-webkit-outer-spin-button,
   .num-row input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   button.step{
     width:44px;flex:0 0 auto;font-size:1.3rem;font-weight:800;cursor:pointer;
-    background:var(--paper-2);color:var(--ink);border:2px solid var(--ink);border-radius:8px;
+    background:var(--warm-white);color:var(--ink);border:2px solid var(--ink);border-radius:8px;
     box-shadow:2px 2px 0 var(--ink);transition:transform .06s ease,box-shadow .06s ease;
   }
-  button.step:hover{background:var(--sage)}
+  button.step:hover{background:var(--tan)}
   button.step:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
 
   /* Rudiment filters — search + family/level chips */
@@ -161,18 +196,18 @@
   #rudSearch{
     width:100%;font-family:inherit;font-size:1rem;font-weight:600;
     padding:11px 14px;border:2px solid var(--ink);border-radius:10px;
-    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+    background:var(--warm-white);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
   }
   #rudSearch::placeholder{color:var(--ink-soft);font-weight:600}
   .filter-chips{display:flex;flex-wrap:wrap;gap:8px}
   .filter-chips button{
     font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;letter-spacing:.02em;
     padding:7px 14px;border:2px solid var(--ink);border-radius:999px;
-    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+    background:var(--warm-white);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
     transition:background .12s ease,transform .06s ease,box-shadow .06s ease;
   }
-  .filter-chips button:hover:not([aria-pressed="true"]){background:var(--sage)}
-  .filter-chips button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2)}
+  .filter-chips button:hover:not([aria-pressed="true"]){background:var(--tan)}
+  .filter-chips button[aria-pressed="true"]{background:var(--ink);color:var(--warm-white)}
   .filter-chips button:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
   .filter-count{margin:0;color:var(--ink-soft);font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
   .rud-empty{color:var(--ink-soft);font-family:var(--serif);font-style:italic;margin:8px 2px}
@@ -183,17 +218,17 @@
   .rud-group-head{
     display:flex;align-items:baseline;gap:8px;margin:0 0 9px;padding:5px 0 6px;
     font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:var(--ink-soft);
-    border-bottom:1px solid var(--stone);position:sticky;top:0;background:var(--card);z-index:1;
+    border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--white);z-index:1;
   }
   .rud-group-head .gcount{color:var(--ink-soft);letter-spacing:.04em}
   .rud-group-cards{display:flex;flex-direction:column;gap:10px}
   .rud-card{
     text-align:left;font-family:inherit;cursor:pointer;padding:12px 14px;
-    border:2px solid var(--ink);border-radius:10px;background:var(--paper-2);
+    border:2px solid var(--ink);border-radius:10px;background:var(--warm-white);
     box-shadow:2px 2px 0 var(--ink);transition:background .12s ease;
   }
-  .rud-card:hover{background:var(--sage)}
-  .rud-card[aria-pressed="true"]{background:var(--sage-deep)}
+  .rud-card:hover{background:var(--tan)}
+  .rud-card[aria-pressed="true"]{background:var(--tan-line)}
   .rud-card .rname{font-family:var(--serif);font-weight:700;font-size:1.12rem}
   /* A span by default, so the margin-top below did nothing and the rudiment
      name ran straight into its meta line. */
@@ -201,22 +236,22 @@
   .rud-card[aria-pressed="true"] .rmeta{color:var(--ink)}
   .rud-card .rmeta .dot{color:var(--ink-soft);padding:0 4px}
   /* The dot is more specific than the rule above it, so it kept --ink-soft when
-     the card was selected and its ground turned --sage-deep: 3.73:1. It follows
+     the card was selected and its ground turned --tan-line: 3.73:1. It follows
      the meta line onto --ink now, like the rest of the line already did. */
   .rud-card[aria-pressed="true"] .rmeta .dot{color:var(--ink)}
   /* Hovering does much the same thing to the ground that selecting does —
-     --sage is only a shade lighter than --sage-deep — so the meta line needs
-     the same treatment there. At --ink-soft it was 4.41:1 under the pointer. */
+     --tan is only a shade lighter than --tan-line — so the meta line needs the
+     same treatment there. At --ink-soft it was 4.41:1 under the pointer. */
   .rud-card:hover .rmeta,.rud-card:hover .rmeta .dot{color:var(--ink)}
 
   .rud-info{margin-top:14px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
   .chip{
-    border:2px solid var(--ink);border-radius:999px;background:var(--paper-2);
+    border:2px solid var(--ink);border-radius:999px;background:var(--warm-white);
     font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
     padding:4px 12px;color:var(--ink);
   }
-  .chip.family{background:var(--sage)}
+  .chip.family{background:var(--tan)}
   .teaching{font-family:var(--serif);font-size:1rem;line-height:1.5;margin:0;color:var(--ink)}
 
   .lead-row{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
@@ -237,40 +272,40 @@
   }
   .count.on-stroke{color:var(--ink)}
   .cell{
-    position:relative;border:2px solid var(--ink);border-radius:9px;background:var(--paper-2);
+    position:relative;border:2px solid var(--ink);border-radius:9px;background:var(--warm-white);
     min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    box-shadow:2px 2px 0 rgba(20,42,54,.18);padding:4px 2px 8px;
+    box-shadow:var(--shadow-cell);padding:4px 2px 8px;
     transition:background .08s linear,transform .08s linear;
   }
-  /* The accent is orange as TEXT, so it takes --orange-ink: the fill token was
-     4.17:1 on the --sage-tint cell, and is 5.45:1 here. .cell.current still
-     flips it to --paper-2 below, where the ground becomes the fill orange. */
-  .cell .acc{height:15px;font-weight:900;font-size:1.05rem;line-height:1;color:var(--orange-ink)}
+  /* The accent mark is Terra as TEXT, so it takes --accent-ink: 4.17:1 on the
+     --tan-soft cell, 5.45:1 here. .cell.current flips it to --warm-white below,
+     where --accent-ink becomes the ground instead. */
+  .cell .acc{height:15px;font-weight:900;font-size:1.05rem;line-height:1;color:var(--accent-ink)}
   .cell .face{display:flex;align-items:flex-start;justify-content:center;gap:1px;line-height:1}
   .cell .letter{font-weight:900;font-size:clamp(1.45rem,6.5vw,2.1rem);letter-spacing:.02em}
   .cell .grace{font-weight:800;font-size:.85rem;margin-top:2px;color:var(--ink-soft);border-bottom:2px solid currentColor;padding:0 1px}
-  .cell.hand-l{background:var(--sage-tint)}
-  .cell.rest{border-style:dashed;border-color:var(--stone);box-shadow:none;background:transparent}
+  .cell.hand-l{background:var(--tan-soft)}
+  .cell.rest{border-style:dashed;border-color:var(--line);box-shadow:none;background:transparent}
   .cell.rest .letter{color:var(--ink-soft);font-size:1.1rem;font-weight:700}
   .cell.diddle-a::after,.cell.diddle-b::after{
     content:"";position:absolute;bottom:-9px;height:4px;background:var(--ink-soft);
   }
   .cell.diddle-a::after{left:20%;right:-4px;border-radius:3px 0 0 3px}
   .cell.diddle-b::after{left:-4px;right:20%;border-radius:0 3px 3px 0}
-  /* Deep, not Terra Cotta itself: paper-coloured type on raw Terra Cotta
-     #e2725b is under the 3:1 large-text floor, and this is the app's most
-     important state — the stroke you are playing right now. The derived
-     --orange-deep clears it. */
-  .cell.current{background:var(--orange-deep);transform:scale(1.06);z-index:1}
-  .cell.current .letter,.cell.current .acc{color:var(--paper-2)}
-  .cell.current .grace{color:var(--paper-2)}
-  .cell.current.rest{background:var(--sage);transform:none}
+  /* --accent-ink, not raw Terra Cotta: Warm-White type on #e2725b is under the
+     3:1 large-text floor, and this is the app's most important state — the
+     stroke you are playing right now. Both sides of the pair flip together in
+     dark, so it holds at 5.97:1 there. */
+  .cell.current{background:var(--accent-ink);transform:scale(1.06);z-index:1}
+  .cell.current .letter,.cell.current .acc{color:var(--warm-white)}
+  .cell.current .grace{color:var(--warm-white)}
+  .cell.current.rest{background:var(--tan);transform:none}
   #sticking.listening{opacity:.45}
   #sticking{transition:opacity .15s ease}
 
   .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;color:var(--ink-soft);font-size:.78rem;font-weight:700}
   .legend .key{display:inline-flex;align-items:center;gap:6px}
-  .legend .k-acc{color:var(--orange-ink);font-weight:900}
+  .legend .k-acc{color:var(--accent-ink);font-weight:900}
   .legend .k-grace{border-bottom:2px solid var(--ink-soft);padding:0 1px}
   .legend .k-diddle{border-bottom:4px solid var(--ink-soft);padding:0 3px;border-radius:0 0 3px 3px}
   .legend .k-rest{color:var(--ink-soft)}
@@ -281,13 +316,13 @@
   .bpm-huge{font-size:clamp(3.4rem,13vw,7rem);font-weight:800;line-height:.92;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
   .bpm-huge small{font-size:.24em;color:var(--ink-soft);font-weight:800;letter-spacing:.1em;vertical-align:.7em;margin-left:.15em}
   .phase-word{font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,3.6vw,1.7rem);color:var(--ink-soft);min-height:1.3em}
-  /* Also orange as TEXT. This one only passed on a wide screen, where the clamp
+  /* Also Terra as TEXT. This one only passed on a wide screen, where the clamp
      caps at 27px and it scores as large text; below ~1.66rem it is body text at
-     4.36:1 on the panel. --orange-ink holds at every width the clamp reaches. */
-  .phase-word.peak{color:var(--orange-ink);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
+     4.36:1 on the panel. --accent-ink holds at every width the clamp reaches. */
+  .phase-word.peak{color:var(--accent-ink);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
   .next-chip{
     justify-self:end;text-align:center;border:2px solid var(--ink);border-radius:12px;
-    padding:10px 18px;background:var(--paper-2);box-shadow:var(--shadow);min-width:112px;
+    padding:10px 18px;background:var(--warm-white);box-shadow:var(--shadow);min-width:112px;
   }
   @media(max-width:560px){.next-chip{justify-self:center}}
   .next-chip .lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-soft);font-weight:800}
@@ -295,20 +330,20 @@
   .next-chip .val small{font-size:.85rem;color:var(--ink-soft)}
 
   .beats{display:flex;gap:12px;justify-content:center;margin:18px 0 2px;min-height:24px}
-  .pip{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);background:var(--paper-2);transition:background .05s linear}
+  .pip{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);background:var(--warm-white);transition:background .05s linear}
   .pip.one{border-width:3px}
-  .pip.on{background:var(--cyan)}
-  .pip.one.on{background:var(--orange)}
+  .pip.on{background:var(--forest)}
+  .pip.one.on{background:var(--accent)}
 
   .banner{
     margin:14px 0 4px;padding:13px 18px;border-radius:10px;border:2px solid var(--ink);
     font-weight:800;text-align:center;font-size:1.02rem;
-    background:var(--paper-2);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
+    background:var(--warm-white);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
   }
-  .banner.listen{background:var(--orange-deep);color:var(--paper-2)}
-  .banner.warn{background:var(--sage-deep);color:var(--ink)}
-  .banner.countin{background:var(--sage);color:var(--ink)}
-  .banner.complete{background:var(--good);color:var(--paper-2)}
+  .banner.listen{background:var(--accent-ink);color:var(--warm-white)}
+  .banner.warn{background:var(--tan-line);color:var(--ink)}
+  .banner.countin{background:var(--tan);color:var(--ink)}
+  .banner.complete{background:var(--forest);color:var(--warm-white)}
   .banner.hidden{visibility:hidden}
 
   .status-line{text-align:center;color:var(--ink-soft);font-size:1rem;margin:10px 0 4px;font-variant-numeric:tabular-nums;min-height:1.4em}
@@ -324,13 +359,13 @@
   .plan-preview{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-top:16px;font-variant-numeric:tabular-nums}
   .plan-preview .rung{font-weight:800;font-size:1.02rem}
   .plan-preview .arrow{color:var(--ink-soft)}
-  .plan-preview .peak{color:var(--orange-ink)}
+  .plan-preview .peak{color:var(--accent-ink)}
   .plan-meta{color:var(--ink-soft);font-size:.88rem;margin-top:8px;font-variant-numeric:tabular-nums}
   .cue-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
-  .cue-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--orange-deep)}
+  .cue-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent-ink)}
   .cue-row label{font-weight:700;font-size:.9rem}
   .cue-row input[type=checkbox]:disabled+label{opacity:.5}
-  .btn.muted{border-color:var(--orange-deep);color:var(--orange-deep)}
+  .btn.muted{border-color:var(--accent-ink);color:var(--accent-ink)}
   .suggested-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .btn.mini{padding:8px 14px;font-size:.82rem}
   .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
@@ -338,7 +373,7 @@
   footer.foot{margin-top:26px;text-align:center;color:var(--ink-soft);font-size:.76rem;line-height:1.6}
   footer.foot a{color:var(--ink-soft)}
   .foot-links{display:flex;justify-content:center;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
-  footer.foot a.foot-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--paper-2);color:var(--ink);border:1.5px solid var(--stone);border-radius:6px;padding:6px 13px;font-size:.78rem;font-weight:700;font-family:var(--serif);transition:all .1s ease}
+  footer.foot a.foot-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--warm-white);color:var(--ink);border:1.5px solid var(--line);border-radius:6px;padding:6px 13px;font-size:.78rem;font-weight:700;font-family:var(--serif);transition:all .1s ease}
   footer.foot a.foot-btn:hover{border-color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
   footer.foot a.foot-btn.foot-ico{padding:8px;border-radius:50%;gap:0;line-height:0}
   footer.foot a.foot-btn.foot-ico svg{width:16px;height:16px;display:block}
@@ -348,29 +383,29 @@
      mailto stays one click away and the message can be copied anywhere. */
   .support-dialog{
     width:min(560px,calc(100vw - 32px));border:2px solid var(--ink);border-radius:12px;
-    padding:20px;background:var(--paper-2);color:var(--ink);box-shadow:var(--shadow)
+    padding:20px;background:var(--warm-white);color:var(--ink);box-shadow:var(--shadow)
   }
-  .support-dialog::backdrop{background:rgba(20,42,54,.45)}
+  .support-dialog::backdrop{background:rgba(0,0,0,.55)}
   .support-dialog h2{margin:0 0 8px;font-size:1.05rem}
   .support-dialog .support-dialog-lede,
   .support-dialog .support-dialog-hint{margin:0 0 12px;color:var(--ink-soft);font-size:.85rem}
   .support-dialog .support-dialog-hint{margin:12px 0 0}
   .support-dialog .support-dialog-label{display:block;font-size:.78rem;font-weight:700}
   .support-dialog textarea{
-    display:block;width:100%;margin-top:6px;padding:10px;border:1.5px solid var(--stone);
-    border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;font-size:.85rem;resize:vertical
+    display:block;width:100%;margin-top:6px;padding:10px;border:1.5px solid var(--line);
+    border-radius:8px;background:var(--warm-white);color:var(--ink);font:inherit;font-size:.85rem;resize:vertical
   }
-  .support-dialog textarea:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+  .support-dialog textarea:focus-visible{outline:3px solid var(--forest);outline-offset:3px}
   .support-dialog .support-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   .support-dialog .foot-btn{
-    display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--paper-2);
-    color:var(--ink);border:1.5px solid var(--stone);border-radius:6px;padding:6px 13px;
+    display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--warm-white);
+    color:var(--ink);border:1.5px solid var(--line);border-radius:6px;padding:6px 13px;
     min-height:44px;font-size:.78rem;font-weight:700;font-family:var(--serif);
     transition:all .1s ease;cursor:pointer
   }
   .support-dialog .foot-btn:hover{border-color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
 
-  :focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+  :focus-visible{outline:3px solid var(--forest);outline-offset:2px}
 
   body:fullscreen,body:-webkit-full-screen{padding-top:20px}
 

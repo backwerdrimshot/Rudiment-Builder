@@ -97,11 +97,31 @@ every re-encoded rudiment, so changing data means updating `tests/cases.js`.
 
 ## Design language
 
-Grid Board / Tempo Ladder visual language: cream paper `#f8e9d8`, navy ink
-`#142a36`, burnt orange `#f36f3d` (deep `#c94b20`), sage selections, 2px ink
-borders, hard offset shadows, Palatino serif accents, cyan `:focus-visible`.
-Segmented controls use `aria-pressed`. Footer credits: `App · Backwerd Rhythm
-Shop · © Backwerd Rimshot, LLC`.
+Backwerd Rhythm Shop base identity plus the **Train Your Hands** accent (Terra
+Cotta). **Every hue comes from `assets/brand/design-tokens.css`**, copied
+verbatim from the site repo and linked ahead of the inline stylesheet — never
+retype a value from it, reference the variable. The inline `:root` holds only
+`--accent` (the category alias), `--accent-ink` (Terra Cotta Deep, the shade
+that carries type and fills on Warm White — raw Terra is 2.82:1 there), the one
+surface the shared file has no name for (`--tan-soft`), and the furniture.
+
+Dark mode is the token file's `prefers-color-scheme` remap: the same names take
+dark values, so app code needs no second colour path. The app's own dark block
+covers only what the shared file cannot know — `--accent-ink` inverts (Terra
+Cotta Deep is 3.53:1 on Ink and fails as type; full Terra is 5.97:1),
+`--tan-soft` moves nearer Ink Raised, and the offset shadows go black, since an
+Ink shadow on an Ink ground is invisible.
+
+The brand faces are **self-hosted** from `assets/fonts` (Big Shoulders Display
+800, Barlow Condensed 400/600/700, OFL 1.1 texts beside them). No font service
+is contacted. Both `assets/brand` and `assets/fonts` ship via
+`SITE_DIRECTORIES` in `build.mjs` — before that they were named in CSS and
+never served, so every visitor saw a fallback.
+
+The letterpress furniture is the app's own: 2px Ink borders, hard offset shadows
+with no blur, Palatino italic captions (`--serif`, not governed by the brand
+guide), Forest `:focus-visible`. Segmented controls use `aria-pressed`. Footer
+credits: `App · Backwerd Rhythm Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 

@@ -135,6 +135,8 @@ Runner-agnostic cases live in `tests/cases.js`:
 
 ```
 index.html            markup + CSS (Backwerd Rhythm Shop visual language)
+assets/brand/         design-tokens.css, copied verbatim from the site repo
+assets/fonts/         the self-hosted brand faces + their OFL 1.1 licences
 js/rudiment-data.js   frozen rudiment records — data only
 js/rudiment-core.js   validation · withLead (leading hand) · expandPattern ·
                       buildPlan (fixed/ladder/oco) · playback position machine
