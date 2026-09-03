@@ -1,97 +1,102 @@
 # REVIEW.md — hybrid rudiment proofing worksheet
 
-The ~28 core rudiments (single/double stroke, standard rolls, flam, flam accent,
-paradiddles, basic drags) are high-confidence and shipped as-is. The 19 rudiments
-below carry **notation choices that vary between sources**. They validate, expand
-in both leads, and pass every test — but "passes the schema" is not "matches the
-way *you* teach it." This sheet is for proofing the musical content against your
-source of truth before you publicize the catalog.
+**Status: proofed 2026-09-03 against the notation the Percussive Arts Society
+published in May 2026.** Of the 19 hybrids listed here, **5 were confirmed
+correct as encoded and 14 were re-encoded.** What remains below is the short
+list of genuinely open musical questions — the places where PAS's reading and
+this app's model disagree for a reason, rather than by mistake.
 
-**How to use it:** for each rudiment, compare the encoded sticking to your
-reference. If it's right, tick the box. If not, edit the record in
-[`js/rudiment-data.js`](js/rudiment-data.js) (each is tagged with a `// REVIEW:`
-comment and its PAS number) and re-run [`tests/test.html`](tests/test.html).
+## What was checked, and how
 
-### Notation legend
-- Capital `R` / `L` — the primary stroke (which hand).
-- `>` — accent. `~` — buzz (multiple bounce). `=` — this note is one half of a measured diddle (double).
-- lowercase prefix — grace note(s) on the opposite hand: `lR` = a **flam** (one left grace) into a right primary; `llR` = a **drag** (two left graces) into a right primary.
-- `·` — a rest / ring (no stroke on that grid slot). `|` separates beats. Sticking shown for the **right lead**; left lead is the exact mirror.
+Each of the 19 was read directly from PAS's per-rudiment chart at
+`pas.org/rudiment/<n>-<slug>/` — the vector notation uploaded in May 2026,
+which shows beaming, tuplet brackets, accents, grace notes and sticking
+letters for both leads. Where the engraving left room for doubt (mainly the
+ratamacue subdivisions), onset timings were measured from PAS's own
+demonstration recordings on the same pages and compared against the notated
+rhythm.
 
----
+Facts were reproduced — names, numbers, stickings, relative rhythm. No PAS
+prose, image or PDF was copied into this repository.
 
-## Priority 1 — please decide before publishing
+### Confirmed correct, no change
 
-These are where I'm least sure the encoding matches standard practice.
+- **#8 Six Stroke Roll** — accented outer notes with the diddles between.
+- **#11 Ten Stroke Roll** — eight roll strokes into two accented sixteenths.
+- **#25 Single Flammed Mill** — flam with a diddle, then two singles.
+- **#27 Pataflafla** — flams on the outer notes of each group, both accented.
+- **#28 Swiss Army Triplet** — flam, same-hand diddle, single.
 
-### ☐ #29 Inverted Flam Tap  · eighth notes · 2-beat
-```
-R  rL>  |  L  lR>
-```
-Encoded as **alternating** singles with the flam on the second note of each beat
-(primary hands R L L R). The more common Inverted Flam Tap uses **same-hand
-pairs** — `R (fR)  L (fL)` — a tap then a flammed note on the *same* hand, which
-is what distinguishes it from a plain Flam Tap by technique (up-flam vs down-flam)
-rather than by letters. **Confirm which you teach.** If it's the same-hand form,
-the graces need to move to the repeated hand.
+### Re-encoded
 
-### ☐ #23 Flamacue  · sixteenth notes · 1-beat
-```
-lR  L>  R  rL
-```
-Flam on beat 1, accent on the 2nd sixteenth, closing flam on the **4th sixteenth
-(the "a")**. Many sources place the closing flam on the **next downbeat** (beat 2),
-so the figure reads flam–accent–tap–tap–flam across the barline. Decide whether
-the closing flam belongs inside this beat or on the following one.
+| PAS | Rudiment | What was wrong |
+|----:|----------|----------------|
+| 2 | Single Stroke Four | Four flat sixteenths; PAS writes a sixteenth-note triplet onto a held eighth. |
+| 3 | Single Stroke Seven | Seven sixteenths; PAS writes a sextuplet arriving on the next beat. |
+| 23 | Flamacue | The closing flam sat on the 4th sixteenth and the fifth note was missing. PAS puts the closing flam on the **following downbeat**. |
+| 29 | Inverted Flam Tap | Hands were right (R L L R) but the cycle started one eighth late, so the flams sat on notes 2 and 4 instead of 1 and 3. |
+| 30 | Flam Drag | Three same-hand primaries with a crushed drag; PAS writes the drag out as two measured sixteenths — R L L R. |
+| 32 | Single Drag Tap | Accent was on the drag; it belongs to the tap. |
+| 33 | Double Drag Tap | Second drag was on the opposite hand. Both drags stay on the lead hand. |
+| 34 | Lesson 25 | Accent was on note 2; PAS accents the closing note, and writes two sixteenths into an eighth. |
+| 35 | Single Dragadiddle | Encoded as a paradiddle-**diddle** (six notes). PAS shows a single paradiddle — four. |
+| 36 | Drag Paradiddle #1 | Missing the accented eighth pickup; the accent had been moved onto the drag. |
+| 37 | Drag Paradiddle #2 | Missing the pickup, and the second drag was on the opposite hand. |
+| 38 | Single Ratamacue | Three primaries on an eighth-triplet grid; PAS has four — a sixteenth-note triplet onto an accented eighth. |
+| 39 | Double Ratamacue | Four primaries on a sixteenth grid; PAS has five, on the same figure as #38 with one extra drag eighth. |
+| 40 | Triple Ratamacue | Accent on the wrong note and a spurious trailing drag. |
 
-### ☐ #38–40 Ratamacue family — subdivision is inconsistent across the three
-| PAS | Name | Encoded | Felt as |
-|----:|------|---------|---------|
-| 38 | Single Ratamacue | `llR L R>  \|  rrL R L>` | **triplet** (3 primaries) |
-| 39 | Double Ratamacue | `llR llR L R>  \|  rrL rrL R L>` | **sixteenths** (4 primaries) |
-| 40 | Triple Ratamacue | `llR llR llR \| L R> llR  \|  rrL rrL rrL \| R L> rrL` | **triplet**, 4-beat cycle |
+The ratamacue question REVIEW.md used to ask — whether the three agree on
+subdivision — has a clean answer: **PAS uses one figure for all three**, a
+sixteenth-note triplet resolving onto an accented eighth, with zero, one or
+two drag eighths in front of it. All three now sit on a sextuplet grid and
+share that shape.
 
-The three are encoded on **different grids** (triplet / sixteenth / triplet). Ratamacues
-are usually felt as a consistent drag-plus-figure across the family. Also confirm the
-**note count** of the single ratamacue — some traditions write it as a drag plus four
-notes (drag + `R L R L`), not the drag + three shown here — and check the trailing
-drag placement in the triple.
-
----
-
-## Priority 2 — plausible standard encodings, confirm at a glance
-
-Rolls & measured figures:
-
-- ☐ **#2 Single Stroke Four** — `R> L R L` (1 beat, sixteenths). Encoded as a 4-note burst; some feel it as a triplet flourish into the next accent.
-- ☐ **#3 Single Stroke Seven** — `R L R L | R L R> ·` (accent on the 7th, arrival note rings).
-- ☐ **#8 Six Stroke Roll** — `R> L= L= R= R= L>` (sextuplet). The accent–diddle–diddle–accent variant (RLLRRL); several other six-stroke orderings exist.
-- ☐ **#11 Ten Stroke Roll** — `R= R= L= L= | R= R= L= L= | R> L> · ·` (four doubles + two accented taps).
-
-Flam hybrids:
-
-- ☐ **#25 Single Flammed Mill** — `lR>= R= L R | …` (flam + RR diddle, then two singles). Sticking of the "mill" varies by source.
-- ☐ **#27 Pataflafla** — `lR> L R rL> | lR> L R rL>` (flams on the outer notes of each beat, both accented).
-- ☐ **#28 Swiss Army Triplet** — `lR>= R= L | …` (flam + same-hand diddle + single, in a triplet).
-- ☐ **#30 Flam Drag** — `lR> llR R | …` (flam + drag + tap on the lead hand, in a triplet).
-
-Drag hybrids:
-
-- ☐ **#32 Single Drag Tap** — `llR> L | rrL> R` (drag into the accented note, then a tap).
-- ☐ **#33 Double Drag Tap** — `llR rrL R> | …` (two drags then an accented tap, triplet).
-- ☐ **#34 Lesson 25** — `llR L> R | rrL R> L` (drag, accented tap, tap).
-- ☐ **#35 Single Dragadiddle** — `llR> L R= R= L= L=` (drag on the lead into a paradiddle-diddle, sextuplet).
-- ☐ **#36 Drag Paradiddle #1** — `llR> L R= R= | …` (paradiddle led by an accented drag).
-- ☐ **#37 Drag Paradiddle #2** — `llR> rrL R= R= | …` (paradiddle led by two drags).
+Regression contract: `tests/cases.js` pins the rendered sticking of every
+re-encoded rudiment plus a structural case per fix. Changing any of them
+means a musical decision was made, not a refactor.
 
 ---
 
-## Separately: errors to fix in the Notion "Rudiment Mastery Program" doc
-*(Flagged in an earlier session; not yet re-verified this pass — treat as a to-check
-list, confirm against the live Notion page before editing.)* The app's data does
-**not** inherit these; they're in your source doc:
-- Numbered rolls (five/seven/nine/etc.) written as single strokes rather than measured doubles.
-- A mislabeled ratamacue.
-- Duplicate rudiment entries.
+## Still open — Taylor's call
 
-I did not touch Notion. If you want, I can pull the page and produce a precise diff.
+### ☐ #35 Single Dragadiddle — which hand plays the drag?
+
+PAS letters this rudiment's drag on the **same hand as the note it decorates**
+(a small `R` into a big `R`), which is what distinguishes a dragadiddle from a
+flam-adiddle by technique rather than by letters.
+
+`validateRudiment` in `js/rudiment-core.js` requires grace hands to **oppose**
+the primary, so honouring PAS here is a **schema change plus a new test**, not
+a data edit. Shipped for now with an opposite-hand drag, tagged `// REVIEW:` in
+the data.
+
+The consequence of leaving it: #35 and #36 now differ only by #36's accented
+pickup, where PAS distinguishes them by the drag hand as well.
+
+### ☐ Meter for the drag family
+
+PAS prints #30, #33, #36, #37 and #39 with **no triplet bracket**, so read
+literally their figures span 1½ or 2 beats rather than the tidy single beat the
+old triplet grids gave them. The re-encoding follows PAS. If you teach these in
+6/8 — which is traditional — say so and they can move back onto triplet grids
+without changing a single stroke's hand or accent.
+
+### ☐ House accents PAS does not print
+
+The app accents the first note of #1, #2, #3, #5 and #31 where the PAS chart
+marks no accent at all. As a cycle marker this is defensible and probably good
+teaching, but it is the app speaking rather than PAS. Kept as-is; worth a line
+in the teaching notes if you want it stated.
+
+---
+
+## Downstream, once the above is settled
+
+- **`assets/notation/rudiments/`** was rendered from this repo's data before the
+  corrections. All 14 changed rudiments need re-rendering from the canonical
+  directory in `backwerdrimshot/praxis-platform` (`data/notation-svg/`) and
+  re-copying here; `manifest.json` still marks the old 19 `review: true`.
+- **Praxis** marks 21 flam and drag stickings `stickingReviewed: false` over the
+  same material. These findings resolve them — reconcile once rather than
+  proofing the same rudiments twice.

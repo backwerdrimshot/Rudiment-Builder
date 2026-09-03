@@ -14,7 +14,7 @@ Pages as-is. This machine has **no Node or Python**.
 - Serve: `powershell -ExecutionPolicy Bypass -File serve.ps1` → http://localhost:8523/
   (Claude Code: `preview_start` name `rudiment-builder`, configured in the
   Pulse Pocket repo's `.claude/launch.json`.)
-- Tests: open `tests/test.html` in a browser (53 cases; summary in
+- Tests: open `tests/test.html` in a browser (62 cases; summary in
   `window.__TEST_RESULTS__`). With Node available: `node --test tests/`.
 - Do **not** create a remote repo, push, or configure domains without Taylor.
 
@@ -76,10 +76,13 @@ problem, and the app disables itself at boot.
 Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
 marker like "PAS addition (1984)". All 40 are encoded; sticking is verified
-against the published PAS chart, **except the ~19 hybrids tagged `// REVIEW:`
-in the data and tracked in `REVIEW.md`**, which carry source-varying notation
-and await Taylor's proofread. Tests pin the shipped values (catalog count,
-family split, PAS coverage), so changing data means updating `tests/cases.js`.
+against the PAS chart, including the 19 formerly source-varying hybrids, which
+were proofed on 2026-09-03 against the notation PAS published in May 2026 (5
+confirmed, 14 re-encoded). `REVIEW.md` now carries only the three musical
+questions still open — chiefly the Single Dragadiddle's same-hand drag, which
+the opposing-grace-hand rule above currently forbids. Tests pin the shipped
+values (catalog count, family split, PAS coverage) and the rendered sticking of
+every re-encoded rudiment, so changing data means updating `tests/cases.js`.
 
 ## Validation expectations for changes
 
@@ -102,9 +105,10 @@ Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 
-- **The 19 hybrid rudiments in [`REVIEW.md`](REVIEW.md)** — the priority items:
-  Inverted Flam Tap (alternating vs. same-hand pairs), Flamacue closing-flam
-  placement, and the Ratamacue family's inconsistent subdivisions/note counts.
+- **The three open questions in [`REVIEW.md`](REVIEW.md)** — the Single
+  Dragadiddle's drag hand (PAS puts it on the primary hand; the schema forbids
+  it), the drag family's meter (PAS prints no triplet brackets), and the house
+  accents PAS does not print. The nineteen hybrids themselves are proofed.
   Also flagged there: sticking errors in the Notion "Rudiment Mastery Program"
   doc (not re-verified this pass; the app data does not inherit them).
 - Five Stroke Roll encoded PAS-card style: diddles on the beat, accented

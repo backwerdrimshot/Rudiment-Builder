@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-08-22`
+- **Build:** `2026-09-03`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -52,10 +52,10 @@ hard-coded into the page, and there are no per-rudiment audio files. Each
 record carries its PAS number and its N.A.R.D. heritage, shown as chips in
 the app (see *Sources & educational lineage* below).
 
-> **Proofing note:** the ~28 core rudiments are high-confidence. About 19
-> hybrids (measured rolls, flam/drag hybrids, ratamacues) carry notation
-> choices that vary by source and await a musical proofread — each is tagged
-> `// REVIEW:` in the data and listed in [`REVIEW.md`](REVIEW.md).
+> **Proofing note:** the 19 hybrids that once carried source-varying notation
+> were proofed on 2026-09-03 against the notation PAS published in May 2026 —
+> 5 were confirmed as encoded and 14 were re-encoded. Three genuinely open
+> musical questions remain, listed in [`REVIEW.md`](REVIEW.md).
 
 ## Features
 
@@ -96,7 +96,7 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 Runner-agnostic cases live in `tests/cases.js`:
 
-- **Browser (no tooling):** open `tests/test.html` — 53 cases covering the full
+- **Browser (no tooling):** open `tests/test.html` — 62 cases covering the full
   40-rudiment catalog (PAS coverage, family split), data validation, generated
   counting, buzz and grouped strokes, leading-hand transformation, stroke
   ordering, accents, grace notes, diddles, tempo paths, plans, the playback
@@ -199,10 +199,11 @@ rudiments — so it wears its sources openly:
 Each rudiment's chips show both: its PAS number and its heritage — the
 N.A.R.D. Standard 26 lineage where it applies, or a "PAS addition (1984)"
 marker for the rudiments the Percussive Arts Society added. Sticking, accents,
-and grace-note structures follow the published PAS chart (with the ~19 hybrids
-in [`REVIEW.md`](REVIEW.md) still awaiting a proofread); the data model, prose,
-teaching notes, and all rendering are original to this app — no publisher's
-notation images are copied or traced.
+and grace-note structures follow the published PAS chart, proofed against the
+notation PAS published in May 2026 (see [`REVIEW.md`](REVIEW.md) for the method
+and the three questions still open); the data model, prose, teaching notes, and
+all rendering are original to this app — no publisher's notation images are
+copied or traced.
 
 Rudiment Builder is an independent Backwerd Rhythm Shop project and is not
 affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.

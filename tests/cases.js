@@ -37,6 +37,33 @@ function getCases(core) {
     };
   }
 
+  // Compact right-lead sticking render, used by the PAS-chart cases below:
+  // lowercase prefix = grace notes (flam/drag), ">" accent, "=" half of a
+  // diddle, "(n)" a stroke held n slots, "\u00b7" an empty slot, "|" a beat line.
+  // Pinning the rendered string keeps the published notation and the data in
+  // step — if a slot, hand, grace or accent moves, exactly one case fails and
+  // its message shows both readings.
+  function sticking(id) {
+    const r = MAP[id], spb = r.slotsPerBeat, total = r.cycleBeats * spb;
+    const bySlot = {};
+    r.strokes.forEach(function (s) { bySlot[s.slot] = s; });
+    const out = [];
+    for (let i = 0; i < total; i++) {
+      if (i % spb === 0 && i) out.push("|");
+      const s = bySlot[i];
+      if (!s) { out.push("\u00b7"); continue; }
+      let t = s.grace ? s.grace.map(function (g) { return g.hand.toLowerCase(); }).join("") : "";
+      t += s.hand;
+      if (s.accent) t += ">";
+      if (s.buzz) t += "~";
+      if (s.diddle !== undefined) t += "=";
+      if (s.group !== undefined) t += "^";
+      if (s.duration && s.duration > 1) t += "(" + s.duration + ")";
+      out.push(t);
+    }
+    return out.join(" ");
+  }
+
   // Break the sample with `mutate`, expect at least one error mentioning `hint`.
   function expectInvalid(assert, mutate, hint) {
     const r = sampleRudiment();
@@ -128,6 +155,132 @@ function getCases(core) {
     // the lineage rather than a fixed label.
     ["five-stroke-roll", "flam-accent", "single-paradiddle"].forEach(function (id) {
       assert.ok(MAP[id].heritage.indexOf("NARD") !== -1, id + " carries a NARD heritage");
+    });
+  }},
+
+  /* ---- PAS chart conformance (2026 notation) ----------------------------
+     The rudiments below were re-encoded against the notation the Percussive
+     Arts Society published in May 2026, read chart by chart and cross-checked
+     against PAS's own demonstration recordings where the engraving left room
+     for doubt. They replace encodings that had been flagged in REVIEW.md as
+     varying by source. These cases are the regression contract: the sticking
+     strings are the published readings, so changing one means a musical
+     decision was made, not a refactor.                                     */
+
+  { name: "PAS chart: the re-encoded hybrids match the published notation", fn: function (assert) {
+    const expected = {
+      "single-stroke-four":  "R> L R L(3) · ·",
+      "single-stroke-seven": "R L R L R L | R>(6) · · · · ·",
+      "flamacue":            "lR L> R L | lR(4) · · ·",
+      "inverted-flam-tap":   "lR> L | rL> R",
+      "flam-drag":           "lR>(2) · L L | R(2) · rL>(2) · | R R L(2) ·",
+      "single-drag-tap":     "llR L> | rrL R>",
+      "double-drag-tap":     "llR llR | L> rrL | rrL R>",
+      "lesson-25":           "llR L R>(2) · | rrL R L>(2) ·",
+      "single-dragadiddle":  "llR> L R= R= | rrL> R L= L=",
+      "drag-paradiddle-1":   "R>(2) · llR L | R= R= L>(2) · | rrL R L= L=",
+      "drag-paradiddle-2":   "R>(2) · llR(2) · | llR L R= R= | L>(2) · rrL(2) · | rrL R L= L=",
+      "single-ratamacue":    "llR L R L>(3) · · | rrL R L R>(3) · ·",
+      "double-ratamacue":    "llR(3) · · llR L R | L>(3) · · rrL(3) · · | rrL R L R>(3) · ·",
+      "triple-ratamacue":    "llR(3) · · llR(3) · · | llR L R L>(3) · · | rrL(3) · · rrL(3) · · | rrL R L R>(3) · ·",
+    };
+    Object.keys(expected).forEach(function (id) {
+      assert.ok(MAP[id], id + " present");
+      assert.equal(sticking(id), expected[id], id);
+    });
+  }},
+
+  { name: "PAS 2 + 3: the stroke counts are flourishes onto a longer note", fn: function (assert) {
+    const four = MAP["single-stroke-four"];
+    assert.equal(four.strokes.length, 4, "four strokes");
+    assert.equal(four.slotsPerBeat, 6, "sextuplet grid holds a triplet plus an eighth");
+    assert.equal(four.strokes[3].duration, 3, "three fast singles arriving on a held fourth");
+    const seven = MAP["single-stroke-seven"];
+    assert.equal(seven.strokes.length, 7, "seven strokes");
+    assert.equal(seven.slotsPerBeat, 6, "the first six fill one beat as a sextuplet");
+    assert.equal(seven.strokes[6].slot, 6, "the seventh arrives on the next beat");
+  }},
+
+  { name: "PAS 23 flamacue: the closing flam lands on the next downbeat", fn: function (assert) {
+    const r = MAP["flamacue"];
+    assert.equal(r.cycleBeats, 2, "the figure resolves onto the following beat");
+    assert.equal(r.strokes.length, 5, "five strokes, not four");
+    const last = r.strokes[4];
+    assert.equal(last.slot % r.slotsPerBeat, 0, "the closing flam is on a beat, not inside one");
+    assert.ok(last.grace && last.grace.length === 1, "the closing stroke carries a flam");
+    const accents = r.strokes.filter(function (s) { return s.accent; });
+    assert.equal(accents.length, 1, "one accent");
+    assert.equal(accents[0].slot, 1, "and it is the second sixteenth");
+  }},
+
+  { name: "PAS 29 inverted flam tap: the flams fall on the beat", fn: function (assert) {
+    const r = MAP["inverted-flam-tap"];
+    const flams = r.strokes.filter(function (s) { return s.grace; });
+    assert.equal(flams.length, 2, "one flam per half");
+    flams.forEach(function (s) {
+      assert.equal(s.slot % r.slotsPerBeat, 0, "the flam is on a beat, not on the upbeat");
+      assert.ok(s.accent, "the flam carries the accent");
+    });
+    assert.deepEqual(r.strokes.map(function (s) { return s.hand; }), ["R", "L", "L", "R"],
+      "taps pair across the flams — the inversion that separates it from the Flam Tap");
+  }},
+
+  { name: "PAS 30 flam drag: the drag is written out, not crushed", fn: function (assert) {
+    const r = MAP["flam-drag"];
+    const half = r.strokes.filter(function (s) { return s.slot < r.cycleBeats * r.slotsPerBeat / 2; });
+    assert.equal(half.length, 4, "four primaries per half");
+    assert.deepEqual(half.map(function (s) { return s.hand; }), ["R", "L", "L", "R"], "R L L R");
+    assert.ok(half[0].grace && half[0].grace.length === 1, "opens on a flam");
+    assert.ok(!half[1].grace && !half[2].grace, "the drag strokes are measured notes, not grace notes");
+  }},
+
+  { name: "PAS 32-34 drag taps: the accent belongs to the tap, not the drag", fn: function (assert) {
+    ["single-drag-tap", "double-drag-tap", "lesson-25"].forEach(function (id) {
+      const r = MAP[id];
+      r.strokes.forEach(function (s) {
+        assert.ok(!(s.accent && s.grace), id + ": no stroke is both dragged and accented");
+      });
+      const half = r.strokes.filter(function (s) { return s.slot < r.cycleBeats * r.slotsPerBeat / 2; });
+      assert.ok(half[half.length - 1].accent, id + ": the accent closes the figure");
+    });
+    assert.deepEqual(MAP["double-drag-tap"].strokes.slice(0, 3).map(function (s) { return s.hand; }),
+      ["R", "R", "L"], "both drags stay on the lead hand before the tap turns it around");
+  }},
+
+  { name: "PAS 35 single dragadiddle: a drag paradiddle, not a paradiddle-diddle", fn: function (assert) {
+    const r = MAP["single-dragadiddle"];
+    assert.equal(r.strokes.length, 8, "four primaries per half");
+    const ids = {};
+    r.strokes.forEach(function (s) { if (s.diddle !== undefined) ids[s.diddle] = true; });
+    assert.equal(Object.keys(ids).length, 2, "one diddle per half, not two");
+  }},
+
+  { name: "PAS 36-37 drag paradiddles: an accented pickup leads the drag", fn: function (assert) {
+    ["drag-paradiddle-1", "drag-paradiddle-2"].forEach(function (id) {
+      const r = MAP[id];
+      const first = r.strokes[0];
+      assert.equal(first.slot, 0, id + ": the pickup opens the cycle");
+      assert.ok(first.accent, id + ": the pickup carries the accent");
+      assert.ok(!first.grace, id + ": the pickup is a plain stroke");
+      assert.ok(r.strokes[1].grace && r.strokes[1].grace.length === 2, id + ": the drag is the note after it");
+    });
+  }},
+
+  { name: "PAS 38-40 ratamacues: one shared figure, 0/1/2 leading drag eighths", fn: function (assert) {
+    ["single-ratamacue", "double-ratamacue", "triple-ratamacue"].forEach(function (id, i) {
+      const r = MAP[id];
+      assert.equal(r.slotsPerBeat, 6, id + ": one sextuplet grid holds the triplet and the eighth");
+      const half = r.strokes.filter(function (s) { return s.slot < r.cycleBeats * 6 / 2; });
+      assert.equal(half.length, 4 + i, id + ": " + (4 + i) + " primaries per half");
+      assert.ok(half[0].grace && half[0].grace.length === 2, id + ": opens on a drag");
+      const cue = half[half.length - 1];
+      assert.ok(cue.accent, id + ": the cue carries the accent");
+      assert.equal(cue.duration, 3, id + ": the cue is held an eighth");
+      assert.ok(!cue.grace, id + ": nothing trails the cue");
+      // the three notes before the cue are the sixteenth-note triplet
+      half.slice(-4, -1).forEach(function (s, k) {
+        assert.equal(s.slot, cue.slot - 3 + k, id + ": the triplet runs straight into the cue");
+      });
     });
   }},
 
