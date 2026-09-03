@@ -209,7 +209,7 @@ function getCases(core) {
     // (Taylor's reference). hands = primary strokes in order, right lead;
     // accents/graced = stroke indices carrying an accent / grace notes.
     [
-      { id: "flamacue",            hands: "RLRL",         accents: [1],     graced: [0] },
+      { id: "flamacue",            hands: "RLRLR",        accents: [1],     graced: [0, 4] },
       { id: "swiss-army-triplet",  hands: "RRL",          accents: [0],     graced: [0] },
       { id: "inverted-flam-tap",   hands: "RLLR",         accents: [0, 2],  graced: [0, 2] },
       { id: "flam-drag",           hands: "RLLRLRRL",     accents: [0, 4],  graced: [0, 4] },

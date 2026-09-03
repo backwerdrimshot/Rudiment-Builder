@@ -336,18 +336,19 @@ var RUDIMENTS = [
       { slot: 2, hand: L, accent: true, grace: [{ hand: R }] }, { slot: 3, hand: L },
     ] },
 
-  /* 23 — Flamacue */ // verified vs the official PAS chart 2026-08-25: closing flam is the NEXT downbeat, 4th note plain
+  /* 23 — Flamacue */ // corrected 2026-09-03 vs PAS-rud-23: the chart draws FIVE notes — the closing flam is printed, not left to the next cycle
   { id: "flamacue", name: "Flamacue", pas: 23, family: "Flam",
-    level: "Intermediate", cycleBeats: 1, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes into a flammed release",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "A flam, then an accent on the second note: fR L> R L. The closing flam of the figure is the next cycle's downbeat flam — the inner accent is the character of the rudiment.",
+    teachingNote: "A flam, an accent on the second note, then a flam to close: fR L> R L fR. The inner accent is the character of the rudiment; the closing flam is what makes it a cue.",
     aliases: ["flam cue"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }] },
       { slot: 1, hand: L, accent: true },
       { slot: 2, hand: R },
       { slot: 3, hand: L },
+      { slot: 4, duration: 4, hand: R, grace: [{ hand: L }] },
     ] },
 
   /* 24 — Flam Paradiddle */

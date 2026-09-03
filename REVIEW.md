@@ -10,6 +10,21 @@ were audited against the chart's Standard-26 asterisks (15, 18, 25 corrected to
 are pinned by the test case *"PAS chart proofing 2026-08-25"* in
 [`tests/cases.js`](tests/cases.js).
 
+### Corrected against the per-rudiment SVGs (2026-09-03)
+
+A full 40-way diff against `PAS-rud-NN.svg` (vendored in praxis-platform
+`data/notation-svg/reference/pas-2026/`) found one content gap and four
+engraving additions, all now fixed:
+
+| PAS | What the chart does that we did not |
+|----:|-------------------------------------|
+| 23 | **Flamacue prints five notes** — `lR L> R L lR`. The closing flam is drawn, not left to the next cycle. The 2026-08-25 reading of the two-page chart got this wrong; the per-rudiment file is unambiguous. |
+| 17, 19, 26, 33 | No tuplet numeral. These are compound-feel figures, and we were printing a "6" (17, 19, 26) or a "3" (33) the chart does not — the same call Taylor made for the flam accent. |
+| 19 | The chart gives the single paradiddle-diddle a **second sticking row**; it does not self-alternate, so one row understates it. |
+
+Beam grouping still differs on two: PAS beams #1 as 4 + 4 (we run one beam
+across all eight) and #18 as 8 + 8 (we beam in fours). Cosmetic, unfixed.
+
 ### Corrected against the chart (13)
 
 | PAS | Rudiment | Now encoded (right lead) |
