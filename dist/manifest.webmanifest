@@ -1,6 +1,6 @@
 {
-  "name": "Rudiment Builder",
-  "short_name": "Rudiment Builder",
+  "name": "Rudiment Room",
+  "short_name": "Rudiment Room",
   "description": "A sticking and tempo trainer for percussion rudiments.",
   "start_url": "./",
   "scope": "./",

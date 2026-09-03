@@ -20,7 +20,7 @@ $mime = @{
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$Port/")
 $listener.Start()
-Write-Host "Rudiment Builder dev server: http://localhost:$Port/  (Ctrl+C to stop)"
+Write-Host "Rudiment Room dev server: http://localhost:$Port/  (Ctrl+C to stop)"
 
 $log = Join-Path $PSScriptRoot "serve.log"
 "[$(Get-Date -Format o)] started on port $Port" | Out-File $log -Encoding utf8

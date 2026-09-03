@@ -1,4 +1,4 @@
-/* Rudiment Builder — pure core.
+/* Rudiment Room — pure core.
    Validation, leading-hand transformation, stroke expansion, practice-mode
    plans, and the block-level playback-position machine. No DOM, no Web Audio —
    the browser page and the Node tests both load this file.

@@ -1,4 +1,4 @@
-# CLAUDE.md — Rudiment Builder
+# CLAUDE.md — Rudiment Room
 
 Focused trainer for **established, named rudiments** (Backwerd Rhythm Shop
 family). Product boundary: no freeform pattern construction, no

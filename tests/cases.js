@@ -1,4 +1,4 @@
-/* Rudiment Builder core test cases — runner-agnostic.
+/* Rudiment Room core test cases — runner-agnostic.
    Each case is { name, fn(assert, core) } where assert provides
    ok / equal / deepEqual. Run them either way:
      - Node:    node --test tests/        (wraps these in node:test)

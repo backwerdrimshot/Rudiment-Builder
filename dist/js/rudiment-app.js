@@ -1,5 +1,5 @@
 "use strict";
-/* Rudiment Builder — audio scheduler + UI on top of RudimentCore.
+/* Rudiment Room — audio scheduler + UI on top of RudimentCore.
    The lookahead scheduler, listen voice, pause-by-suspend, and visual queue
    are adapted from Tempo Ladder / Click Drop / Pulse Pocket. Layer boundaries:
      Core       — data, withLead, expandPattern, buildPlan, playback machine
@@ -878,6 +878,9 @@ function syncPlanPreview() {
 /* ---------------- remembered settings + shareable link ----------------
    Precedence: built-in defaults < last-used (localStorage) < a shared link's
    query params. Every value is validated on the way in. */
+// Deliberately still "rudimentbuilder-" after the rename to Rudiment Room:
+// this key holds a returning student's saved tempo, mode and lead. Renaming
+// it would silently hand every existing user a factory reset.
 var STORE_KEY = "rudimentbuilder-settings";
 function persistSettings() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(settings)); } catch (e) { /* private mode */ }

@@ -1,8 +1,8 @@
-# Rudiment Builder
+# Rudiment Room
 
 **Choose the rudiment. See the sticking. Build the hands. Control the tempo.**
 
-Rudiment Builder is a focused, forever-free practice app from
+Rudiment Room is a focused, forever-free practice app from
 [Backwerd Rhythm Shop](https://backwerdrhythmshop.com) for learning and
 practicing established, named percussion rudiments. A student selects a
 rudiment, sees a large original sticking display (accents, diddles, flams),
@@ -26,6 +26,28 @@ No account. No backend. No notation software feel.
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
 - **Repository:** <https://github.com/backwerdrimshot/Rudiment-Builder>
+
+### Renamed from Rudiment Builder, 2026-09-03
+
+Nothing in this app builds anything: a student picks a named rudiment and the
+app plays it. Earning "Builder" would have meant freeform pattern construction,
+which is **Stick Lab's** job by an explicit product boundary — so the app was
+named for what it is instead.
+
+**The rename is content-only so far.** These still carry the old name on
+purpose, and are Taylor's to move:
+
+| Still `rudiment-builder` | Why |
+|---|---|
+| The public hostname, DNS record and Workers route | Cloudflare work, and see the route caveat below |
+| The GitHub repository name | A GitHub setting, not a file |
+| `STORE_KEY` in `js/rudiment-app.js` | Renaming it factory-resets every existing user's saved settings |
+| `APP` in the visit counter (`index.html`) | A new key restarts the running total from zero |
+| `assets/notation/` | Vendored; regenerate upstream, do not edit here |
+
+A hostname move is the clean moment to fix the route compromise described under
+**Deployment** — attach a proper custom domain and delete the stale GitHub Pages
+DNS record — and needs a permanent redirect from the old host.
 
 Build identifiers use ISO `YYYY-MM-DD`, based on the date the shipped app update
 began. The value stays fixed while that release pass is completed across code and
@@ -130,7 +152,7 @@ timestamped visual queue drives the display at hear-time.
 
 ## Privacy and accessibility
 
-Rudiment Builder requires no account or backend. Settings stay in the browser's local
+Rudiment Room requires no account or backend. Settings stay in the browser's local
 storage. One script does load: a Cloudflare Web Analytics beacon that counts page views
 and nothing else — no cookies, no fingerprinting, no following anyone to another site.
 It carries the same site token as the rest of backwerdrhythmshop.com so this app's
@@ -184,7 +206,7 @@ that happens, the route is load-bearing: do not remove it.
 
 ## Sources & educational lineage
 
-Rudiment Builder is an educational tool, and it teaches the *named, standard*
+Rudiment Room is an educational tool, and it teaches the *named, standard*
 rudiments — so it wears its sources openly:
 
 - **N.A.R.D.** — the National Association of Rudimental Drummers (formed at
@@ -205,7 +227,7 @@ and the three questions still open); the data model, prose, teaching notes, and
 all rendering are original to this app — no publisher's notation images are
 copied or traced.
 
-Rudiment Builder is an independent Backwerd Rhythm Shop project and is not
+Rudiment Room is an independent Backwerd Rhythm Shop project and is not
 affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
 ## Family
@@ -215,7 +237,7 @@ Twelve free apps, all listed at
 
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Tempo Ladder · Count It · Mallet Board · Mallet Map · Scale Trail ·
-Drum Map · **Rudiment Builder**
+Drum Map · **Rudiment Room**
 
 ## Visit counter
 

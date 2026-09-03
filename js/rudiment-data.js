@@ -1,4 +1,4 @@
-/* Rudiment Builder — rudiment definitions (all 40 PAS International Drum Rudiments).
+/* Rudiment Room — rudiment definitions (all 40 PAS International Drum Rudiments).
    Structured data ONLY: no DOM, no audio. The small builder functions below
    just assemble stroke arrays (measured rolls especially) so long diddle
    sequences are generated correctly instead of hand-typed; the exported
