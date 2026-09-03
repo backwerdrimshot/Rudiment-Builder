@@ -22,8 +22,13 @@ engraving additions, all now fixed:
 | 17, 19, 26, 33 | No tuplet numeral. These are compound-feel figures, and we were printing a "6" (17, 19, 26) or a "3" (33) the chart does not — the same call Taylor made for the flam accent. |
 | 19 | The chart gives the single paradiddle-diddle a **second sticking row**; it does not self-alternate, so one row understates it. |
 
-Beam grouping still differs on two: PAS beams #1 as 4 + 4 (we run one beam
-across all eight) and #18 as 8 + 8 (we beam in fours). Cosmetic, unfixed.
+Beam grouping was the last difference and is now matched too (2026-09-03):
+**#1** breaks 4 + 4 rather than running one beam over all eight, and **#18**
+carries the primary beam across eight sixteenths with the *secondary* beam
+breaking at the beat — which is how the chart shows the beat inside a long
+group. Both are engraving, not data: `beamGroup` in the composer, plus a beam
+break at beat boundaries that is a no-op wherever a group is one beat wide.
+Nothing on the chart is now knowingly drawn differently from PAS.
 
 ### Corrected against the chart (13)
 
