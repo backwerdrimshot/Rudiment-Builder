@@ -11,7 +11,9 @@
    ACCURACY NOTE: proofed against the official 1984 PAS International Drum
    Rudiments chart on 2026-08-25 (see REVIEW.md) — 13 hybrids corrected,
    flags cleared where verified. Taylor settled the #2 and #3 rhythms on
-   2026-08-29; #8 (Six Stroke Roll) is the last one carrying "// REVIEW".
+   2026-08-29. Re-checked on 2026-09-03 against the per-rudiment SVGs PAS
+   published in May 2026 (pas.org/rudiment/<n>-<slug>/), which settled #8
+   and shortened #1. **No "// REVIEW" tags remain.**
 
    Record + stroke shape are documented in js/rudiment-core.js (validateRudiment).
    `counting` is omitted here and generated from the subdivision by the core.
@@ -76,9 +78,9 @@ var RUDIMENTS = [
      I. ROLL RUDIMENTS (PAS 1–15)
      ============================================================ */
 
-  /* 1 — Single Stroke Roll */
+  /* 1 — Single Stroke Roll */ // verified vs the PAS per-rudiment SVG (PAS-rud-01, published 2026-05): eight thirty-seconds, one beamed group per lead
   { id: "single-stroke-roll", name: "Single Stroke Roll", pas: 1, family: "Roll",
-    level: "Beginner", cycleBeats: 2, slotsPerBeat: 8, subdivision: "Thirty-second notes",
+    level: "Beginner", cycleBeats: 1, slotsPerBeat: 8, subdivision: "Thirty-second notes",
     tempo: { defaultBpm: 90, suggestedLo: 60, suggestedHi: 160 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "The foundation: even, alternating single strokes. Keep both hands matched in height and sound from slow to fast.",
@@ -86,8 +88,6 @@ var RUDIMENTS = [
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
       { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R }, { slot: 7, hand: L },
-      { slot: 8, hand: R }, { slot: 9, hand: L }, { slot: 10, hand: R }, { slot: 11, hand: L },
-      { slot: 12, hand: R }, { slot: 13, hand: L }, { slot: 14, hand: R }, { slot: 15, hand: L },
     ] },
 
   /* 2 — Single Stroke Four */ // rhythm chosen by Taylor 2026-08-29: the ratamacue figure — a sixteenth-note triplet into an eighth release, matching the official PAS chart
@@ -169,7 +169,7 @@ var RUDIMENTS = [
       { slot: 12, hand: L, accent: true, duration: 4 },
     ] },
 
-  /* 8 — Six Stroke Roll */ // REVIEW: sticking/accents match the official PAS chart (RLLRRL, accents both ends); chart rhythm is 8th–rolled body–8th vs the even sextuplet here — Taylor to pick
+  /* 8 — Six Stroke Roll */ // verified vs the PAS per-rudiment SVG (PAS-rud-08, published 2026-05): strokes and accents match; the chart's 8th–rolled body–8th is the CLOSED form, carried by rudiments/closed/closed-08-six-stroke-roll.svg, not a different rhythm
   { id: "six-stroke-roll", name: "Six Stroke Roll", pas: 8, family: "Roll",
     level: "Intermediate", cycleBeats: 1, slotsPerBeat: 6, subdivision: "Sextuplet",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",

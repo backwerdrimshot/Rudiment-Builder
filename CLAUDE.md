@@ -77,9 +77,8 @@ Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
 marker like "PAS addition (1984)". All 40 are encoded and were proofed
 against the official 1984 PAS chart on 2026-08-25 (13 hybrids corrected —
-see `REVIEW.md`), **except #8, still tagged `// REVIEW:`** (Six Stroke
-Roll — a deliberate rhythm variant awaiting Taylor's pick; #2 and #3 were
-settled 2026-08-29). Tests pin the shipped
+see `REVIEW.md`) and re-checked on 2026-09-03 against the per-rudiment SVGs
+PAS published in May 2026. **No `// REVIEW` tags remain.** Tests pin the shipped
 values (catalog count, family split, PAS coverage, and the corrected
 hybrid patterns), so changing data means updating `tests/cases.js`.
 
@@ -104,11 +103,10 @@ Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 
-- **[`REVIEW.md`](REVIEW.md), post-proofread:** 13 hybrids were corrected
-  against the official PAS chart on 2026-08-25 and most flags cleared. Still
-  open there: #2/#3/#8 rhythm variants, the lead-marker accents the chart
-  doesn't print, and the sticking errors in the Notion "Rudiment Mastery
-  Program" doc (not re-verified; the app data does not inherit them).
+- **[`REVIEW.md`](REVIEW.md) — all rudiment flags are closed.** Still noted
+  there: #4's classroom expansion of the multiple bounce roll, #7's release
+  placement, and the sticking errors in the Notion "Rudiment Mastery Program"
+  doc (not re-verified; the app data does not inherit them).
 - Five Stroke Roll encoded PAS-card style: diddles on the beat, accented
   release ON beats 2/4 ringing through the beat (alternative: pickup placement
   releasing on the downbeat).

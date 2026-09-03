@@ -236,6 +236,26 @@ function getCases(core) {
     });
   }},
 
+  { name: "PAS per-rudiment SVGs 2026-09-03: single-stroke lengths and the six stroke roll", fn: function (assert) {
+    // Pinned against the SVGs PAS published per rudiment in May 2026
+    // (pas.org/rudiment/<n>-<slug>/ → PAS-rud-NN.svg), which are drawn from the
+    // same 1984 chart but one rudiment to a file, so lengths are unambiguous.
+    const one = MAP["single-stroke-roll"];
+    assert.equal(one.cycleBeats * one.slotsPerBeat, 8,
+      "single stroke roll: eight thirty-seconds, as PAS-rud-01 draws it — not sixteen");
+    assert.equal(hands(one), "RLRLRLRL", "single stroke roll: strict alternation");
+
+    // PAS-rud-08 draws the six stroke roll as accent / rolled body / accent.
+    // That is the CLOSED form of these same six strokes, not a rhythm we differ
+    // on: the strokes and both accents match, so the data stands and the
+    // shorthand lives in the poster's closed-roll layer.
+    const six = MAP["six-stroke-roll"];
+    assert.equal(hands(six), "RLLRRL", "six stroke roll: sticking matches the chart");
+    const sixAccents = [];
+    six.strokes.forEach(function (s, i) { if (s.accent) sixAccents.push(i); });
+    assert.deepEqual(sixAccents, [0, 5], "six stroke roll: accents bracket the diddles");
+  }},
+
   { name: "withLead never mutates the source definition", fn: function (assert) {
     const before = JSON.stringify(core.RUDIMENTS);
     ["single-paradiddle", "flam-accent", "five-stroke-roll"].forEach(function (id) {
