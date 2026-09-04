@@ -22,11 +22,11 @@
       "name": "Single Stroke Four",
       "family": "Roll",
       "level": "Beginner",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Sixteenth-note triplet into an eighth",
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
-      "slotsPerBeat": 4,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-03-single-stroke-seven.svg",
@@ -35,11 +35,11 @@
       "name": "Single Stroke Seven",
       "family": "Roll",
       "level": "Intermediate",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Sextuplet into an arrival",
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
-      "slotsPerBeat": 4,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-04-multiple-bounce-roll.svg",
@@ -104,7 +104,7 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 6,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-09-seven-stroke-roll.svg",
@@ -143,7 +143,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 3,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-12-eleven-stroke-roll.svg",
@@ -297,9 +297,9 @@
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 1,
+      "cycleBeats": 2,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-24-flam-paradiddle.svg",
@@ -325,7 +325,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-26-flam-paradiddle-diddle.svg",
@@ -351,7 +351,7 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-28-swiss-army-triplet.svg",
@@ -364,7 +364,7 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-29-inverted-flam-tap.svg",
@@ -377,7 +377,7 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-30-flam-drag.svg",
@@ -386,11 +386,11 @@
       "name": "Flam Drag",
       "family": "Flam",
       "level": "Advanced",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Eighth, two sixteenths, eighth",
       "heritage": "PAS addition (1984)",
-      "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "cycleBeats": 3,
+      "slotsPerBeat": 4,
+      "review": false
     },
     {
       "file": "rudiment-31-drag.svg",
@@ -416,7 +416,7 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-33-double-drag-tap.svg",
@@ -425,11 +425,11 @@
       "name": "Double Drag Tap",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Eighth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "cycleBeats": 3,
+      "slotsPerBeat": 2,
+      "review": false
     },
     {
       "file": "rudiment-34-lesson-25.svg",
@@ -438,11 +438,11 @@
       "name": "Lesson 25",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Two sixteenths into an eighth",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "slotsPerBeat": 4,
+      "review": false
     },
     {
       "file": "rudiment-35-single-dragadiddle.svg",
@@ -451,10 +451,10 @@
       "name": "Single Dragadiddle",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Sextuplet",
+      "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 1,
-      "slotsPerBeat": 6,
+      "cycleBeats": 2,
+      "slotsPerBeat": 4,
       "review": true
     },
     {
@@ -464,11 +464,11 @@
       "name": "Drag Paradiddle #1",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Eighth pickup into sixteenths",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
+      "cycleBeats": 3,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-37-drag-paradiddle-2.svg",
@@ -477,11 +477,11 @@
       "name": "Drag Paradiddle #2",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Eighth pickup, dragged eighth, sixteenths",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
+      "cycleBeats": 4,
       "slotsPerBeat": 4,
-      "review": true
+      "review": false
     },
     {
       "file": "rudiment-38-single-ratamacue.svg",
@@ -490,11 +490,11 @@
       "name": "Single Ratamacue",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Sixteenth-note triplet into an eighth",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
-      "slotsPerBeat": 3,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-39-double-ratamacue.svg",
@@ -503,11 +503,11 @@
       "name": "Double Ratamacue",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Dragged eighth, triplet, accent",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
-      "slotsPerBeat": 4,
-      "review": true
+      "cycleBeats": 3,
+      "slotsPerBeat": 6,
+      "review": false
     },
     {
       "file": "rudiment-40-triple-ratamacue.svg",
@@ -516,11 +516,11 @@
       "name": "Triple Ratamacue",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Triplet eighth notes",
+      "subdivision": "Two dragged eighths, triplet, accent",
       "heritage": "NARD Standard 26",
       "cycleBeats": 4,
-      "slotsPerBeat": 3,
-      "review": true
+      "slotsPerBeat": 6,
+      "review": false
     }
   ]
 }
