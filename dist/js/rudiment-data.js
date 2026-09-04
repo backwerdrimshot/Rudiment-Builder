@@ -169,7 +169,7 @@ var RUDIMENTS = [
       { slot: 12, hand: L, accent: true, duration: 4 },
     ] },
 
-  /* 8 — Six Stroke Roll */ // REVIEW: accent–diddle–diddle–accent variant (RLLRRL); other versions exist
+  /* 8 — Six Stroke Roll */ // accent–diddle–diddle–accent (RLLRRL); confirmed against PAS 2026-09-03
   { id: "six-stroke-roll", name: "Six Stroke Roll", pas: 8, family: "Roll",
     level: "Intermediate", cycleBeats: 1, slotsPerBeat: 6, subdivision: "Sextuplet",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",
@@ -201,7 +201,7 @@ var RUDIMENTS = [
     aliases: ["9 stroke roll"],
     strokes: measuredRoll(4) },
 
-  /* 11 — Ten Stroke Roll */ // REVIEW: four doubles + two accented taps
+  /* 11 — Ten Stroke Roll */ // four doubles + two accented taps; confirmed against PAS 2026-09-03
   { id: "ten-stroke-roll", name: "Ten Stroke Roll", pas: 11, family: "Roll",
     level: "Intermediate", cycleBeats: 3, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
@@ -365,7 +365,7 @@ var RUDIMENTS = [
       { slot: 6, hand: L, diddle: 2 }, { slot: 7, hand: L, diddle: 2 },
     ] },
 
-  /* 25 — Single Flammed Mill */ // REVIEW: flam + diddle + two singles; sticking varies
+  /* 25 — Single Flammed Mill */ // flam + diddle + two singles; confirmed against PAS 2026-09-03
   { id: "single-flammed-mill", name: "Single Flammed Mill", pas: 25, family: "Flam",
     level: "Advanced", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
@@ -395,7 +395,7 @@ var RUDIMENTS = [
       { slot: 10, hand: R, diddle: 4 }, { slot: 11, hand: R, diddle: 4 },
     ] },
 
-  /* 27 — Pataflafla */ // REVIEW: flams on the outer notes with a central "flafla"
+  /* 27 — Pataflafla */ // flams on the outer notes, plain centre; confirmed against PAS 2026-09-03
   { id: "pataflafla", name: "Pataflafla", pas: 27, family: "Flam",
     level: "Advanced", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
@@ -407,7 +407,7 @@ var RUDIMENTS = [
       { slot: 4, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 5, hand: L }, { slot: 6, hand: R }, { slot: 7, hand: L, accent: true, grace: [{ hand: R }] },
     ] },
 
-  /* 28 — Swiss Army Triplet */ // REVIEW: flam + diddle-hand + single, in a triplet
+  /* 28 — Swiss Army Triplet */ // flam + diddle-hand + single, in a triplet; confirmed against PAS 2026-09-03
   { id: "swiss-army-triplet", name: "Swiss Army Triplet", pas: 28, family: "Flam",
     level: "Advanced", cycleBeats: 2, slotsPerBeat: 3, subdivision: "Triplet eighth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
