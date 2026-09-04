@@ -256,13 +256,17 @@ function describePattern(pattern) {
    Generate a counting label per grid slot from the subdivision, so rudiment
    records don't each have to hand-maintain a counting row. A record may still
    override with its own `counting` array (validated to the grid length). */
+/* Thirty-seconds interleave "ta" between the sixteenth-note syllables —
+   1 ta e ta & ta a ta — so the "&" still falls on the half beat. Writing the
+   sixteenth row first and padding it out puts the "&" on the fourth
+   thirty-second, which is a beat a student cannot find. */
 const SUBDIV_COUNTS = {
   1: [],
   2: ["&"],
   3: ["trip", "let"],
   4: ["e", "&", "a"],
   6: ["la", "li", "&", "la", "li"],
-  8: ["e", "&", "a", "ta", "&", "ta", "&"],
+  8: ["ta", "e", "ta", "&", "ta", "a", "ta"],
 };
 function countingFor(slotsPerBeat, cycleBeats) {
   const labels = SUBDIV_COUNTS[slotsPerBeat] || [];

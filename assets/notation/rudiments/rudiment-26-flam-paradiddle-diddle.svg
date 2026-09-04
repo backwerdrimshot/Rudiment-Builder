@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-120 -1769.7 7045 2459.7" width="7045" height="2459.7" data-units-per-space="250" data-pas="26" data-rudiment="flam-paradiddle-diddle" data-family="Flam" role="img" aria-label="Flam Paradiddle-diddle (PAS 26)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-120 -1354 7045 2044" width="7045" height="2044" data-units-per-space="250" data-pas="26" data-rudiment="flam-paradiddle-diddle" data-family="Flam" role="img" aria-label="Flam Paradiddle-diddle (PAS 26)">
 <!-- PAS 26 — Flam Paradiddle-diddle (Flam; Sextuplet). Right-hand lead. Composed from Bravura-extracted glyphs — SIL OFL 1.1, see LICENSE-bravura.txt. -->
 <g fill="currentColor">
 <path transform="translate(420 0) scale(1 -1)" d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z"/>
@@ -28,7 +28,6 @@
 <rect x="1725" y="-687.5" width="550" height="125"/>
 <rect x="2245" y="-687.5" width="550" height="125"/>
 <rect x="2765" y="-687.5" width="550" height="125"/>
-<path transform="translate(1721.7 -1362.2) scale(0.9 -0.9)" d="M229 350H233C250 350 264 345 264 339C264 335 255 331 250 329C235 322 223 307 223 286C223 262 243 248 265 248C294 248 314 270 314 304C314 345 278 375 219 375C133 375 64 320 28 209C17 175 10 141 10 111C10 43 43 -8 128 -8C201 -8 283 42 283 144C283 192 252 230 194 230C167 230 143 224 123 209C114 203 105 204 111 223C132 282 170 347 229 350ZM165 194C194 194 202 174 202 145C202 75 164 18 125 18C93 18 84 42 84 67C84 79 86 91 88 102C98 154 130 194 165 194Z"/>
 <path transform="translate(3960 0) scale(1 -1)" d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z"/>
 <rect x="4225" y="-875" width="30" height="833"/>
 <path transform="translate(3938 -1039) scale(1 -1)" d="M326 105C339 108 339 115 339 123C339 131 339 137 326 141L26 243C22 244 18 245 17 245C8 245 5 239 2 231C1 227 0 224 0 221C0 216 3 211 14 207C14 207 230 134 240 130C245 129 247 126 247 123C247 120 245 118 239 116C228 113 14 40 14 40C3 35 0 30 0 25C0 22 1 19 2 16C5 9 9 1 16 1C17 1 19 1 20 2Z"/>
@@ -56,6 +55,5 @@
 <rect x="5265" y="-687.5" width="550" height="125"/>
 <rect x="5785" y="-687.5" width="550" height="125"/>
 <rect x="6305" y="-687.5" width="550" height="125"/>
-<path transform="translate(5261.7 -1362.2) scale(0.9 -0.9)" d="M229 350H233C250 350 264 345 264 339C264 335 255 331 250 329C235 322 223 307 223 286C223 262 243 248 265 248C294 248 314 270 314 304C314 345 278 375 219 375C133 375 64 320 28 209C17 175 10 141 10 111C10 43 43 -8 128 -8C201 -8 283 42 283 144C283 192 252 230 194 230C167 230 143 224 123 209C114 203 105 204 111 223C132 282 170 347 229 350ZM165 194C194 194 202 174 202 145C202 75 164 18 125 18C93 18 84 42 84 67C84 79 86 91 88 102C98 154 130 194 165 194Z"/>
 </g>
 </svg>

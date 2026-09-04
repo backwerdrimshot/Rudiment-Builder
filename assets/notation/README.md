@@ -19,8 +19,11 @@ Contents:
   with Reserved Font Name "Bravura"; the licence travels with the outlines.
 - `rudiments/` — all 40 PAS rudiment cards, rendered from THIS repo's own
   `js/rudiment-data.js`; the snapshot the canonical directory holds names the
-  commit it was taken from. One card carries `review: true` in
-  `manifest.json` — the Single Dragadiddle, the last of REVIEW.md's open
-  questions that changes what is drawn. Any further data correction here is
-  re-rendered upstream and re-copied; editing a card in place would put the
-  drawing and the app out of step with no way to tell which is right.
+  commit it was taken from. **No card carries `review: true` any more** — the
+  proofread against the official chart and PAS's per-rudiment SVGs closed
+  every flag. The `manifest.json` here is the one the upstream composer wrote,
+  so it also carries `altSticking`, `halved` and `devices` per card, which the
+  poster generator reads; nothing in this app does, and they cost nothing to
+  keep in step. Any further data correction here is re-rendered upstream and
+  re-copied; editing a card in place would put the drawing and the app out of
+  step with no way to tell which is right.

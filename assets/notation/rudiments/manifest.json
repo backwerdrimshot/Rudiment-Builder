@@ -9,10 +9,13 @@
       "name": "Single Stroke Roll",
       "family": "Roll",
       "level": "Beginner",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Thirty-second notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
-      "slotsPerBeat": 4,
+      "cycleBeats": 1,
+      "slotsPerBeat": 8,
+      "altSticking": false,
+      "halved": false,
+      "devices": [],
       "review": false
     },
     {
@@ -22,10 +25,16 @@
       "name": "Single Stroke Four",
       "family": "Roll",
       "level": "Beginner",
-      "subdivision": "Sixteenth-note triplet into an eighth",
+      "subdivision": "Sixteenth-note triplet into an eighth release",
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 6,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "tuplet",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -35,10 +44,16 @@
       "name": "Single Stroke Seven",
       "family": "Roll",
       "level": "Intermediate",
-      "subdivision": "Sextuplet into an arrival",
+      "subdivision": "Sextuplet into a quarter",
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "tuplet",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -52,6 +67,11 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "buzz"
+      ],
       "review": false
     },
     {
@@ -65,6 +85,11 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "tuplet"
+      ],
       "review": false
     },
     {
@@ -78,6 +103,9 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [],
       "review": false
     },
     {
@@ -89,8 +117,14 @@
       "level": "Beginner",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 4,
+      "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -104,6 +138,13 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 6,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "accent",
+        "tuplet",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -115,8 +156,14 @@
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 4,
+      "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -128,8 +175,14 @@
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 6,
+      "cycleBeats": 3,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -143,6 +196,12 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 3,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -154,8 +213,14 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 6,
+      "cycleBeats": 3,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -167,8 +232,14 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 8,
+      "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -180,8 +251,14 @@
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 8,
+      "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -192,9 +269,15 @@
       "family": "Roll",
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
-      "cycleBeats": 10,
+      "heritage": "PAS addition (1984)",
+      "cycleBeats": 5,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": true,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -208,6 +291,11 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent"
+      ],
       "review": false
     },
     {
@@ -221,6 +309,11 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent"
+      ],
       "review": false
     },
     {
@@ -231,9 +324,14 @@
       "family": "Diddle",
       "level": "Intermediate",
       "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
+      "heritage": "PAS addition (1984)",
       "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent"
+      ],
       "review": false
     },
     {
@@ -247,6 +345,12 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 1,
       "slotsPerBeat": 6,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "accent",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -260,6 +364,11 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 1,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "flam"
+      ],
       "review": false
     },
     {
@@ -273,6 +382,12 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 3,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -286,6 +401,12 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -295,10 +416,17 @@
       "name": "Flamacue",
       "family": "Flam",
       "level": "Intermediate",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Sixteenth notes into a flammed release",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -312,6 +440,12 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -322,9 +456,15 @@
       "family": "Flam",
       "level": "Advanced",
       "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
+      "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -338,6 +478,12 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -351,6 +497,12 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -362,8 +514,16 @@
       "level": "Advanced",
       "subdivision": "Triplet eighth notes",
       "heritage": "PAS addition (1984)",
-      "cycleBeats": 2,
+      "cycleBeats": 1,
       "slotsPerBeat": 3,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam",
+        "tuplet",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -377,6 +537,12 @@
       "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam"
+      ],
       "review": false
     },
     {
@@ -386,10 +552,17 @@
       "name": "Flam Drag",
       "family": "Flam",
       "level": "Advanced",
-      "subdivision": "Eighth, two sixteenths, eighth",
+      "subdivision": "Triplet feel; the drag written out as sixteenths",
       "heritage": "PAS addition (1984)",
-      "cycleBeats": 3,
-      "slotsPerBeat": 4,
+      "cycleBeats": 2,
+      "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "flam",
+        "tuplet"
+      ],
       "review": false
     },
     {
@@ -403,6 +576,11 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 1,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "drag"
+      ],
       "review": false
     },
     {
@@ -416,6 +594,12 @@
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 2,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag"
+      ],
       "review": false
     },
     {
@@ -425,10 +609,16 @@
       "name": "Double Drag Tap",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Eighth notes",
+      "subdivision": "Triplet eighth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 3,
-      "slotsPerBeat": 2,
+      "cycleBeats": 2,
+      "slotsPerBeat": 3,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag"
+      ],
       "review": false
     },
     {
@@ -438,10 +628,17 @@
       "name": "Lesson 25",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Two sixteenths into an eighth",
+      "subdivision": "Sixteenth notes",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 2,
+      "cycleBeats": 1,
       "slotsPerBeat": 4,
+      "altSticking": true,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag",
+        "sticking"
+      ],
       "review": false
     },
     {
@@ -451,11 +648,16 @@
       "name": "Single Dragadiddle",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Sixteenth notes",
-      "heritage": "NARD Standard 26",
+      "subdivision": "Sixteenth notes; the diddled lead written as thirty-seconds",
+      "heritage": "PAS addition (1984)",
       "cycleBeats": 2,
-      "slotsPerBeat": 4,
-      "review": true
+      "slotsPerBeat": 8,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent"
+      ],
+      "review": false
     },
     {
       "file": "rudiment-36-drag-paradiddle-1.svg",
@@ -464,10 +666,17 @@
       "name": "Drag Paradiddle #1",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Eighth pickup into sixteenths",
+      "subdivision": "An eighth, then sixteenths (compound feel)",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 3,
-      "slotsPerBeat": 4,
+      "cycleBeats": 2,
+      "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag",
+        "tuplet"
+      ],
       "review": false
     },
     {
@@ -477,10 +686,16 @@
       "name": "Drag Paradiddle #2",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Eighth pickup, dragged eighth, sixteenths",
+      "subdivision": "Eighths into sixteenths",
       "heritage": "NARD Standard 26",
       "cycleBeats": 4,
       "slotsPerBeat": 4,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag"
+      ],
       "review": false
     },
     {
@@ -490,10 +705,17 @@
       "name": "Single Ratamacue",
       "family": "Drag",
       "level": "Intermediate",
-      "subdivision": "Sixteenth-note triplet into an eighth",
+      "subdivision": "Sixteenth-note triplet into an eighth release",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag",
+        "tuplet"
+      ],
       "review": false
     },
     {
@@ -503,10 +725,17 @@
       "name": "Double Ratamacue",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Dragged eighth, triplet, accent",
+      "subdivision": "A dragged eighth, then triplet sixteenths into the release",
       "heritage": "NARD Standard 26",
       "cycleBeats": 3,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag",
+        "tuplet"
+      ],
       "review": false
     },
     {
@@ -516,10 +745,17 @@
       "name": "Triple Ratamacue",
       "family": "Drag",
       "level": "Advanced",
-      "subdivision": "Two dragged eighths, triplet, accent",
+      "subdivision": "Two dragged eighths, then triplet sixteenths into the release",
       "heritage": "NARD Standard 26",
       "cycleBeats": 4,
       "slotsPerBeat": 6,
+      "altSticking": false,
+      "halved": false,
+      "devices": [
+        "accent",
+        "drag",
+        "tuplet"
+      ],
       "review": false
     }
   ]
