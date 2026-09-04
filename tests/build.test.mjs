@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
+import { GENERATED_ASSETS, SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = new URL("../", import.meta.url);
@@ -32,7 +32,7 @@ async function filesBelow(directory, prefix = "") {
 test("the production build publishes only the explicit allowlist", async () => {
   await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
   const shipped = (await filesBelow(dist)).sort();
-  const named = new Set(SITE_ASSETS);
+  const named = new Set([...SITE_ASSETS, ...GENERATED_ASSETS]);
   const underDirectory = (file) => SITE_DIRECTORIES.some((dir) => file.startsWith(`${dir}/`));
 
   /* Two ways to be allowlisted, and nothing else ships: named in SITE_ASSETS,
@@ -80,4 +80,43 @@ test("the built page still carries the analytics beacon", async () => {
   const tag = html.match(/<script[^>]*cloudflareinsights[^>]*><\/script>/);
   assert.ok(tag, "dist/index.html must carry the beacon");
   assert.match(tag[0], /4c76fa6f3023401899bbeb30fa4eebd3/);
+});
+
+/* The capability manifest the build publishes.
+ *
+ * Rudiment Room published nothing about itself, so the shop site's guide-build
+ * audit could not check whether its guide still names the build this app
+ * serves — and an app in that audit's uncovered list can carry a stale stamp
+ * for as long as it takes somebody to notice by hand. That is how Drum Map's
+ * was found on 2026-09-04. The manifest is only worth having if its version
+ * cannot drift from the page, which is what these pin. */
+test("the published version is read from the page, not repeated", async () => {
+  const { buildStamp, capabilities } = await import("../capabilities.mjs");
+  const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const stamp = buildStamp(html);
+
+  assert.match(stamp, /^\d{4}-\d{2}-\d{2}(\.\d+)?$/, "the build identifier should be an ISO date, optionally suffixed");
+  assert.equal(capabilities(stamp).version, stamp);
+
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+  assert.ok(readme.includes("**Build:** `" + stamp + "`"),
+    "README.md and index.html name different builds");
+
+  /* The page holds other ISO dates, so the whole assignment is the anchor: a
+     looser pattern would publish a number nobody chose. */
+  assert.throws(() => buildStamp('<script>var build = "2026-09-04";</script>'), /no build-stamp block/);
+  assert.equal(buildStamp('var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-01-02.3";'), "2026-01-02.3");
+
+  const published = capabilities(stamp);
+  /* The app is Rudiment Room; the slug stays rudiment-builder, which is where
+     every existing link and the guide URL already point. */
+  assert.equal(published.app, "rudiment-builder");
+  assert.equal(published.title, "Rudiment Room");
+  assert.match(published.guideUrl, /^https:\/\/guides\./);
+  /* No privacy block: those fields are a claim, and an unchecked one published
+     at a public URL is worse than an absent field. */
+  assert.equal(published.privacy, undefined);
+
+  const built = JSON.parse(await readFile(new URL("../dist/capabilities.json", import.meta.url), "utf8"));
+  assert.equal(built.version, stamp);
 });

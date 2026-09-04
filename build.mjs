@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildStamp, capabilities } from "./capabilities.mjs";
 
 /* An explicit allowlist, copied into dist/, and the reason is not tidiness.
    This site used to publish through GitHub Pages with `path: '.'` — the whole
@@ -32,6 +33,13 @@ export const SITE_ASSETS = [
    inlined where it is used, and the PAS rudiment cards are a source asset. */
 export const SITE_DIRECTORIES = ["assets/brand", "assets/fonts"];
 
+/* Written by the build rather than copied from the tree, so it is in neither
+   list above — but it IS published, and the allowlist test would rightly refuse
+   an unnamed file in dist. Declared here so the boundary stays exhaustive: the
+   history in this file is a deploy that served the whole repository root, and
+   the fix for that only holds while everything published is named somewhere. */
+export const GENERATED_ASSETS = ["capabilities.json"];
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const output = path.join(here, "dist");
 
@@ -49,6 +57,22 @@ for (const dir of SITE_DIRECTORIES) {
   fs.cpSync(from, path.join(output, dir), { recursive: true });
 }
 
+/* The version is read out of index.html rather than typed, so it cannot
+   become a third copy of the build identifier that the README and the page
+   already carry between them.
+
+   Note that dist/ is TRACKED in this repository, so unlike the siblings the
+   generated file does get committed — what stops it drifting is that the build
+   overwrites it from the page every run, and the test below compares the two.
+   Editing dist/capabilities.json by hand would survive exactly until the next
+   build. */
+const stamp = buildStamp(fs.readFileSync(path.join(here, "index.html"), "utf8"));
+fs.writeFileSync(
+  path.join(output, "capabilities.json"),
+  JSON.stringify(capabilities(stamp), null, 2) + "\n",
+);
+
 console.log(
-  `Built ${SITE_ASSETS.length} site assets and ${SITE_DIRECTORIES.length} asset directories in dist.`,
+  `Built ${SITE_ASSETS.length} site assets, ${SITE_DIRECTORIES.length} asset directories ` +
+    `and capabilities.json for build ${stamp} in dist.`,
 );
