@@ -123,13 +123,19 @@ Runner-agnostic cases live in `tests/cases.js`:
   counting, buzz and grouped strokes, leading-hand transformation, stroke
   ordering, accents, grace notes, diddles, tempo paths, plans, the playback
   position machine, snapshot/restore, reset, and drift.
-- **Node (when available):** `node --test tests/core.test.cjs` — the same 53
+- **Node (when available):** `node --test tests/core.test.cjs` — the same 62
   cases, run headless.
 
   Name the file, not the directory. `node --test tests/` resolves `tests/` as a
   module path and fails with `Cannot find module .../tests` before running a
   single case — and it exits `0` while doing it, so a script that only checks
   the exit code reads that as a pass.
+
+- **The build and privacy tests:** `node --test tests/*.test.mjs` — six cases
+  over what `dist/` publishes and what the shipped page carries. **This is what
+  CI's `validate` job runs, and it does not run the core cases**, so running
+  only `core.test.cjs` before a push proves nothing about the checks that gate
+  the merge. Run both.
 
 ## Architecture
 

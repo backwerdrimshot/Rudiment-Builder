@@ -4,7 +4,7 @@ import { readdir } from "node:fs/promises";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { SITE_ASSETS } from "../build.mjs";
+import { SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = new URL("../", import.meta.url);
@@ -32,7 +32,29 @@ async function filesBelow(directory, prefix = "") {
 test("the production build publishes only the explicit allowlist", async () => {
   await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
   const shipped = (await filesBelow(dist)).sort();
-  assert.deepEqual(shipped, [...SITE_ASSETS].sort());
+  const named = new Set(SITE_ASSETS);
+  const underDirectory = (file) => SITE_DIRECTORIES.some((dir) => file.startsWith(`${dir}/`));
+
+  /* Two ways to be allowlisted, and nothing else ships: named in SITE_ASSETS,
+     or sitting under a directory SITE_DIRECTORIES names. The directories exist
+     because the brand token file and the fonts have to be served, and a licence
+     has to travel with its fonts — an allowlist of individual woff2 files would
+     drop the OFL text the first time a face was added. */
+  assert.deepEqual(
+    shipped.filter((file) => !named.has(file) && !underDirectory(file)),
+    [],
+    "dist may only hold what SITE_ASSETS or SITE_DIRECTORIES names",
+  );
+  for (const asset of SITE_ASSETS) assert.ok(shipped.includes(asset), `${asset} must ship`);
+
+  /* The named directories ship whole, and no others do. assets/notation is the
+     one this is guarding: its library is inlined where it is used and the PAS
+     rudiment cards are a source asset, so none of it belongs on the web. */
+  assert.deepEqual(
+    [...new Set(shipped.filter(underDirectory).map((file) => file.split("/").slice(0, 2).join("/")))].sort(),
+    [...SITE_DIRECTORIES].sort(),
+  );
+  assert.ok(!shipped.some((file) => file.startsWith("assets/notation/")), "assets/notation must not be published");
 });
 
 /* Named individually rather than left to the deepEqual above, because these are
