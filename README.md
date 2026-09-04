@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-03`
+- **Build:** `2026-09-04`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -74,10 +74,12 @@ hard-coded into the page, and there are no per-rudiment audio files. Each
 record carries its PAS number and its N.A.R.D. heritage, shown as chips in
 the app (see *Sources & educational lineage* below).
 
-> **Proofing note:** the 19 hybrids that once carried source-varying notation
-> were proofed on 2026-09-03 against the notation PAS published in May 2026 —
-> 5 were confirmed as encoded and 14 were re-encoded. Three genuinely open
-> musical questions remain, listed in [`REVIEW.md`](REVIEW.md).
+> **Proofing note:** every rudiment has been read against a reference. The
+> sticking was proofed against the official 1984 PAS International Drum
+> Rudiments chart, then re-checked rudiment by rudiment against the notation
+> PAS published in May 2026 — one file per rudiment, so lengths and beam
+> grouping are unambiguous. `REVIEW.md` records what each pass found. No
+> rudiment carries an open notation flag.
 
 ## Features
 
@@ -231,7 +233,7 @@ N.A.R.D. Standard 26 lineage where it applies, or a "PAS addition (1984)"
 marker for the rudiments the Percussive Arts Society added. Sticking, accents,
 and grace-note structures follow the published PAS chart, proofed against the
 notation PAS published in May 2026 (see [`REVIEW.md`](REVIEW.md) for the method
-and the three questions still open); the data model, prose, teaching notes, and
+and what each pass found); the data model, prose, teaching notes, and
 all rendering are original to this app — no publisher's notation images are
 copied or traced.
 

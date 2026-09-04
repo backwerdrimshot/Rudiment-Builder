@@ -60,7 +60,12 @@ machine advanced by the scheduler **only at block boundaries**.
 
 ### Rudiment data rules (validated at boot and in tests)
 
-One cycle covers both leads' halves. `slot` indexes a `cycleBeats ×
+A cycle usually covers both leads' halves, but not always: where the PAS chart
+draws a single-lead figure the record follows it, so the **Swiss Army Triplet
+and Lesson 25 loop one lead** and a student swaps hands with the Leading hand
+control rather than by waiting for the second half. Nothing in the core assumes
+otherwise — `withLead` mirrors whatever it is given — but do not write a test
+that asserts the old rule. `slot` indexes a `cycleBeats ×
 slotsPerBeat` grid; `duration` (default 1) may not cross a beat boundary (MVP
 display constraint — the cell spans its beat group). Diddle = **exactly two**
 same-hand strokes on consecutive slots sharing a `diddle` id; `group` = a
@@ -75,14 +80,13 @@ problem, and the app disables itself at boot.
 
 Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
-marker like "PAS addition (1984)". All 40 are encoded; sticking is verified
-against the PAS chart, including the 19 formerly source-varying hybrids, which
-were proofed on 2026-09-03 against the notation PAS published in May 2026 (5
-confirmed, 14 re-encoded). `REVIEW.md` now carries only the three musical
-questions still open — chiefly the Single Dragadiddle's same-hand drag, which
-the opposing-grace-hand rule above currently forbids. Tests pin the shipped
-values (catalog count, family split, PAS coverage) and the rendered sticking of
-every re-encoded rudiment, so changing data means updating `tests/cases.js`.
+marker like "PAS addition (1984)". All 40 are encoded, and the sticking is
+proofed: against the official 1984 PAS chart on 2026-08-25 (13 hybrids
+corrected), then re-checked on 2026-09-03 against the per-rudiment SVGs PAS
+published in May 2026, which settled the last two calls. Taylor settled the #2
+and #3 rhythms on 2026-08-29. **No `// REVIEW` tags remain.** Tests pin the
+shipped values (catalog count, family split, PAS coverage) and the corrected
+hybrid patterns, so changing data means updating `tests/cases.js`.
 
 ## Validation expectations for changes
 
@@ -125,12 +129,10 @@ credits: `App · Backwerd Rhythm Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 
-- **The three open questions in [`REVIEW.md`](REVIEW.md)** — the Single
-  Dragadiddle's drag hand (PAS puts it on the primary hand; the schema forbids
-  it), the drag family's meter (PAS prints no triplet brackets), and the house
-  accents PAS does not print. The nineteen hybrids themselves are proofed.
-  Also flagged there: sticking errors in the Notion "Rudiment Mastery Program"
-  doc (not re-verified this pass; the app data does not inherit them).
+- **[`REVIEW.md`](REVIEW.md) — every rudiment flag is closed.** Still noted
+  there: #4's classroom expansion of the multiple bounce roll, #7's release
+  placement, and the sticking errors in the Notion "Rudiment Mastery Program"
+  doc (not re-verified; the app data does not inherit them).
 - Five Stroke Roll encoded PAS-card style: diddles on the beat, accented
   release ON beats 2/4 ringing through the beat (alternative: pickup placement
   releasing on the downbeat).

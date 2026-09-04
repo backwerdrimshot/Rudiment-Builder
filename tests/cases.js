@@ -158,31 +158,68 @@ function getCases(core) {
     });
   }},
 
-  /* ---- PAS chart conformance (2026 notation) ----------------------------
-     The rudiments below were re-encoded against the notation the Percussive
-     Arts Society published in May 2026, read chart by chart and cross-checked
-     against PAS's own demonstration recordings where the engraving left room
-     for doubt. They replace encodings that had been flagged in REVIEW.md as
-     varying by source. These cases are the regression contract: the sticking
-     strings are the published readings, so changing one means a musical
-     decision was made, not a refactor.                                     */
+  /* ---- PAS chart conformance: the rhythm ---------------------------------
+     The hands, accents and grace placements are pinned further down against
+     the official chart and the per-rudiment SVGs PAS published in May 2026.
+     This case pins what those cannot: the grid each rudiment is written on
+     and how long each note is held. Nearly every correction in the proofread
+     moved one of those \u2014 the drag family onto a compound grid, the ratamacues
+     onto a shared sextuplet, the dragadiddle onto thirty-seconds \u2014 so a
+     changed string here means a musical decision was made, not a refactor.
 
-  { name: "PAS chart: the re-encoded hybrids match the published notation", fn: function (assert) {
+     Reading: "|" is a beat line, "\u00b7" a slot the previous note holds through,
+     "(n)" a duration in slots, ">" an accent, "=" a diddle, "^" a group
+     bracket, "~" a buzz, and lower-case letters are grace hands.            */
+
+  { name: "counting: every grid the catalog uses generates a countable row", fn: function (assert) {
+    // The generated row is what a student reads under the sticking, so the
+    // syllables have to be the ones they were taught, and the "&" has to land
+    // on the half beat in every grid. Thirty-seconds are the grid that catches
+    // a lazy table: they interleave "ta" between the sixteenth syllables
+    // rather than continuing past them.
     const expected = {
-      "single-stroke-four":  "R> L R L(3) · ·",
-      "single-stroke-seven": "R L R L R L | R>(6) · · · · ·",
-      "flamacue":            "lR L> R L | lR(4) · · ·",
-      "inverted-flam-tap":   "lR> L | rL> R",
-      "flam-drag":           "lR>(2) · L L | R(2) · rL>(2) · | R R L(2) ·",
-      "single-drag-tap":     "llR L> | rrL R>",
-      "double-drag-tap":     "llR llR | L> rrL | rrL R>",
-      "lesson-25":           "llR L R>(2) · | rrL R L>(2) ·",
-      "single-dragadiddle":  "llR> L R= R= | rrL> R L= L=",
-      "drag-paradiddle-1":   "R>(2) · llR L | R= R= L>(2) · | rrL R L= L=",
-      "drag-paradiddle-2":   "R>(2) · llR(2) · | llR L R= R= | L>(2) · rrL(2) · | rrL R L= L=",
-      "single-ratamacue":    "llR L R L>(3) · · | rrL R L R>(3) · ·",
-      "double-ratamacue":    "llR(3) · · llR L R | L>(3) · · rrL(3) · · | rrL R L R>(3) · ·",
-      "triple-ratamacue":    "llR(3) · · llR(3) · · | llR L R L>(3) · · | rrL(3) · · rrL(3) · · | rrL R L R>(3) · ·",
+      1: "1",
+      2: "1 &",
+      3: "1 trip let",
+      4: "1 e & a",
+      6: "1 la li & la li",
+      8: "1 ta e ta & ta a ta",
+    };
+    const used = {};
+    core.RUDIMENTS.forEach(function (r) { used[r.slotsPerBeat] = true; });
+    Object.keys(used).forEach(function (spb) {
+      assert.ok(expected[spb], "grid of " + spb + " has a counting row defined");
+      assert.equal(core.countingFor(Number(spb), 1).join(" "), expected[spb],
+        "counting row for " + spb + " slots per beat");
+      const row = core.countingFor(Number(spb), 1);
+      assert.equal(row.length, Number(spb), spb + ": one label per slot");
+      if (Number(spb) % 2 === 0 && Number(spb) > 1)
+        assert.equal(row[spb / 2], "&", spb + ": the & lands on the half beat");
+    });
+  }},
+
+  { name: "PAS chart: the corrected hybrids sit on the grid the chart draws", fn: function (assert) {
+    const expected = {
+      "single-stroke-roll":      "R L R L R L R L",
+      "single-stroke-four":      "R L R L(3) \u00b7 \u00b7",
+      "single-stroke-seven":     "R L R L R L | R(6) \u00b7 \u00b7 \u00b7 \u00b7 \u00b7",
+      "triple-stroke-roll":      "R^ R^ R^ | L^ L^ L^",
+      "double-stroke-open-roll": "R= R= L= L= | R= R= L= L=",
+      "flam":                    "lR | rL",
+      "flamacue":                "lR L> R L | lR(4) \u00b7 \u00b7 \u00b7",
+      "swiss-army-triplet":      "lR>= R= L",
+      "inverted-flam-tap":       "lR> L | rL> R",
+      "flam-drag":               "lR>(2) \u00b7 L= L= R(2) \u00b7 | rL>(2) \u00b7 R= R= L(2) \u00b7",
+      "drag":                    "llR | rrL",
+      "single-drag-tap":         "llR L> | rrL R>",
+      "double-drag-tap":         "llR llR L> | rrL rrL R>",
+      "lesson-25":               "llR L R>(2) \u00b7",
+      "single-dragadiddle":      "R>= R= L(2) \u00b7 R=(2) \u00b7 R=(2) \u00b7 | L>= L= R(2) \u00b7 L=(2) \u00b7 L=(2) \u00b7",
+      "drag-paradiddle-1":       "R>(2) \u00b7 llR L R= R= | L>(2) \u00b7 rrL R L= L=",
+      "drag-paradiddle-2":       "R>(2) \u00b7 llR(2) \u00b7 | llR L R= R= | L>(2) \u00b7 rrL(2) \u00b7 | rrL R L= L=",
+      "single-ratamacue":        "llR L R L>(3) \u00b7 \u00b7 | rrL R L R>(3) \u00b7 \u00b7",
+      "double-ratamacue":        "llR(3) \u00b7 \u00b7 llR L R | L>(3) \u00b7 \u00b7 rrL(3) \u00b7 \u00b7 | rrL R L R>(3) \u00b7 \u00b7",
+      "triple-ratamacue":        "llR(3) \u00b7 \u00b7 llR(3) \u00b7 \u00b7 | llR L R L>(3) \u00b7 \u00b7 | rrL(3) \u00b7 \u00b7 rrL(3) \u00b7 \u00b7 | rrL R L R>(3) \u00b7 \u00b7",
     };
     Object.keys(expected).forEach(function (id) {
       assert.ok(MAP[id], id + " present");
@@ -240,19 +277,25 @@ function getCases(core) {
       r.strokes.forEach(function (s) {
         assert.ok(!(s.accent && s.grace), id + ": no stroke is both dragged and accented");
       });
-      const half = r.strokes.filter(function (s) { return s.slot < r.cycleBeats * r.slotsPerBeat / 2; });
-      assert.ok(half[half.length - 1].accent, id + ": the accent closes the figure");
+      assert.ok(r.strokes[r.strokes.length - 1].accent, id + ": the accent closes the figure");
     });
     assert.deepEqual(MAP["double-drag-tap"].strokes.slice(0, 3).map(function (s) { return s.hand; }),
       ["R", "R", "L"], "both drags stay on the lead hand before the tap turns it around");
   }},
 
-  { name: "PAS 35 single dragadiddle: a drag paradiddle, not a paradiddle-diddle", fn: function (assert) {
+  { name: "PAS 35 single dragadiddle: the drag is measured, not a grace note", fn: function (assert) {
     const r = MAP["single-dragadiddle"];
-    assert.equal(r.strokes.length, 8, "four primaries per half");
+    // The chart letters this one without grace notes: the "drag" is written
+    // out as a diddle in the beat, which is what lets it sit on the same
+    // thirty-second grid as the diddles that follow it. That is also why the
+    // opposing-grace-hand rule never applies here \u2014 there is no grace hand.
+    assert.equal(r.strokes.filter(function (s) { return s.grace; }).length, 0,
+      "no grace notes: the drag is a measured double");
+    assert.equal(r.strokes.length, 10, "five primaries per half");
     const ids = {};
     r.strokes.forEach(function (s) { if (s.diddle !== undefined) ids[s.diddle] = true; });
-    assert.equal(Object.keys(ids).length, 2, "one diddle per half, not two");
+    assert.equal(Object.keys(ids).length, 4, "two diddles per half \u2014 the opening double and the diddle");
+    assert.ok(r.strokes[0].accent && r.strokes[5].accent, "each half opens accented");
   }},
 
   { name: "PAS 36-37 drag paradiddles: an accented pickup leads the drag", fn: function (assert) {
@@ -355,6 +398,58 @@ function getCases(core) {
   { name: "five stroke roll: left lead swaps the doubles and the release", fn: function (assert) {
     assert.equal(hands(pattern("five-stroke-roll", "R")), "RRLLRLLRRL", "right lead");
     assert.equal(hands(pattern("five-stroke-roll", "L")), "LLRRLRRLLR", "left lead");
+  }},
+
+  { name: "PAS chart proofing 2026-08-25: corrected hybrids match the official chart", fn: function (assert) {
+    // Pinned against the official 1984 PAS International Drum Rudiments chart
+    // (Taylor's reference). hands = primary strokes in order, right lead;
+    // accents/graced = stroke indices carrying an accent / grace notes.
+    [
+      { id: "flamacue",            hands: "RLRLR",        accents: [1],     graced: [0, 4] },
+      { id: "swiss-army-triplet",  hands: "RRL",          accents: [0],     graced: [0] },
+      { id: "inverted-flam-tap",   hands: "RLLR",         accents: [0, 2],  graced: [0, 2] },
+      { id: "flam-drag",           hands: "RLLRLRRL",     accents: [0, 4],  graced: [0, 4] },
+      { id: "single-drag-tap",     hands: "RLLR",         accents: [1, 3],  graced: [0, 2] },
+      { id: "double-drag-tap",     hands: "RRLLLR",       accents: [2, 5],  graced: [0, 1, 3, 4] },
+      { id: "lesson-25",           hands: "RLR",          accents: [2],     graced: [0] },
+      { id: "single-dragadiddle",  hands: "RRLRRLLRLL",   accents: [0, 5],  graced: [] },
+      { id: "drag-paradiddle-1",   hands: "RRLRRLLRLL",   accents: [0, 5],  graced: [1, 6] },
+      { id: "drag-paradiddle-2",   hands: "RRRLRRLLLRLL", accents: [0, 6],  graced: [1, 2, 7, 8] },
+      { id: "single-ratamacue",    hands: "RLRLLRLR",     accents: [3, 7],  graced: [0, 4] },
+      { id: "double-ratamacue",    hands: "RRLRLLLRLR",   accents: [4, 9],  graced: [0, 1, 5, 6] },
+      { id: "triple-ratamacue",    hands: "RRRLRLLLLRLR", accents: [5, 11], graced: [0, 1, 2, 6, 7, 8] },
+    ].forEach(function (t) {
+      const r = MAP[t.id];
+      assert.ok(r, t.id + " exists");
+      assert.equal(hands(r), t.hands, t.id + ": sticking matches the chart");
+      const accents = [], graced = [];
+      r.strokes.forEach(function (s, i) {
+        if (s.accent) accents.push(i);
+        if (s.grace) graced.push(i);
+      });
+      assert.deepEqual(accents, t.accents, t.id + ": accents on the chart's strokes");
+      assert.deepEqual(graced, t.graced, t.id + ": grace notes on the chart's strokes");
+    });
+  }},
+
+  { name: "PAS per-rudiment SVGs 2026-09-03: single-stroke lengths and the six stroke roll", fn: function (assert) {
+    // Pinned against the SVGs PAS published per rudiment in May 2026
+    // (pas.org/rudiment/<n>-<slug>/ → PAS-rud-NN.svg), which are drawn from the
+    // same 1984 chart but one rudiment to a file, so lengths are unambiguous.
+    const one = MAP["single-stroke-roll"];
+    assert.equal(one.cycleBeats * one.slotsPerBeat, 8,
+      "single stroke roll: eight thirty-seconds, as PAS-rud-01 draws it — not sixteen");
+    assert.equal(hands(one), "RLRLRLRL", "single stroke roll: strict alternation");
+
+    // PAS-rud-08 draws the six stroke roll as accent / rolled body / accent.
+    // That is the CLOSED form of these same six strokes, not a rhythm we differ
+    // on: the strokes and both accents match, so the data stands and the
+    // shorthand lives in the poster's closed-roll layer.
+    const six = MAP["six-stroke-roll"];
+    assert.equal(hands(six), "RLLRRL", "six stroke roll: sticking matches the chart");
+    const sixAccents = [];
+    six.strokes.forEach(function (s, i) { if (s.accent) sixAccents.push(i); });
+    assert.deepEqual(sixAccents, [0, 5], "six stroke roll: accents bracket the diddles");
   }},
 
   { name: "withLead never mutates the source definition", fn: function (assert) {

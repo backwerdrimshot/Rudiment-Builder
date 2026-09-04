@@ -8,12 +8,12 @@
    Percussive Arts Society's 40 International Drum Rudiments and standard
    rudimental pedagogy. The data model, prose, and rendering are original.
 
-   ACCURACY NOTE: sticking, accents and grace structures follow the PAS
-   chart. The 19 hybrids that once carried source-varying notation were
-   proofed on 2026-09-03 against the notation PAS published in May 2026 — 5
-   confirmed as encoded, 14 re-encoded. tests/cases.js pins every re-encoded
-   sticking. REVIEW.md carries the three questions still open; only the
-   Single Dragadiddle is still tagged "REVIEW" here.
+   ACCURACY NOTE: proofed against the official 1984 PAS International Drum
+   Rudiments chart on 2026-08-25 (see REVIEW.md) — 13 hybrids corrected,
+   flags cleared where verified. Taylor settled the #2 and #3 rhythms on
+   2026-08-29. Re-checked on 2026-09-03 against the per-rudiment SVGs PAS
+   published in May 2026 (pas.org/rudiment/<n>-<slug>/), which settled #8
+   and shortened #1. **No "// REVIEW" tags remain.**
 
    Record + stroke shape are documented in js/rudiment-core.js (validateRudiment).
    `counting` is omitted here and generated from the subdivision by the core.
@@ -78,41 +78,41 @@ var RUDIMENTS = [
      I. ROLL RUDIMENTS (PAS 1–15)
      ============================================================ */
 
-  /* 1 — Single Stroke Roll */
+  /* 1 — Single Stroke Roll */ // verified vs the PAS per-rudiment SVG (PAS-rud-01, published 2026-05): eight thirty-seconds, one beamed group per lead
   { id: "single-stroke-roll", name: "Single Stroke Roll", pas: 1, family: "Roll",
-    level: "Beginner", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Beginner", cycleBeats: 1, slotsPerBeat: 8, subdivision: "Thirty-second notes",
     tempo: { defaultBpm: 90, suggestedLo: 60, suggestedHi: 160 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "The foundation: even, alternating single strokes. Keep both hands matched in height and sound from slow to fast.",
     aliases: ["single stroke", "singles"],
     strokes: [
-      { slot: 0, hand: R, accent: true }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
+      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
       { slot: 4, hand: R }, { slot: 5, hand: L }, { slot: 6, hand: R }, { slot: 7, hand: L },
     ] },
 
-  /* 2 — Single Stroke Four */
+  /* 2 — Single Stroke Four */ // rhythm chosen by Taylor 2026-08-29: the ratamacue figure — a sixteenth-note triplet into an eighth release, matching the official PAS chart
   { id: "single-stroke-four", name: "Single Stroke Four", pas: 2, family: "Roll",
-    level: "Beginner", cycleBeats: 1, slotsPerBeat: 6, subdivision: "Sixteenth-note triplet into an eighth",
+    level: "Beginner", cycleBeats: 1, slotsPerBeat: 6, subdivision: "Sixteenth-note triplet into an eighth release",
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 150 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "A flourish, not four flat notes: three fast singles across the first half of the beat landing on a longer fourth. Keep the triplet even and let the arrival ring.",
+    teachingNote: "Four single strokes in the ratamacue's rhythm: three quick strokes into a longer fourth. Keep the first three even and let the fourth land.",
     aliases: ["single stroke 4"],
     strokes: [
-      { slot: 0, hand: R, accent: true }, { slot: 1, hand: L }, { slot: 2, hand: R },
-      { slot: 3, hand: L, duration: 3 },
+      { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R },
+      { slot: 3, duration: 3, hand: L },
     ] },
 
-  /* 3 — Single Stroke Seven */
+  /* 3 — Single Stroke Seven */ // rhythm chosen by Taylor 2026-08-29: a sextuplet with a quarter at the end, matching the official PAS chart
   { id: "single-stroke-seven", name: "Single Stroke Seven", pas: 3, family: "Roll",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Sextuplet into an arrival",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Sextuplet into a quarter",
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 144 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "Six single strokes filling one beat, arriving on the seventh at the top of the next. Keep the sextuplet even and let the arrival ring.",
+    teachingNote: "A sextuplet of six single strokes arriving on a seventh: the run is even, the arrival rings.",
     aliases: ["single stroke 7"],
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R },
       { slot: 3, hand: L }, { slot: 4, hand: R }, { slot: 5, hand: L },
-      { slot: 6, hand: R, accent: true, duration: 6 },
+      { slot: 6, duration: 6, hand: R },
     ] },
 
   /* 4 — Multiple Bounce Roll (buzz) */
@@ -135,7 +135,7 @@ var RUDIMENTS = [
     teachingNote: "Three even strokes per hand: RRR LLL. Let the second and third strokes rebound naturally without losing evenness.",
     aliases: ["triple stroke", "french roll"],
     strokes: [
-      { slot: 0, hand: R, accent: true, group: 1 }, { slot: 1, hand: R, group: 1 }, { slot: 2, hand: R, group: 1 },
+      { slot: 0, hand: R, group: 1 }, { slot: 1, hand: R, group: 1 }, { slot: 2, hand: R, group: 1 },
       { slot: 3, hand: L, group: 2 }, { slot: 4, hand: L, group: 2 }, { slot: 5, hand: L, group: 2 },
     ] },
 
@@ -147,7 +147,7 @@ var RUDIMENTS = [
     teachingNote: "The long roll: clean, even double strokes. Match the two strokes of each hand in height and volume before adding speed.",
     aliases: ["long roll", "open roll", "double stroke roll"],
     strokes: [
-      { slot: 0, hand: R, accent: true, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
+      { slot: 0, hand: R, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
       { slot: 2, hand: L, diddle: 2 }, { slot: 3, hand: L, diddle: 2 },
       { slot: 4, hand: R, diddle: 3 }, { slot: 5, hand: R, diddle: 3 },
       { slot: 6, hand: L, diddle: 4 }, { slot: 7, hand: L, diddle: 4 },
@@ -169,7 +169,7 @@ var RUDIMENTS = [
       { slot: 12, hand: L, accent: true, duration: 4 },
     ] },
 
-  /* 8 — Six Stroke Roll */ // REVIEW: accent–diddle–diddle–accent variant (RLLRRL); other versions exist
+  /* 8 — Six Stroke Roll */ // verified vs the PAS per-rudiment SVG (PAS-rud-08, published 2026-05): strokes and accents match; the chart's 8th–rolled body–8th is the CLOSED form, carried by rudiments/closed/closed-08-six-stroke-roll.svg, not a different rhythm
   { id: "six-stroke-roll", name: "Six Stroke Roll", pas: 8, family: "Roll",
     level: "Intermediate", cycleBeats: 1, slotsPerBeat: 6, subdivision: "Sextuplet",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",
@@ -201,7 +201,7 @@ var RUDIMENTS = [
     aliases: ["9 stroke roll"],
     strokes: measuredRoll(4) },
 
-  /* 11 — Ten Stroke Roll */ // REVIEW: four doubles + two accented taps
+  /* 11 — Ten Stroke Roll */ // verified vs the official PAS chart 2026-08-25: four doubles + two accented taps + rest
   { id: "ten-stroke-roll", name: "Ten Stroke Roll", pas: 11, family: "Roll",
     level: "Intermediate", cycleBeats: 3, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
@@ -247,7 +247,7 @@ var RUDIMENTS = [
   { id: "seventeen-stroke-roll", name: "Seventeen Stroke Roll", pas: 15, family: "Roll",
     level: "Advanced", cycleBeats: 10, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 60, suggestedLo: 48, suggestedHi: 108 }, leadingHand: "mirror",
-    heritage: "NARD Standard 26",
+    heritage: "PAS addition (1984)",
     teachingNote: "Eight doubles into an accented release on the downbeat. The longest measured roll in the set.",
     aliases: ["17 stroke roll"],
     strokes: measuredRoll(8) },
@@ -278,7 +278,7 @@ var RUDIMENTS = [
   { id: "triple-paradiddle", name: "Triple Paradiddle", pas: 18, family: "Diddle",
     level: "Intermediate", cycleBeats: 4, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 126 }, leadingHand: "mirror",
-    heritage: "NARD Standard 26",
+    heritage: "PAS addition (1984)",
     teachingNote: "Three pairs of alternating singles before the diddle: RLRLRLRR. Keep the long run of singles even into the closing double.",
     aliases: ["triple paradiddle", "RLRLRLRR"],
     strokes: paradiddle(6, 4) },
@@ -308,8 +308,8 @@ var RUDIMENTS = [
     teachingNote: "One soft grace note tucked just ahead of the main stroke, so they sound almost as one thick note. Keep the grace low and the primary full.",
     aliases: ["flams"],
     strokes: [
-      { slot: 0, hand: R, accent: true, grace: [{ hand: L }] },
-      { slot: 1, hand: L, accent: true, grace: [{ hand: R }] },
+      { slot: 0, hand: R, grace: [{ hand: L }] },
+      { slot: 1, hand: L, grace: [{ hand: R }] },
     ] },
 
   /* 21 — Flam Accent */
@@ -336,19 +336,19 @@ var RUDIMENTS = [
       { slot: 2, hand: L, accent: true, grace: [{ hand: R }] }, { slot: 3, hand: L },
     ] },
 
-  /* 23 — Flamacue */
+  /* 23 — Flamacue */ // corrected 2026-09-03 vs PAS-rud-23: the chart draws FIVE notes — the closing flam is printed, not left to the next cycle
   { id: "flamacue", name: "Flamacue", pas: 23, family: "Flam",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes into a flammed release",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "A flam, an accent on the second sixteenth, two taps, and a closing flam on the following downbeat: fR L> R L fR. The inner accent is the character of the rudiment, and the closing flam lands on the beat rather than inside it.",
+    teachingNote: "A flam, an accent on the second note, then a flam to close: fR L> R L fR. The inner accent is the character of the rudiment; the closing flam is what makes it a cue.",
     aliases: ["flam cue"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }] },
       { slot: 1, hand: L, accent: true },
       { slot: 2, hand: R },
       { slot: 3, hand: L },
-      { slot: 4, hand: R, grace: [{ hand: L }], duration: 4 },
+      { slot: 4, duration: 4, hand: R, grace: [{ hand: L }] },
     ] },
 
   /* 24 — Flam Paradiddle */
@@ -365,11 +365,11 @@ var RUDIMENTS = [
       { slot: 6, hand: L, diddle: 2 }, { slot: 7, hand: L, diddle: 2 },
     ] },
 
-  /* 25 — Single Flammed Mill */ // REVIEW: flam + diddle + two singles; sticking varies
+  /* 25 — Single Flammed Mill */ // verified vs the official PAS chart 2026-08-25: fRR L R as encoded
   { id: "single-flammed-mill", name: "Single Flammed Mill", pas: 25, family: "Flam",
     level: "Advanced", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
-    heritage: "NARD Standard 26",
+    heritage: "PAS addition (1984)",
     teachingNote: "A flammed lead into a diddle, then two singles: fR–rr–L–R. Essentially an inverted flam paradiddle with the diddle up front.",
     aliases: ["flammed mill"],
     strokes: [
@@ -395,7 +395,7 @@ var RUDIMENTS = [
       { slot: 10, hand: R, diddle: 4 }, { slot: 11, hand: R, diddle: 4 },
     ] },
 
-  /* 27 — Pataflafla */ // REVIEW: flams on the outer notes with a central "flafla"
+  /* 27 — Pataflafla */ // verified vs the official PAS chart 2026-08-25: flams and accents on notes 1 and 4 as encoded
   { id: "pataflafla", name: "Pataflafla", pas: 27, family: "Flam",
     level: "Advanced", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
@@ -407,44 +407,43 @@ var RUDIMENTS = [
       { slot: 4, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 5, hand: L }, { slot: 6, hand: R }, { slot: 7, hand: L, accent: true, grace: [{ hand: R }] },
     ] },
 
-  /* 28 — Swiss Army Triplet */ // REVIEW: flam + diddle-hand + single, in a triplet
+  /* 28 — Swiss Army Triplet */ // verified vs the official PAS chart 2026-08-25: the same lead repeats every triplet; the mirror is the left-lead practice
   { id: "swiss-army-triplet", name: "Swiss Army Triplet", pas: 28, family: "Flam",
-    level: "Advanced", cycleBeats: 2, slotsPerBeat: 3, subdivision: "Triplet eighth notes",
+    level: "Advanced", cycleBeats: 1, slotsPerBeat: 3, subdivision: "Triplet eighth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "A flam, then the flam hand plays again, then the other hand: fR R L. Feels like a flam accent but with a diddle-style lead.",
+    teachingNote: "A flam, then the flam hand plays again, then the other hand: fR R L, repeating on the same lead. That repeated lead is what separates it from a flam accent — practice the left lead as the mirror.",
     aliases: ["swiss triplet", "swiss army"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }], diddle: 1 }, { slot: 1, hand: R, diddle: 1 }, { slot: 2, hand: L },
-      { slot: 3, hand: L, accent: true, grace: [{ hand: R }], diddle: 2 }, { slot: 4, hand: L, diddle: 2 }, { slot: 5, hand: R },
     ] },
 
-  /* 29 — Inverted Flam Tap */
+  /* 29 — Inverted Flam Tap */ // verified vs the official PAS chart 2026-08-25: flam, then the tap on the OPPOSITE hand; the tap then feeds the next flam on its own hand
   { id: "inverted-flam-tap", name: "Inverted Flam Tap", pas: 29, family: "Flam",
     level: "Advanced", cycleBeats: 2, slotsPerBeat: 2, subdivision: "Eighth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "A flammed accent into a tap on the opposite hand: fR> L, fL> R. The flams fall on the beat and the taps pair across them — that inversion is what separates it from the Flam Tap.",
+    teachingNote: "A flammed accent, then a tap on the other hand: fR> L fL> R. Each tap turns into the next flam on the same hand — the inverted move a plain flam tap doesn't have.",
     aliases: ["inverted flam tap"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: L },
       { slot: 2, hand: L, accent: true, grace: [{ hand: R }] }, { slot: 3, hand: R },
     ] },
 
-  /* 30 — Flam Drag */
+  /* 30 — Flam Drag */ // verified vs the official PAS chart 2026-08-25: the "drag" is two measured sixteenths on the opposite hand, written out
   { id: "flam-drag", name: "Flam Drag", pas: 30, family: "Flam",
-    level: "Advanced", cycleBeats: 3, slotsPerBeat: 4, subdivision: "Eighth, two sixteenths, eighth",
+    level: "Advanced", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Triplet feel; the drag written out as sixteenths",
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
-    teachingNote: "A flammed accent, then an open drag written out as two measured sixteenths, resolving back onto the lead hand: fR> L L R. The drag is counted, not crushed.",
+    teachingNote: "A flammed accent, a measured double on the other hand, and a tap back on the lead: fR> L-L R. The middle is a written-out drag — two real sixteenths, not grace notes.",
     aliases: ["flam drag"],
     strokes: [
-      { slot: 0, hand: R, accent: true, grace: [{ hand: L }], duration: 2 },
-      { slot: 2, hand: L }, { slot: 3, hand: L },
-      { slot: 4, hand: R, duration: 2 },
-      { slot: 6, hand: L, accent: true, grace: [{ hand: R }], duration: 2 },
-      { slot: 8, hand: R }, { slot: 9, hand: R },
-      { slot: 10, hand: L, duration: 2 },
+      { slot: 0, duration: 2, hand: R, accent: true, grace: [{ hand: L }] },
+      { slot: 2, hand: L, diddle: 1 }, { slot: 3, hand: L, diddle: 1 },
+      { slot: 4, duration: 2, hand: R },
+      { slot: 6, duration: 2, hand: L, accent: true, grace: [{ hand: R }] },
+      { slot: 8, hand: R, diddle: 2 }, { slot: 9, hand: R, diddle: 2 },
+      { slot: 10, duration: 2, hand: L },
     ] },
 
   /* ============================================================
@@ -459,142 +458,141 @@ var RUDIMENTS = [
     teachingNote: "Two quick grace notes tucked ahead of the main stroke: ll–R, rr–L. Keep the two graces low, even, and close to the primary.",
     aliases: ["ruff", "half drag", "drag ruff"],
     strokes: [
-      { slot: 0, hand: R, accent: true, grace: [{ hand: L }, { hand: L }] },
-      { slot: 1, hand: L, accent: true, grace: [{ hand: R }, { hand: R }] },
+      { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] },
+      { slot: 1, hand: L, grace: [{ hand: R }, { hand: R }] },
     ] },
 
-  /* 32 — Single Drag Tap */
+  /* 32 — Single Drag Tap */ // verified vs the official PAS chart 2026-08-25: the accent is on the TAP, not the dragged note
   { id: "single-drag-tap", name: "Single Drag Tap", pas: 32, family: "Drag",
     level: "Beginner", cycleBeats: 2, slotsPerBeat: 2, subdivision: "Eighth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "A drag into the lead hand, then an accented tap on the other: drag-R L>. The accent belongs to the tap, not to the drag underneath it.",
+    teachingNote: "A drag into an accented tap on the other hand: drag-R L>, drag-L R>. The graces stay soft; the weight lands on the tap.",
     aliases: ["single drag"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L, accent: true },
       { slot: 2, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 3, hand: R, accent: true },
     ] },
 
-  /* 33 — Double Drag Tap */
+  /* 33 — Double Drag Tap */ // verified vs the official PAS chart 2026-08-25: both drags on the SAME hand, then the accented tap opposite
   { id: "double-drag-tap", name: "Double Drag Tap", pas: 33, family: "Drag",
-    level: "Intermediate", cycleBeats: 3, slotsPerBeat: 2, subdivision: "Eighth notes",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 3, subdivision: "Triplet eighth notes",
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "Two drags on the same hand, then an accented tap on the other: drag-R drag-R L>. Both drags stay on the lead hand before the accent turns the figure around.",
+    teachingNote: "Two drags on the same hand, then an accented tap on the other: drag-R drag-R L>. Keep the two drags even before the accent lands.",
     aliases: ["double drag"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 2, hand: L, accent: true },
       { slot: 3, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 4, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 5, hand: R, accent: true },
     ] },
 
-  /* 34 — Lesson 25 */
+  /* 34 — Lesson 25 */ // verified vs the official PAS chart 2026-08-25: sixteenths with the accent on the FINAL stroke; the lead repeats
   { id: "lesson-25", name: "Lesson 25", pas: 34, family: "Drag",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Two sixteenths into an eighth",
+    level: "Intermediate", cycleBeats: 1, slotsPerBeat: 4, subdivision: "Sixteenth notes",
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "A drag, a tap, and an accented arrival back on the lead hand: drag-R L R>. The accent closes the figure rather than opening it.",
+    teachingNote: "A drag, a tap, then an accented stroke back on the lead: drag-R L R>. The same lead repeats each cycle — practice the left lead as the mirror.",
     aliases: ["lesson twenty-five", "single drag tap no. 2"],
     strokes: [
-      { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L },
-      { slot: 2, hand: R, accent: true, duration: 2 },
-      { slot: 4, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 5, hand: R },
-      { slot: 6, hand: L, accent: true, duration: 2 },
+      { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L }, { slot: 2, duration: 2, hand: R, accent: true },
     ] },
 
-  /* 35 — Single Dragadiddle */ // REVIEW: PAS letters this drag on the primary hand; the core requires opposing grace hands, so it ships as an opposite-hand drag pending Taylor's call
+  /* 35 — Single Dragadiddle */ // verified vs the official PAS chart 2026-08-25: a paradiddle whose first stroke is a measured same-hand diddle (no grace notes)
   { id: "single-dragadiddle", name: "Single Dragadiddle", pas: 35, family: "Drag",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 4, subdivision: "Sixteenth notes",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 8, subdivision: "Sixteenth notes; the diddled lead written as thirty-seconds",
     tempo: { defaultBpm: 68, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
-    heritage: "NARD Standard 26",
-    teachingNote: "A single paradiddle whose accented first note carries a drag: drag-R> L R R. Four notes, not six — the diddle closes the figure.",
+    heritage: "PAS addition (1984)",
+    teachingNote: "A paradiddle where the first stroke is played as a same-hand double: RR> L R R, LL> R L L. The \"drag\" is a measured diddle on the lead, not grace notes.",
     aliases: ["dragadiddle"],
     strokes: [
-      { slot: 0, hand: R, accent: true, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L },
-      { slot: 2, hand: R, diddle: 1 }, { slot: 3, hand: R, diddle: 1 },
-      { slot: 4, hand: L, accent: true, grace: [{ hand: R }, { hand: R }] }, { slot: 5, hand: R },
-      { slot: 6, hand: L, diddle: 2 }, { slot: 7, hand: L, diddle: 2 },
+      { slot: 0, hand: R, accent: true, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
+      { slot: 2, duration: 2, hand: L },
+      { slot: 4, duration: 2, hand: R, diddle: 2 }, { slot: 6, duration: 2, hand: R, diddle: 2 },
+      { slot: 8, hand: L, accent: true, diddle: 3 }, { slot: 9, hand: L, diddle: 3 },
+      { slot: 10, duration: 2, hand: R },
+      { slot: 12, duration: 2, hand: L, diddle: 4 }, { slot: 14, duration: 2, hand: L, diddle: 4 },
     ] },
 
-  /* 36 — Drag Paradiddle #1 */
+  /* 36 — Drag Paradiddle #1 */ // verified vs the official PAS chart 2026-08-25: an accented single FIRST, then a dragged paradiddle on the same hand
   { id: "drag-paradiddle-1", name: "Drag Paradiddle #1", pas: 36, family: "Drag",
-    level: "Advanced", cycleBeats: 3, slotsPerBeat: 4, subdivision: "Eighth pickup into sixteenths",
+    level: "Advanced", cycleBeats: 2, slotsPerBeat: 6, subdivision: "An eighth, then sixteenths (compound feel)",
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "An accented pickup on the lead hand, then a single paradiddle whose first note carries a drag: R> drag-R L R R. The accent is the pickup — the drag underneath the next note stays soft.",
+    teachingNote: "An accented single, then a paradiddle whose first note carries the drag: R> drag-R L R R. The accent belongs to the single, not the dragged note.",
     aliases: ["drag paradiddle 1", "drag paradiddle one"],
     strokes: [
-      { slot: 0, hand: R, accent: true, duration: 2 },
+      { slot: 0, duration: 2, hand: R, accent: true },
       { slot: 2, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 3, hand: L },
       { slot: 4, hand: R, diddle: 1 }, { slot: 5, hand: R, diddle: 1 },
-      { slot: 6, hand: L, accent: true, duration: 2 },
+      { slot: 6, duration: 2, hand: L, accent: true },
       { slot: 8, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 9, hand: R },
       { slot: 10, hand: L, diddle: 2 }, { slot: 11, hand: L, diddle: 2 },
     ] },
 
-  /* 37 — Drag Paradiddle #2 */
+  /* 37 — Drag Paradiddle #2 */ // verified vs the official PAS chart 2026-08-25: accented single, TWO same-hand dragged strokes, then the paradiddle tail
   { id: "drag-paradiddle-2", name: "Drag Paradiddle #2", pas: 37, family: "Drag",
-    level: "Advanced", cycleBeats: 4, slotsPerBeat: 4, subdivision: "Eighth pickup, dragged eighth, sixteenths",
+    level: "Advanced", cycleBeats: 4, slotsPerBeat: 4, subdivision: "Eighths into sixteenths",
     tempo: { defaultBpm: 63, suggestedLo: 46, suggestedHi: 108 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "An accented pickup, a dragged eighth on the same hand, then a drag paradiddle: R> drag-R drag-R L R R. Both drags stay on the lead hand.",
+    teachingNote: "An accented single, two dragged strokes on the same hand, then the paradiddle finishes: R> drag-R drag-R L R R. Both drags sit on the lead hand.",
     aliases: ["drag paradiddle 2", "drag paradiddle two"],
     strokes: [
-      { slot: 0, hand: R, accent: true, duration: 2 },
-      { slot: 2, hand: R, grace: [{ hand: L }, { hand: L }], duration: 2 },
+      { slot: 0, duration: 2, hand: R, accent: true },
+      { slot: 2, duration: 2, hand: R, grace: [{ hand: L }, { hand: L }] },
       { slot: 4, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 5, hand: L },
       { slot: 6, hand: R, diddle: 1 }, { slot: 7, hand: R, diddle: 1 },
-      { slot: 8, hand: L, accent: true, duration: 2 },
-      { slot: 10, hand: L, grace: [{ hand: R }, { hand: R }], duration: 2 },
+      { slot: 8, duration: 2, hand: L, accent: true },
+      { slot: 10, duration: 2, hand: L, grace: [{ hand: R }, { hand: R }] },
       { slot: 12, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 13, hand: R },
       { slot: 14, hand: L, diddle: 2 }, { slot: 15, hand: L, diddle: 2 },
     ] },
 
-  /* 38 — Single Ratamacue */
+  /* 38 — Single Ratamacue */ // verified vs the official PAS chart 2026-08-25: dragged triplet plus a 4th note — the accented release
   { id: "single-ratamacue", name: "Single Ratamacue", pas: 38, family: "Drag",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Sixteenth-note triplet into an eighth",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Sixteenth-note triplet into an eighth release",
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "A drag into a fast triplet that resolves onto a longer accent: drag-R L R L>. Four notes — ra-ta-ma-cue — with the cue held.",
+    teachingNote: "A dragged sixteenth triplet resolving to an accented release on the other hand: drag-R L R L>. Four strokes — the accent is the \"cue\".",
     aliases: ["ratamacue", "single rat"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L }, { slot: 2, hand: R },
-      { slot: 3, hand: L, accent: true, duration: 3 },
+      { slot: 3, duration: 3, hand: L, accent: true },
       { slot: 6, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 7, hand: R }, { slot: 8, hand: L },
-      { slot: 9, hand: R, accent: true, duration: 3 },
+      { slot: 9, duration: 3, hand: R, accent: true },
     ] },
 
-  /* 39 — Double Ratamacue */
+  /* 39 — Double Ratamacue */ // verified vs the official PAS chart 2026-08-25: a dragged eighth, then the full single-ratamacue figure — five strokes
   { id: "double-ratamacue", name: "Double Ratamacue", pas: 39, family: "Drag",
-    level: "Advanced", cycleBeats: 3, slotsPerBeat: 6, subdivision: "Dragged eighth, triplet, accent",
+    level: "Advanced", cycleBeats: 3, slotsPerBeat: 6, subdivision: "A dragged eighth, then triplet sixteenths into the release",
     tempo: { defaultBpm: 60, suggestedLo: 46, suggestedHi: 104 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "The single ratamacue with one extra drag in front of it: drag-R, then drag-R L R resolving onto the accent. Same figure, one drag longer.",
+    teachingNote: "A dragged eighth, then the ratamacue: drag-R drag-R L R L>. Both drags on the lead hand; the accent still lands on the release.",
     aliases: ["double rat"],
     strokes: [
-      { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }], duration: 3 },
+      { slot: 0, duration: 3, hand: R, grace: [{ hand: L }, { hand: L }] },
       { slot: 3, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 4, hand: L }, { slot: 5, hand: R },
-      { slot: 6, hand: L, accent: true, duration: 3 },
-      { slot: 9, hand: L, grace: [{ hand: R }, { hand: R }], duration: 3 },
+      { slot: 6, duration: 3, hand: L, accent: true },
+      { slot: 9, duration: 3, hand: L, grace: [{ hand: R }, { hand: R }] },
       { slot: 12, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 13, hand: R }, { slot: 14, hand: L },
-      { slot: 15, hand: R, accent: true, duration: 3 },
+      { slot: 15, duration: 3, hand: R, accent: true },
     ] },
 
-  /* 40 — Triple Ratamacue */
+  /* 40 — Triple Ratamacue */ // verified vs the official PAS chart 2026-08-25: two dragged eighths, then the single-ratamacue figure — six strokes, accent on the release
   { id: "triple-ratamacue", name: "Triple Ratamacue", pas: 40, family: "Drag",
-    level: "Advanced", cycleBeats: 4, slotsPerBeat: 6, subdivision: "Two dragged eighths, triplet, accent",
+    level: "Advanced", cycleBeats: 4, slotsPerBeat: 6, subdivision: "Two dragged eighths, then triplet sixteenths into the release",
     tempo: { defaultBpm: 60, suggestedLo: 46, suggestedHi: 100 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "The single ratamacue with two extra drags in front: drag-R drag-R, then drag-R L R resolving onto the accent. Keep all three drags even and the same weight.",
+    teachingNote: "Two dragged eighths, then the ratamacue: drag-R drag-R drag-R L R L>. All three drags on the lead hand, one accent at the very end.",
     aliases: ["triple rat"],
     strokes: [
-      { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }], duration: 3 },
-      { slot: 3, hand: R, grace: [{ hand: L }, { hand: L }], duration: 3 },
+      { slot: 0, duration: 3, hand: R, grace: [{ hand: L }, { hand: L }] },
+      { slot: 3, duration: 3, hand: R, grace: [{ hand: L }, { hand: L }] },
       { slot: 6, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 7, hand: L }, { slot: 8, hand: R },
-      { slot: 9, hand: L, accent: true, duration: 3 },
-      { slot: 12, hand: L, grace: [{ hand: R }, { hand: R }], duration: 3 },
-      { slot: 15, hand: L, grace: [{ hand: R }, { hand: R }], duration: 3 },
+      { slot: 9, duration: 3, hand: L, accent: true },
+      { slot: 12, duration: 3, hand: L, grace: [{ hand: R }, { hand: R }] },
+      { slot: 15, duration: 3, hand: L, grace: [{ hand: R }, { hand: R }] },
       { slot: 18, hand: L, grace: [{ hand: R }, { hand: R }] }, { slot: 19, hand: R }, { slot: 20, hand: L },
-      { slot: 21, hand: R, accent: true, duration: 3 },
+      { slot: 21, duration: 3, hand: R, accent: true },
     ] },
 
 ];
