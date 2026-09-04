@@ -1,12 +1,12 @@
 {
-  "name": "Rudiment Builder",
-  "short_name": "Rudiment Builder",
+  "name": "Rudiment Room",
+  "short_name": "Rudiment Room",
   "description": "A sticking and tempo trainer for percussion rudiments.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#291642",
-  "theme_color": "#291642",
+  "background_color": "#fafaf9",
+  "theme_color": "#171717",
   "icons": [
     {
       "src": "./icon-192.png",

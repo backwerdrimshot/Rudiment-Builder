@@ -1,4 +1,4 @@
-# CLAUDE.md — Rudiment Builder
+# CLAUDE.md — Rudiment Room
 
 Focused trainer for **established, named rudiments** (Backwerd Rhythm Shop
 family). Product boundary: no freeform pattern construction, no
@@ -14,7 +14,7 @@ Pages as-is. This machine has **no Node or Python**.
 - Serve: `powershell -ExecutionPolicy Bypass -File serve.ps1` → http://localhost:8523/
   (Claude Code: `preview_start` name `rudiment-builder`, configured in the
   Pulse Pocket repo's `.claude/launch.json`.)
-- Tests: open `tests/test.html` in a browser (53 cases; summary in
+- Tests: open `tests/test.html` in a browser (62 cases; summary in
   `window.__TEST_RESULTS__`). With Node available: `node --test tests/`.
 - Do **not** create a remote repo, push, or configure domains without Taylor.
 
@@ -76,10 +76,13 @@ problem, and the app disables itself at boot.
 Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
 marker like "PAS addition (1984)". All 40 are encoded; sticking is verified
-against the published PAS chart, **except the ~19 hybrids tagged `// REVIEW:`
-in the data and tracked in `REVIEW.md`**, which carry source-varying notation
-and await Taylor's proofread. Tests pin the shipped values (catalog count,
-family split, PAS coverage), so changing data means updating `tests/cases.js`.
+against the PAS chart, including the 19 formerly source-varying hybrids, which
+were proofed on 2026-09-03 against the notation PAS published in May 2026 (5
+confirmed, 14 re-encoded). `REVIEW.md` now carries only the three musical
+questions still open — chiefly the Single Dragadiddle's same-hand drag, which
+the opposing-grace-hand rule above currently forbids. Tests pin the shipped
+values (catalog count, family split, PAS coverage) and the rendered sticking of
+every re-encoded rudiment, so changing data means updating `tests/cases.js`.
 
 ## Validation expectations for changes
 
@@ -94,17 +97,38 @@ family split, PAS coverage), so changing data means updating `tests/cases.js`.
 
 ## Design language
 
-Grid Board / Tempo Ladder visual language: cream paper `#f8e9d8`, navy ink
-`#142a36`, burnt orange `#f36f3d` (deep `#c94b20`), sage selections, 2px ink
-borders, hard offset shadows, Palatino serif accents, cyan `:focus-visible`.
-Segmented controls use `aria-pressed`. Footer credits: `App · Backwerd Rhythm
-Shop · © Backwerd Rimshot, LLC`.
+Backwerd Rhythm Shop base identity plus the **Train Your Hands** accent (Terra
+Cotta). **Every hue comes from `assets/brand/design-tokens.css`**, copied
+verbatim from the site repo and linked ahead of the inline stylesheet — never
+retype a value from it, reference the variable. The inline `:root` holds only
+`--accent` (the category alias), `--accent-ink` (Terra Cotta Deep, the shade
+that carries type and fills on Warm White — raw Terra is 2.82:1 there), the one
+surface the shared file has no name for (`--tan-soft`), and the furniture.
+
+Dark mode is the token file's `prefers-color-scheme` remap: the same names take
+dark values, so app code needs no second colour path. The app's own dark block
+covers only what the shared file cannot know — `--accent-ink` inverts (Terra
+Cotta Deep is 3.53:1 on Ink and fails as type; full Terra is 5.97:1),
+`--tan-soft` moves nearer Ink Raised, and the offset shadows go black, since an
+Ink shadow on an Ink ground is invisible.
+
+The brand faces are **self-hosted** from `assets/fonts` (Big Shoulders Display
+800, Barlow Condensed 400/600/700, OFL 1.1 texts beside them). No font service
+is contacted. Both `assets/brand` and `assets/fonts` ship via
+`SITE_DIRECTORIES` in `build.mjs` — before that they were named in CSS and
+never served, so every visitor saw a fallback.
+
+The letterpress furniture is the app's own: 2px Ink borders, hard offset shadows
+with no blur, Palatino italic captions (`--serif`, not governed by the brand
+guide), Forest `:focus-visible`. Segmented controls use `aria-pressed`. Footer
+credits: `App · Backwerd Rhythm Shop · © Backwerd Rimshot, LLC`.
 
 ## Decisions awaiting Taylor's musical review
 
-- **The 19 hybrid rudiments in [`REVIEW.md`](REVIEW.md)** — the priority items:
-  Inverted Flam Tap (alternating vs. same-hand pairs), Flamacue closing-flam
-  placement, and the Ratamacue family's inconsistent subdivisions/note counts.
+- **The three open questions in [`REVIEW.md`](REVIEW.md)** — the Single
+  Dragadiddle's drag hand (PAS puts it on the primary hand; the schema forbids
+  it), the drag family's meter (PAS prints no triplet brackets), and the house
+  accents PAS does not print. The nineteen hybrids themselves are proofed.
   Also flagged there: sticking errors in the Notion "Rudiment Mastery Program"
   doc (not re-verified this pass; the app data does not inherit them).
 - Five Stroke Roll encoded PAS-card style: diddles on the beat, accented

@@ -1,8 +1,8 @@
-# Rudiment Builder
+# Rudiment Room
 
 **Choose the rudiment. See the sticking. Build the hands. Control the tempo.**
 
-Rudiment Builder is a focused, forever-free practice app from
+Rudiment Room is a focused, forever-free practice app from
 [Backwerd Rhythm Shop](https://backwerdrhythmshop.com) for learning and
 practicing established, named percussion rudiments. A student selects a
 rudiment, sees a large original sticking display (accents, diddles, flams),
@@ -21,11 +21,33 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-08-22`
+- **Build:** `2026-09-03`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
 - **Repository:** <https://github.com/backwerdrimshot/Rudiment-Builder>
+
+### Renamed from Rudiment Builder, 2026-09-03
+
+Nothing in this app builds anything: a student picks a named rudiment and the
+app plays it. Earning "Builder" would have meant freeform pattern construction,
+which is **Stick Lab's** job by an explicit product boundary — so the app was
+named for what it is instead.
+
+**The rename is content-only so far.** These still carry the old name on
+purpose, and are Taylor's to move:
+
+| Still `rudiment-builder` | Why |
+|---|---|
+| The public hostname, DNS record and Workers route | Cloudflare work, and see the route caveat below |
+| The GitHub repository name | A GitHub setting, not a file |
+| `STORE_KEY` in `js/rudiment-app.js` | Renaming it factory-resets every existing user's saved settings |
+| `APP` in the visit counter (`index.html`) | A new key restarts the running total from zero |
+| `assets/notation/` | Vendored; regenerate upstream, do not edit here |
+
+A hostname move is the clean moment to fix the route compromise described under
+**Deployment** — attach a proper custom domain and delete the stale GitHub Pages
+DNS record — and needs a permanent redirect from the old host.
 
 Build identifiers use ISO `YYYY-MM-DD`, based on the date the shipped app update
 began. The value stays fixed while that release pass is completed across code and
@@ -52,10 +74,10 @@ hard-coded into the page, and there are no per-rudiment audio files. Each
 record carries its PAS number and its N.A.R.D. heritage, shown as chips in
 the app (see *Sources & educational lineage* below).
 
-> **Proofing note:** the ~28 core rudiments are high-confidence. About 19
-> hybrids (measured rolls, flam/drag hybrids, ratamacues) carry notation
-> choices that vary by source and await a musical proofread — each is tagged
-> `// REVIEW:` in the data and listed in [`REVIEW.md`](REVIEW.md).
+> **Proofing note:** the 19 hybrids that once carried source-varying notation
+> were proofed on 2026-09-03 against the notation PAS published in May 2026 —
+> 5 were confirmed as encoded and 14 were re-encoded. Three genuinely open
+> musical questions remain, listed in [`REVIEW.md`](REVIEW.md).
 
 ## Features
 
@@ -96,12 +118,12 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 Runner-agnostic cases live in `tests/cases.js`:
 
-- **Browser (no tooling):** open `tests/test.html` — 53 cases covering the full
+- **Browser (no tooling):** open `tests/test.html` — 62 cases covering the full
   40-rudiment catalog (PAS coverage, family split), data validation, generated
   counting, buzz and grouped strokes, leading-hand transformation, stroke
   ordering, accents, grace notes, diddles, tempo paths, plans, the playback
   position machine, snapshot/restore, reset, and drift.
-- **Node (when available):** `node --test tests/core.test.cjs` — the same 53
+- **Node (when available):** `node --test tests/core.test.cjs` — the same 62
   cases, run headless.
 
   Name the file, not the directory. `node --test tests/` resolves `tests/` as a
@@ -109,10 +131,18 @@ Runner-agnostic cases live in `tests/cases.js`:
   single case — and it exits `0` while doing it, so a script that only checks
   the exit code reads that as a pass.
 
+- **The build and privacy tests:** `node --test tests/*.test.mjs` — six cases
+  over what `dist/` publishes and what the shipped page carries. **This is what
+  CI's `validate` job runs, and it does not run the core cases**, so running
+  only `core.test.cjs` before a push proves nothing about the checks that gate
+  the merge. Run both.
+
 ## Architecture
 
 ```
 index.html            markup + CSS (Backwerd Rhythm Shop visual language)
+assets/brand/         design-tokens.css, copied verbatim from the site repo
+assets/fonts/         the self-hosted brand faces + their OFL 1.1 licences
 js/rudiment-data.js   frozen rudiment records — data only
 js/rudiment-core.js   validation · withLead (leading hand) · expandPattern ·
                       buildPlan (fixed/ladder/oco) · playback position machine
@@ -130,7 +160,7 @@ timestamped visual queue drives the display at hear-time.
 
 ## Privacy and accessibility
 
-Rudiment Builder requires no account or backend. Settings stay in the browser's local
+Rudiment Room requires no account or backend. Settings stay in the browser's local
 storage. One script does load: a Cloudflare Web Analytics beacon that counts page views
 and nothing else — no cookies, no fingerprinting, no following anyone to another site.
 It carries the same site token as the rest of backwerdrhythmshop.com so this app's
@@ -184,7 +214,7 @@ that happens, the route is load-bearing: do not remove it.
 
 ## Sources & educational lineage
 
-Rudiment Builder is an educational tool, and it teaches the *named, standard*
+Rudiment Room is an educational tool, and it teaches the *named, standard*
 rudiments — so it wears its sources openly:
 
 - **N.A.R.D.** — the National Association of Rudimental Drummers (formed at
@@ -199,12 +229,13 @@ rudiments — so it wears its sources openly:
 Each rudiment's chips show both: its PAS number and its heritage — the
 N.A.R.D. Standard 26 lineage where it applies, or a "PAS addition (1984)"
 marker for the rudiments the Percussive Arts Society added. Sticking, accents,
-and grace-note structures follow the published PAS chart (with the ~19 hybrids
-in [`REVIEW.md`](REVIEW.md) still awaiting a proofread); the data model, prose,
-teaching notes, and all rendering are original to this app — no publisher's
-notation images are copied or traced.
+and grace-note structures follow the published PAS chart, proofed against the
+notation PAS published in May 2026 (see [`REVIEW.md`](REVIEW.md) for the method
+and the three questions still open); the data model, prose, teaching notes, and
+all rendering are original to this app — no publisher's notation images are
+copied or traced.
 
-Rudiment Builder is an independent Backwerd Rhythm Shop project and is not
+Rudiment Room is an independent Backwerd Rhythm Shop project and is not
 affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
 ## Family
@@ -214,7 +245,7 @@ Twelve free apps, all listed at
 
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Tempo Ladder · Count It · Mallet Board · Mallet Map · Scale Trail ·
-Drum Map · **Rudiment Builder**
+Drum Map · **Rudiment Room**
 
 ## Visit counter
 
