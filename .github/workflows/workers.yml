@@ -1,0 +1,91 @@
+name: Deploy to Cloudflare Workers
+
+# A merge to main publishes — but only a commit that CI has already passed.
+#
+# Until now a merge here published nothing at all. This was the last app in the
+# family with no automatic deploy: GitHub Pages was retired when it stopped
+# running on this account, no Workers Builds connection was ever made, and the
+# only thing that shipped Rudiment Room was a person remembering to run
+# `npx wrangler deploy`. The gap was invisible from here — every check was
+# green, because every check read the repository — and the site's own
+# HOW-EACH-APP-DEPLOYS.md table recorded this app as shipping on merge, which it
+# did not. It was found by reading Cloudflare's version history: the last
+# publish was a hand deploy ninety-five minutes after the merge it shipped.
+on:
+  workflow_run:
+    workflows: ["README standard"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-workers-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # A failed or cancelled CI run must not publish. A manual dispatch is an
+    # explicit human decision and carries no workflow_run to inspect.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    # A hung deploy otherwise holds the concurrency group and silently blocks
+    # every later merge from publishing.
+    timeout-minutes: 15
+    environment: cloudflare-workers-production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Deploy the commit CI validated. On workflow_run the default is the
+          # branch tip, which can already have moved past it.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require Cloudflare credentials
+        # Fail here, naming the missing secret, rather than several minutes
+        # later inside wrangler with an authentication error that reads like a
+        # revoked token.
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          : "${CLOUDFLARE_API_TOKEN:?not set for the cloudflare-workers-production environment}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?not set for the cloudflare-workers-production environment}"
+      - name: Validate
+        # Both suites. "README standard" runs `tests/*.test.mjs`, which does not
+        # match `tests/core.test.cjs` — 65 tests that were running nowhere. The
+        # gate that publishes should not be narrower than the test directory.
+        run: |
+          node --test tests/*.test.mjs
+          node --test tests/core.test.cjs
+      - name: Rebuild dist, and prove the committed copy matches its source
+        # dist/ is TRACKED here, unlike every sibling, so what deploys is a
+        # committed artifact rather than one built at deploy time. That makes it
+        # a hand-kept copy of something generated, and the failure mode is a
+        # commit whose dist was never rebuilt: the deploy succeeds and ships the
+        # previous build's assets. Rebuilding and diffing turns that into a
+        # loud failure at the one moment it matters.
+        run: |
+          set -euo pipefail
+          node build.mjs
+          git diff --exit-code -- dist || {
+            echo "::error::dist/ does not match what build.mjs produces from this commit."
+            echo "Run 'node build.mjs' and commit the result."
+            exit 1
+          }
+      - name: Deploy static assets
+        # wrangler.jsonc serves ./dist — the built tree, never the repository,
+        # which still holds CLAUDE.md, REVIEW.md, serve.ps1 and the test suite.
+        # Pinned: an unpinned npx would silently move this deploy to whatever
+        # wrangler major is current on the day it runs, and this repo has no
+        # lockfile to pin it for us.
+        run: npx --yes wrangler@4.92.0 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
