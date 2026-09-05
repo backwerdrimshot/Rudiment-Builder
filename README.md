@@ -174,7 +174,35 @@ and screen wake lock support individual and classroom use.
 
 Static site published as Cloudflare Workers static assets. `node build.mjs`
 copies the `SITE_ASSETS` allowlist into `dist/`, and `npx wrangler deploy` ships
-it. There is no deploy workflow, and none is wanted.
+it. That still works by hand, and is still the fastest way to publish an urgent
+fix.
+
+**A merge now ships, once CI is green.** `.github/workflows/workers.yml` runs on
+a successful **README standard** run against `main`, re-runs both test suites,
+rebuilds `dist/` and proves the committed copy matches what `build.mjs` produces
+from that commit, then deploys the exact commit CI validated.
+
+This section previously read *"There is no deploy workflow, and none is
+wanted."* That was a deliberate choice and it had a cost nobody could see from
+here: **a merge to this repository published nothing at all.** GitHub Pages was
+retired, no Cloudflare Workers Builds connection was ever made, and the only
+thing that shipped this app was somebody remembering to run the command above.
+Every check stayed green throughout, because every check reads this repository.
+
+It was found on 2026-09-05 by reading Cloudflare's version history rather than
+anything here: the Worker's last publish was a hand deploy ninety-five minutes
+after the merge it shipped, and not one version in its history carries the
+branch alias a Workers Builds preview leaves. The shop site's
+`docs/HOW-EACH-APP-DEPLOYS.md` table had this app recorded as shipping on merge,
+which it did not — the same row it warns about, a copy carried forward without
+evidence.
+
+**`dist/` is tracked here, unlike every sibling**, so what deploys is a
+committed artifact rather than one built at deploy time. That makes it a
+hand-kept copy of something generated, and the failure mode is a commit whose
+`dist/` was never rebuilt: the deploy succeeds and ships the previous build's
+assets. The workflow rebuilds and diffs before deploying, so that fails loudly
+at the one moment it matters.
 
 It used to publish through GitHub Pages via `actions/deploy-pages`, and that
 stopped working on 15 August when Actions stopped running on this account. Every
