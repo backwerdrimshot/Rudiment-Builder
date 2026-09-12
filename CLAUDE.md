@@ -7,16 +7,25 @@ No accounts, no backend, no microphone/camera grading, ever.
 
 ## Stack + commands
 
-Static app, **classic scripts** (no ES modules, no build step, no framework) —
-the family convention; everything runs over `file://` and deploys to GitHub
-Pages as-is. This machine has **no Node or Python**.
+Static app, **classic scripts** (no ES modules, no bundler, no framework) —
+the family convention; the app itself runs over `file://`. Publishing is
+Cloudflare Workers static assets: `node build.mjs` copies the `SITE_ASSETS`
+allowlist into the **tracked** `dist/`, and `.github/workflows/workers.yml`
+deploys a green merge to `main` after rebuilding `dist/` and proving the
+committed copy matches. A commit whose `dist/` was not rebuilt fails that
+diff — run the build before committing. README "Deployment" has the route
+caveat (the public hostname is a Workers route over a stale GitHub Pages DNS
+record; do not remove the route). The app has been off GitHub Pages since
+August 2026.
 
-- Serve: `powershell -ExecutionPolicy Bypass -File serve.ps1` → http://localhost:8523/
-  (Claude Code: `preview_start` name `rudiment-builder`, configured in the
-  Pulse Pocket repo's `.claude/launch.json`.)
-- Tests: open `tests/test.html` in a browser (62 cases; summary in
-  `window.__TEST_RESULTS__`). With Node available: `node --test tests/`.
-- Do **not** create a remote repo, push, or configure domains without Taylor.
+- Serve: any static server at the repo root — `serve.ps1` (PowerShell,
+  port 8523), `python3 -m http.server`, or `npx serve`.
+- Tests: `node --test tests/*.test.mjs` (Node 22+; the bare directory form
+  does not resolve), or open `tests/test.html` in a
+  browser — `window.__TEST_RESULTS__` carries the summary. The case count is
+  whatever `tests/cases.js` exports; do not restate it here.
+- Do **not** configure domains, DNS, or Cloudflare routes without Taylor.
+  Pushing to a branch is fine; a merge to `main` publishes.
 
 ## Architecture (keep these layers separate)
 

@@ -120,7 +120,7 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 Runner-agnostic cases live in `tests/cases.js`:
 
-- **Browser (no tooling):** open `tests/test.html` — 62 cases covering the full
+- **Browser (no tooling):** open `tests/test.html` — every case covering the full
   40-rudiment catalog (PAS coverage, family split), data validation, generated
   counting, buzz and grouped strokes, leading-hand transformation, stroke
   ordering, accents, grace notes, diddles, tempo paths, plans, the playback
