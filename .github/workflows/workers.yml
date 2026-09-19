@@ -85,7 +85,7 @@ jobs:
         # Pinned: an unpinned npx would silently move this deploy to whatever
         # wrangler major is current on the day it runs, and this repo has no
         # lockfile to pin it for us.
-        run: npx --yes wrangler@4.92.0 deploy
+        run: npx --yes wrangler@4.131.0 deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
