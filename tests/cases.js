@@ -961,6 +961,64 @@ function getCases(core) {
     assert.equal(core.beatSeconds(90), 60 / 90, "beat length");
   }},
 
+  /* ================= best clean tempo (the student's log) ================= */
+
+  { name: "best clean: the first mark sets a best and only a faster mark replaces it", fn: function (assert) {
+    let r = core.markClean({}, "flam-tap", "R", 100, "2026-09-20");
+    assert.ok(r.improved, "the first mark is a best");
+    assert.deepEqual(r.log, { "flam-tap": { R: { bpm: 100, date: "2026-09-20" } } });
+    r = core.markClean(r.log, "flam-tap", "R", 96, "2026-09-21");
+    assert.ok(!r.improved, "slower is not a best");
+    assert.deepEqual(r.best, { bpm: 100, date: "2026-09-20" }, "the standing best and its day are kept");
+    r = core.markClean(r.log, "flam-tap", "R", 100, "2026-09-22");
+    assert.ok(!r.improved, "matching the best keeps the day it was first played");
+    r = core.markClean(r.log, "flam-tap", "R", 104, "2026-09-23");
+    assert.ok(r.improved, "faster is a best");
+    assert.deepEqual(r.log["flam-tap"].R, { bpm: 104, date: "2026-09-23" });
+  }},
+
+  { name: "best clean: each leading hand and each rudiment keeps its own best", fn: function (assert) {
+    let log = core.markClean({}, "flam-tap", "R", 120, "2026-09-23").log;
+    const left = core.markClean(log, "flam-tap", "L", 90, "2026-09-23");
+    assert.ok(left.improved, "a slower left lead is still the left lead's first best");
+    log = core.markClean(left.log, "single-paradiddle", "R", 80, "2026-09-23").log;
+    assert.deepEqual(log, {
+      "flam-tap": { R: { bpm: 120, date: "2026-09-23" }, L: { bpm: 90, date: "2026-09-23" } },
+      "single-paradiddle": { R: { bpm: 80, date: "2026-09-23" } },
+    });
+    assert.deepEqual(core.clearBest(log, "flam-tap"),
+      { "single-paradiddle": { R: { bpm: 80, date: "2026-09-23" } } }, "clearing one rudiment leaves the rest");
+  }},
+
+  { name: "best clean: marking and clearing never mutate the log they are given", fn: function (assert) {
+    const log = Object.freeze({ "flam-tap": Object.freeze({ R: Object.freeze({ bpm: 100, date: "2026-09-20" }) }) });
+    const r = core.markClean(log, "flam-tap", "R", 110, "2026-09-21");
+    assert.equal(log["flam-tap"].R.bpm, 100, "the old log is untouched");
+    assert.equal(r.log["flam-tap"].R.bpm, 110);
+    core.clearBest(log, "flam-tap");
+    assert.ok(log["flam-tap"], "clearing copies too");
+  }},
+
+  { name: "best clean: a mark outside the rules is refused, not stored", fn: function (assert) {
+    assert.ok(threw(function () { core.markClean({}, "no-such-rudiment", "R", 100, "2026-09-23"); }), "unknown rudiment");
+    assert.ok(threw(function () { core.markClean({}, "flam-tap", "X", 100, "2026-09-23"); }), "unknown lead");
+    assert.ok(threw(function () { core.markClean({}, "flam-tap", "R", core.BPM_MAX + 1, "2026-09-23"); }), "tempo out of range");
+    assert.ok(threw(function () { core.markClean({}, "flam-tap", "R", 100.5, "2026-09-23"); }), "fractional tempo");
+    assert.ok(threw(function () { core.markClean({}, "flam-tap", "R", 100, "Sep 23"); }), "a day that is not YYYY-MM-DD");
+  }},
+
+  { name: "best clean: whatever storage hands back is cleaned before the page uses it", fn: function (assert) {
+    [null, undefined, 42, "text", []].forEach(function (raw) {
+      assert.deepEqual(core.sanitizeBestLog(raw), {}, JSON.stringify(raw) + " reads as an empty log");
+    });
+    assert.deepEqual(core.sanitizeBestLog({
+      "flam-tap": { R: { bpm: 104, date: "2026-09-23" }, L: { bpm: "fast", date: "2026-09-23" }, X: { bpm: 90, date: "2026-09-23" } },
+      "single-paradiddle": { R: { bpm: 9999, date: "2026-09-23" }, L: { bpm: 90, date: "yesterday" } },
+      "no-such-rudiment": { R: { bpm: 90, date: "2026-09-23" } },
+      "drag": "broken",
+    }), { "flam-tap": { R: { bpm: 104, date: "2026-09-23" } } }, "only well-formed marks on real rudiments survive");
+  }},
+
   ];
 }
 

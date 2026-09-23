@@ -555,6 +555,53 @@ function createPracticePlayback(plan) {
   return pb;
 }
 
+/* ---------------- best clean tempo (the student's own log) ----------------
+   The fastest tempo a student says they played a rudiment cleanly, kept per
+   leading hand. "Clean" is theirs to judge: the app never listens, so a mark
+   is a claim, and the log keeps the best claim for each hand. It lives on the
+   device only. These never mutate the log they are given, and sanitizeBestLog
+   is what stands between the page and whatever storage hands back.
+     log shape: { "<rudimentId>": { R: { bpm, date }, L: { bpm, date } } }
+   `date` is the local calendar day, YYYY-MM-DD. */
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+function bestEntry(e) {
+  return !!e && Number.isInteger(e.bpm) && e.bpm >= BPM_MIN && e.bpm <= BPM_MAX &&
+    typeof e.date === "string" && ISO_DAY.test(e.date);
+}
+function sanitizeBestLog(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  Object.keys(raw).forEach(function (id) {
+    if (!Data.RUDIMENT_MAP[id] || !raw[id] || typeof raw[id] !== "object") return;
+    ["R", "L"].forEach(function (lead) {
+      const e = raw[id][lead];
+      if (bestEntry(e)) (out[id] = out[id] || {})[lead] = { bpm: e.bpm, date: e.date };
+    });
+  });
+  return out;
+}
+// Mark `bpm` as played cleanly. Returns the new log, whether it is a new best,
+// and the best that now stands for that rudiment and hand.
+function markClean(log, rudimentId, lead, bpm, date) {
+  if (!Data.RUDIMENT_MAP[rudimentId]) throw new Error("unknown rudiment " + rudimentId);
+  if (lead !== "R" && lead !== "L") throw new Error('lead must be "R" or "L"');
+  intIn(bpm, BPM_MIN, BPM_MAX, "bpm");
+  if (typeof date !== "string" || !ISO_DAY.test(date)) throw new Error("date must be YYYY-MM-DD");
+  const prev = log[rudimentId] && log[rudimentId][lead];
+  const improved = !prev || bpm > prev.bpm;
+  const next = Object.assign({}, log);
+  if (improved) {
+    next[rudimentId] = Object.assign({}, log[rudimentId]);
+    next[rudimentId][lead] = { bpm: bpm, date: date };
+  }
+  return { log: next, improved: improved, best: improved ? { bpm: bpm, date: date } : prev };
+}
+function clearBest(log, rudimentId) {
+  const next = Object.assign({}, log);
+  delete next[rudimentId];
+  return next;
+}
+
 /* ---------------- export ---------------- */
 const RudimentCore = {
   RUDIMENTS: Data.RUDIMENTS,
@@ -582,6 +629,9 @@ const RudimentCore = {
   buildPlan: buildPlan,
   totalSeconds: totalSeconds,
   createPracticePlayback: createPracticePlayback,
+  sanitizeBestLog: sanitizeBestLog,
+  markClean: markClean,
+  clearBest: clearBest,
 };
 
 if (typeof module !== "undefined" && module.exports) module.exports = RudimentCore;

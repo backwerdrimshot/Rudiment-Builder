@@ -63,6 +63,14 @@ machine advanced by the scheduler **only at block boundaries**.
   only; never in share links) apply without stopping. Choosing a sound while
   idle or complete plays a sample — never while paused, where resuming the
   context would unfreeze the plan.
+- Best clean tempo is the student's claim, never a judgement (nothing listens).
+  "Clean at N" offers only a tempo actually HEARD in a played block (set from
+  `renderNow`, so count-in, listen blocks and a pending fixed-mode change do
+  not count); once a run completes it offers the run's peak. A rudiment or
+  lead change ends the claim. Core `markClean` keeps the best per rudiment per
+  lead and never mutates; `sanitizeBestLog` cleans what storage returns. Own
+  key (`rudimentroom-best`), never in share links. Clearing takes two presses,
+  not `confirm()`, which would block the scheduler tick mid-play.
 - Scheduling: 25 ms tick, 0.12 s horizon, absolute times accumulated exactly
   from `AudioContext.currentTime` — never schedule audio off `setInterval`
   time. Visuals ride a timestamped queue flushed from BOTH rAF and the tick.

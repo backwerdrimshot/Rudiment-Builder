@@ -274,6 +274,7 @@ var live = {
   raf: null,
   visualQ: [],
   doneQueued: false,
+  heard: null,      // { bpm, peak } of this run — see noteHeard()
 };
 
 /* One block's schedule. Listen blocks (count-in / transition) walk quarter
@@ -459,6 +460,7 @@ function renderNow(ev) {
   $("sticking").classList.toggle("listening", ev.kind !== "play");
   if (ev.type === "stroke") highlightCell(ev.strokeIndex);
   else clearCellHighlight();
+  if (ev.type === "stroke" && ev.kind === "play") noteHeard(ev.bpm);
 
   if (ev.kind === "count-in") {
     setBanner("countin", "Count-in — " + ev.bpm + " BPM");
@@ -648,12 +650,13 @@ function buildCards() {
     b.dataset.id = r.id;
     b.innerHTML = '<span class="rname">' + r.name + '</span>' +
       '<span class="rmeta">' + r.family + '<span class="dot">·</span>PAS #' + r.pas +
-      '<span class="dot">·</span>' + r.level + "</span>";
+      '<span class="dot">·</span>' + r.level + "</span>" +
+      '<span class="rbest" hidden></span>';
     b.addEventListener("click", function () { selectRudiment(r.id); });
     g.cards.appendChild(b);
     var hay = (r.name + " " + r.family + " " + r.level + " pas " + r.pas + " #" + r.pas +
       " " + (r.aliases ? r.aliases.join(" ") : "")).toLowerCase();
-    cardIndex.push({ el: b, fam: r.family, level: r.level, hay: hay });
+    cardIndex.push({ el: b, id: r.id, best: b.querySelector(".rbest"), fam: r.family, level: r.level, hay: hay });
   });
 }
 
@@ -721,6 +724,7 @@ function renderRudimentInfo() {
     "–" + r.tempo.suggestedHi + " BPM.";
   $("suggestedText").textContent = "Suggested " + r.tempo.suggestedLo + "–" + r.tempo.suggestedHi + " BPM";
   $("btnSuggested").textContent = "Start at " + r.tempo.suggestedLo;
+  renderBest();
   var leadDisabled = r.leadingHand === "fixed";
   var leadBtns = $("segLead").querySelectorAll("button");
   for (var i = 0; i < leadBtns.length; i++) leadBtns[i].disabled = leadDisabled;
@@ -735,6 +739,7 @@ function selectRudiment(id) {
   renderSticking();
   syncPlanPreview();
   primeDisplay();
+  forgetHeard();
 }
 
 /* ---------------- transport ---------------- */
@@ -773,6 +778,8 @@ function startPlayback() {
   live.playback = Core.createPracticePlayback(plan);
   live.visualQ = [];
   live.doneQueued = false;
+  live.heard = null;
+  $("cleanNote").textContent = "";
   live.blockStart = audio.currentTime + 0.15;
   buildEntries();
   live.status = "playing";
@@ -816,6 +823,7 @@ function stopPlayback() {
   if (audio) { killPending(); if (audio.state === "suspended") audio.resume(); }
   live.status = "idle";
   live.playback = null;
+  live.heard = null;
 }
 
 // Any structural change during playback (rudiment, lead, mode, ladder/OCO
@@ -864,6 +872,114 @@ function updateStartBtn() {
                   : live.status === "complete" ? "Start again" : "Start";
     b.classList.add("primary"); b.classList.remove("play");
   }
+  updateCleanBtn(); // every status change passes through here
+}
+
+/* ---------------- best clean tempo ----------------
+   The student's own log (Core.markClean). "Clean at N" claims the tempo just
+   heard; each rudiment keeps its fastest claim per leading hand. The app
+   never listens, so nothing here judges — it only keeps the record honest
+   about which tempo, rudiment and hand were actually played. Kept under its
+   own storage key, on this device only, and never in a share link. */
+var BEST_KEY = "rudimentroom-best";
+var bestLog = {};
+function loadBest() {
+  try { bestLog = Core.sanitizeBestLog(JSON.parse(localStorage.getItem(BEST_KEY))); }
+  catch (e) { bestLog = {}; }
+}
+function saveBest() {
+  try { localStorage.setItem(BEST_KEY, JSON.stringify(bestLog)); } catch (e) { /* private mode */ }
+}
+function effectiveLead() { return live.pattern && live.pattern.mirrored ? "L" : "R"; }
+
+// Called at hear-time for every played stroke (never count-in or listen
+// clicks), so the tempo on the button is the one the student just heard.
+function noteHeard(bpm) {
+  var h = live.heard;
+  if (h && h.bpm === bpm) return;
+  live.heard = { bpm: bpm, peak: Math.max(bpm, h ? h.peak : 0) };
+  updateCleanBtn();
+}
+// A run's tempos belong to the rudiment and hand it was played with, so a
+// change of either ends the claim — even after a completed run, where the
+// status stays "complete" but the display has gone back to Ready.
+function forgetHeard() {
+  live.heard = null;
+  $("cleanNote").textContent = "";
+  updateCleanBtn();
+}
+// The tempo a press would claim: the one being heard while playing or paused,
+// and the fastest one played once a run completes (an open-close-open run
+// ends at its slow end).
+function claimableBpm() {
+  var h = live.heard;
+  if (!h) return null;
+  if (live.status === "playing" || live.status === "paused") return h.bpm;
+  if (live.status === "complete") return h.peak;
+  return null;
+}
+function updateCleanBtn() {
+  var bpm = claimableBpm();
+  $("btnClean").disabled = bpm == null;
+  $("cleanLabel").textContent = "Clean at " + (bpm == null ? "—" : bpm);
+}
+function onClean() {
+  var bpm = claimableBpm();
+  if (bpm == null) return;
+  var lead = effectiveLead();
+  var r = Core.markClean(bestLog, settings.rudimentId, lead, bpm, today());
+  bestLog = r.log;
+  saveBest();
+  renderBest();
+  $("cleanNote").textContent = r.improved
+    ? "New best: " + bpm + " BPM clean, " + (lead === "R" ? "right" : "left") + " lead."
+    : "Logged " + bpm + " BPM clean. Your best is still " + r.best.bpm + ".";
+}
+
+function today() {
+  var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; };
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+function fmtDay(iso) {
+  var y = +iso.slice(0, 4), m = +iso.slice(5, 7), d = +iso.slice(8, 10);
+  var opts = { month: "short", day: "numeric" };
+  if (y !== new Date().getFullYear()) opts.year = "numeric";
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, opts);
+}
+function renderBest() {
+  var rec = bestLog[settings.rudimentId];
+  var one = function (e) { return e ? "best clean " + e.bpm + " BPM (" + fmtDay(e.date) + ")" : "not logged yet"; };
+  $("bestLine").textContent = rec
+    ? "Right lead: " + one(rec.R) + "\nLeft lead: " + one(rec.L)
+    : "Best clean: not logged yet. While you are playing it cleanly, press \u201cClean at\u201d.";
+  $("btnClearBest").hidden = !rec;
+  disarmClear();
+  cardIndex.forEach(function (c) {
+    var r = bestLog[c.id];
+    c.best.hidden = !r;
+    c.best.textContent = r ? "Best clean " +
+      [r.R ? "R " + r.R.bpm : "", r.L ? "L " + r.L.bpm : ""].filter(Boolean).join(" \u00b7 ") : "";
+  });
+}
+// Clearing takes two presses, a few seconds apart at most. Not confirm(): a
+// modal dialog blocks the scheduler's tick and the audio would drop out.
+var clearArmed = null;
+function onClearBest() {
+  if (!clearArmed) {
+    $("btnClearBest").textContent = "Press again to clear";
+    clearArmed = setTimeout(disarmClear, 4000);
+    return;
+  }
+  bestLog = Core.clearBest(bestLog, settings.rudimentId);
+  saveBest();
+  renderBest();
+  $("cleanNote").textContent = "Cleared the best clean tempos for " +
+    Core.RUDIMENT_MAP[settings.rudimentId].name + ".";
+}
+function disarmClear() {
+  if (clearArmed) clearTimeout(clearArmed);
+  clearArmed = null;
+  $("btnClearBest").textContent = "Clear";
 }
 
 function onStartButton() {
@@ -989,6 +1105,7 @@ function applyLead(lead) {
   renderSticking();
   syncPlanPreview();
   primeDisplay();
+  forgetHeard();
 }
 
 function fmtDuration(secs) {
@@ -1189,6 +1306,8 @@ function wireEvents() {
     updateCueEnabled();
   });
   $("btnMute").addEventListener("click", toggleMute);
+  $("btnClean").addEventListener("click", onClean);
+  $("btnClearBest").addEventListener("click", onClearBest);
   $("btnSuggested").addEventListener("click", function () {
     var r = Core.RUDIMENT_MAP[settings.rudimentId];
     $("bpm").value = r.tempo.suggestedLo;
@@ -1228,6 +1347,7 @@ function wireEvents() {
   }
   coerceSettings(loadSaved());
   coerceSettings(queryToRaw());
+  loadBest();
   buildCards();
   applyFilters();
   hydrateControls();
