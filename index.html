@@ -310,6 +310,20 @@
   .legend .k-diddle{border-bottom:4px solid var(--ink-soft);padding:0 3px;border-radius:0 0 3px 3px}
   .legend .k-rest{color:var(--ink-soft)}
 
+  /* The drawn card: the same rudiment in notation, under the live sticking.
+     Sized in the card's own units (250 per staff space, --card-w/--card-h set
+     from its viewBox) so every rudiment draws at one staff size, and only a
+     card too long for the panel shrinks to fit. The inlined SVG fills with
+     currentColor, so it follows --ink into dark mode; the <img> fallback used
+     over file:// paints black whatever the scheme, hence the dark-only invert. */
+  .notation{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line)}
+  .notation-card svg,.notation-card img{
+    display:block;color:var(--ink);max-width:100%;height:auto;
+    width:calc(var(--card-w) * .045px);aspect-ratio:var(--card-w) / var(--card-h);
+  }
+  .notation-cap{margin:10px 0 0;font-family:var(--serif);font-style:italic;font-size:.9rem;color:var(--ink-soft)}
+  @media (prefers-color-scheme:dark){.notation-card img{filter:invert(1)}}
+
   /* Status + transport */
   .status-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
   @media(max-width:560px){.status-grid{grid-template-columns:1fr;text-align:center}}
@@ -485,6 +499,10 @@
         <span class="key"><span class="k-diddle">R R</span> diddle</span>
         <span class="key"><span class="k-rest">·</span> rest / ring</span>
       </div>
+      <figure class="notation" id="notation">
+        <div class="notation-card" id="notationCard"></div>
+        <figcaption class="notation-cap" id="notationCap"></figcaption>
+      </figure>
     </section>
 
     <!-- ============ STATUS + TRANSPORT ============ -->
@@ -662,7 +680,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-04.2";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-23";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {

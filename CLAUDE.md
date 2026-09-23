@@ -131,6 +131,13 @@ is contacted. Both `assets/brand` and `assets/fonts` ship via
 `SITE_DIRECTORIES` in `build.mjs` — before that they were named in CSS and
 never served, so every visitor saw a fallback.
 
+The sticking panel shows each rudiment's drawn card from
+`assets/notation/rudiments` (vendored — never edit a card here; re-render
+upstream). Cards are right-hand lead only, fill with `currentColor` so they take
+`--ink` when inlined, and fall back to an `<img>` over `file://`. The page and
+the build share `Core.notationCard(r)` for the path; only the 40 cards and the
+Bravura licence ship (`NOTATION_ASSETS`), and a missing card fails the build.
+
 The letterpress furniture is the app's own: 2px Ink borders, hard offset shadows
 with no blur, Palatino italic captions (`--serif`, not governed by the brand
 guide), Forest `:focus-visible`. Segmented controls use `aria-pressed`. Footer

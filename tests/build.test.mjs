@@ -4,7 +4,10 @@ import { readdir, readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { GENERATED_ASSETS, SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
+import { createRequire } from "node:module";
+import { GENERATED_ASSETS, NOTATION_ASSETS, SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
+
+const Core = createRequire(import.meta.url)("../js/rudiment-core.js");
 
 const execFileAsync = promisify(execFile);
 const root = new URL("../", import.meta.url);
@@ -47,14 +50,41 @@ test("the production build publishes only the explicit allowlist", async () => {
   );
   for (const asset of SITE_ASSETS) assert.ok(shipped.includes(asset), `${asset} must ship`);
 
-  /* The named directories ship whole, and no others do. assets/notation is the
-     one this is guarding: its library is inlined where it is used and the PAS
-     rudiment cards are a source asset, so none of it belongs on the web. */
+  /* The named directories ship whole, and no others do. */
   assert.deepEqual(
     [...new Set(shipped.filter(underDirectory).map((file) => file.split("/").slice(0, 2).join("/")))].sort(),
     [...SITE_DIRECTORIES].sort(),
   );
-  assert.ok(!shipped.some((file) => file.startsWith("assets/notation/")), "assets/notation must not be published");
+});
+
+/* assets/notation used to stay off the web entirely. Since the sticking panel
+   shows each rudiment's drawn card, part of it ships: one card per rudiment and
+   the Bravura licence the card outlines are under. The rest is source material
+   for regenerating the cards upstream, and this keeps it that way. */
+test("the notation cards ship, one per rudiment, and nothing else from assets/notation", async () => {
+  await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
+  const shipped = await filesBelow(dist);
+  const cards = Core.RUDIMENTS.map(Core.notationCard);
+
+  assert.equal(new Set(cards).size, 40, "forty rudiments, forty distinct cards");
+  assert.deepEqual(
+    shipped.filter((file) => file.startsWith("assets/notation/")).sort(),
+    [...NOTATION_ASSETS].sort(),
+  );
+  assert.deepEqual([...NOTATION_ASSETS].sort(), ["assets/notation/LICENSE-bravura.txt", ...cards].sort());
+  for (const source of ["notation-lib.js", "README.md", "rudiments/manifest.json"]) {
+    assert.ok(!shipped.includes(`assets/notation/${source}`), `assets/notation/${source} must not be published`);
+  }
+
+  /* The file the page asks for must be the drawing of the rudiment it asked
+     about: the card carries its own PAS number and id, and the fill has to be
+     currentColor or the dark scheme gets black notation on an Ink ground. */
+  for (const r of Core.RUDIMENTS) {
+    const svg = await readFile(new URL(Core.notationCard(r), dist), "utf8");
+    assert.match(svg, new RegExp(`data-pas="${r.pas}" data-rudiment="${r.id}"`), `${r.id} card is its own drawing`);
+    assert.match(svg, /<g fill="currentColor">/, `${r.id} card is filled with currentColor`);
+    assert.doesNotMatch(svg, /<script|\son[a-z]+=/i, `${r.id} card carries no script (the page inlines it)`);
+  }
 });
 
 /* Named individually rather than left to the deepEqual above, because these are
