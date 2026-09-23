@@ -158,6 +158,23 @@ function getCases(core) {
     });
   }},
 
+  { name: "notation: every rudiment names its own card, by PAS number and id", fn: function (assert) {
+    // The vendored cards are named rudiment-NN-<id>.svg, and the build ships
+    // exactly these paths (tests/build.test.mjs proves each file exists), so a
+    // renamed id or a renumbered rudiment breaks here before it breaks a page.
+    assert.equal(core.notationCard(MAP["single-stroke-roll"]),
+      "assets/notation/rudiments/rudiment-01-single-stroke-roll.svg", "single digits pad to two");
+    assert.equal(core.notationCard(MAP["single-paradiddle"]),
+      "assets/notation/rudiments/rudiment-16-single-paradiddle.svg");
+    const seen = {};
+    core.RUDIMENTS.forEach(function (r) {
+      const file = core.notationCard(r);
+      assert.ok(file.indexOf("-" + r.id + ".svg") !== -1, r.id + " card carries its id");
+      assert.ok(!seen[file], "two rudiments share " + file);
+      seen[file] = true;
+    });
+  }},
+
   /* ---- PAS chart conformance: the rhythm ---------------------------------
      The hands, accents and grace placements are pinned further down against
      the official chart and the per-rudiment SVGs PAS published in May 2026.

@@ -474,6 +474,65 @@ function renderSticking() {
     " · " + p.cycleBeats + "-beat cycle";
   $("stickingDesc").textContent = p.name + ", " + (p.lead === "R" ? "right" : "left") +
     "-hand lead, " + r.subdivision.toLowerCase() + ". " + Core.describePattern(p);
+  renderNotation(r, p.mirrored);
+}
+
+/* ---------------- notation card ----------------
+   The rudiment written out, under the live sticking. Every card is drawn with
+   a right-hand lead, so on a left lead the caption says so rather than letting
+   the two displays quietly disagree. The card is inlined when it can be
+   fetched, so its currentColor fill takes --ink in both schemes; over file://
+   fetch is refused and an <img> stands in (see the .notation-card CSS). */
+var notationFiles = {};  // path -> Promise<SVGSVGElement | null>, one fetch each
+var notationShown = null;
+
+function fetchNotation(file) {
+  if (location.protocol === "file:") return Promise.resolve(null); // refused anyway, and logged as an error
+  if (!notationFiles[file]) {
+    notationFiles[file] = fetch(file).then(function (res) {
+      if (!res.ok) throw new Error(file + " " + res.status);
+      return res.text();
+    }).then(function (text) {
+      var svg = new DOMParser().parseFromString(text, "image/svg+xml").documentElement;
+      if (svg.namespaceURI !== "http://www.w3.org/2000/svg" || svg.localName !== "svg") throw new Error(file + " is not an SVG");
+      return svg;
+    }).catch(function () { return null; });
+  }
+  return notationFiles[file];
+}
+
+function renderNotation(r, mirrored) {
+  $("notationCap").textContent = mirrored
+    ? "As written, right-hand lead — your left lead swaps every R and L."
+    : "As written, right-hand lead.";
+  var file = Core.notationCard(r);
+  if (file === notationShown) return;
+  notationShown = file;
+  var host = $("notationCard");
+  host.textContent = "";
+  var label = r.name + " written in notation, right-hand lead";
+  fetchNotation(file).then(function (source) {
+    if (notationShown !== file) return; // another rudiment was chosen meanwhile
+    var card;
+    if (source) {
+      card = document.importNode(source, true);
+      var box = (card.getAttribute("viewBox") || "").split(/[\s,]+/);
+      card.removeAttribute("width");
+      card.removeAttribute("height");
+      card.style.setProperty("--card-w", box[2]);
+      card.style.setProperty("--card-h", box[3]);
+      card.setAttribute("aria-label", label);
+    } else {
+      card = el("img");
+      card.alt = label;
+      card.onload = function () {
+        card.style.setProperty("--card-w", card.naturalWidth);
+        card.style.setProperty("--card-h", card.naturalHeight);
+      };
+      card.src = file;
+    }
+    host.appendChild(card);
+  });
 }
 
 /* ---------------- rudiment info + cards ----------------

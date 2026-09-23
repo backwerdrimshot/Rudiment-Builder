@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-70 -945 3275.5 1635" width="3275.5" height="1635" data-units-per-space="250" data-pas="4" data-rudiment="multiple-bounce-roll" data-family="Roll" role="img" aria-label="Multiple Bounce Roll (PAS 4)">
+<!-- PAS 4 — Multiple Bounce Roll (Roll; Buzzed pulses). Right-hand lead. Composed from Bravura-extracted glyphs — SIL OFL 1.1, see LICENSE-bravura.txt. -->
+<g fill="currentColor">
+<path transform="translate(0 0) scale(1 -1)" d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z"/>
+<rect x="265" y="-875" width="30" height="833"/>
+<path transform="translate(279.5 -430) scale(1 -1)" d="M156 -116V-67H-64L156 67V116H-155V67H61L-155 -67V-116Z"/>
+<path transform="translate(-25.7 620) scale(0.20093770931011387 -0.20093770931011387)" d="M735 831Q856 831 908.5 876.0Q961 921 961 1024Q961 1126 908.5 1170.0Q856 1214 735 1214H573V831ZM573 565V0H188V1493H776Q1071 1493 1208.5 1394.0Q1346 1295 1346 1081Q1346 933 1274.5 838.0Q1203 743 1059 698Q1138 680 1200.5 616.5Q1263 553 1327 424L1536 0H1126L944 371Q889 483 832.5 524.0Q776 565 682 565Z"/>
+<path transform="translate(900 0) scale(1 -1)" d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z"/>
+<rect x="1165" y="-875" width="30" height="833"/>
+<path transform="translate(1179.5 -430) scale(1 -1)" d="M156 -116V-67H-64L156 67V116H-155V67H61L-155 -67V-116Z"/>
+<path transform="translate(903.1 620) scale(0.20093770931011387 -0.20093770931011387)" d="M188 1493H573V291H1249V0H188Z"/>
+<rect x="265" y="-875" width="930" height="125"/>
+<path transform="translate(1800 0) scale(1 -1)" d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z"/>
+<rect x="2065" y="-875" width="30" height="833"/>
+<path transform="translate(2079.5 -430) scale(1 -1)" d="M156 -116V-67H-64L156 67V116H-155V67H61L-155 -67V-116Z"/>
+<path transform="translate(1774.3 620) scale(0.20093770931011387 -0.20093770931011387)" d="M735 831Q856 831 908.5 876.0Q961 921 961 1024Q961 1126 908.5 1170.0Q856 1214 735 1214H573V831ZM573 565V0H188V1493H776Q1071 1493 1208.5 1394.0Q1346 1295 1346 1081Q1346 933 1274.5 838.0Q1203 743 1059 698Q1138 680 1200.5 616.5Q1263 553 1327 424L1536 0H1126L944 371Q889 483 832.5 524.0Q776 565 682 565Z"/>
+<path transform="translate(2700 0) scale(1 -1)" d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z"/>
+<rect x="2965" y="-875" width="30" height="833"/>
+<path transform="translate(2979.5 -430) scale(1 -1)" d="M156 -116V-67H-64L156 67V116H-155V67H61L-155 -67V-116Z"/>
+<path transform="translate(2703.1 620) scale(0.20093770931011387 -0.20093770931011387)" d="M188 1493H573V291H1249V0H188Z"/>
+<rect x="2065" y="-875" width="930" height="125"/>
+</g>
+</svg>

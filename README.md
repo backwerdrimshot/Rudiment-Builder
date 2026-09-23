@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-04.2`
+- **Build:** `2026-09-23`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -86,6 +86,9 @@ the app (see *Sources & educational lineage* below).
 - Large R/L sticking cells with accent marks (`>`), grace-note chips (flams),
   diddle underlines, counting-row subdivision guides, and beat grouping
 - Current-stroke highlight synchronized to the audio clock
+- The rudiment **written in notation** under the live sticking — one drawn card
+  per rudiment, always with a right-hand lead; on a left lead the caption says
+  to swap every R and L rather than letting the two displays quietly disagree
 - Leading-hand control — left lead is a hand-swapped copy of the pattern
   (grace hands included); the source definition is frozen and never mutated
 - Four-beat count-in in the family's soft "listen" voice
@@ -125,7 +128,7 @@ Runner-agnostic cases live in `tests/cases.js`:
   counting, buzz and grouped strokes, leading-hand transformation, stroke
   ordering, accents, grace notes, diddles, tempo paths, plans, the playback
   position machine, snapshot/restore, reset, and drift.
-- **Node (when available):** `node --test tests/core.test.cjs` — the same 62
+- **Node (when available):** `node --test tests/core.test.cjs` — the same
   cases, run headless.
 
   Name the file, not the directory. `node --test tests/` resolves `tests/` as a
@@ -133,7 +136,7 @@ Runner-agnostic cases live in `tests/cases.js`:
   single case — and it exits `0` while doing it, so a script that only checks
   the exit code reads that as a pass.
 
-- **The build and privacy tests:** `node --test tests/*.test.mjs` — six cases
+- **The build and privacy tests:** `node --test tests/*.test.mjs` — cases
   over what `dist/` publishes and what the shipped page carries. **This is what
   CI's `validate` job runs, and it does not run the core cases**, so running
   only `core.test.cjs` before a push proves nothing about the checks that gate
@@ -145,6 +148,8 @@ Runner-agnostic cases live in `tests/cases.js`:
 index.html            markup + CSS (Backwerd Rhythm Shop visual language)
 assets/brand/         design-tokens.css, copied verbatim from the site repo
 assets/fonts/         the self-hosted brand faces + their OFL 1.1 licences
+assets/notation/      vendored notation (see its README); only rudiments/*.svg
+                      and the Bravura licence ship, via NOTATION_ASSETS
 js/rudiment-data.js   frozen rudiment records — data only
 js/rudiment-core.js   validation · withLead (leading hand) · expandPattern ·
                       buildPlan (fixed/ladder/oco) · playback position machine
@@ -263,7 +268,8 @@ and grace-note structures follow the published PAS chart, proofed against the
 notation PAS published in May 2026 (see [`REVIEW.md`](REVIEW.md) for the method
 and what each pass found); the data model, prose, teaching notes, and
 all rendering are original to this app — no publisher's notation images are
-copied or traced.
+copied or traced. The notation cards are no exception: they are engraved from
+this app's own data with glyphs extracted from Bravura (SIL OFL 1.1).
 
 Rudiment Room is an independent Backwerd Rhythm Shop project and is not
 affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.

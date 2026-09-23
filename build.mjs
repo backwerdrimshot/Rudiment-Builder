@@ -1,7 +1,22 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildStamp, capabilities } from "./capabilities.mjs";
+
+const Core = createRequire(import.meta.url)("./js/rudiment-core.js");
+
+/* The drawn notation cards shown beside the sticking, one per rudiment. They
+   are named by the same function the page uses to ask for them, so the build
+   cannot ship a set the page does not request, and a card that is missing
+   fails the existence check below instead of breaking a page. Only the
+   drawings and the Bravura licence their outlines are under ship: the glyph
+   library, the vendoring README and the composer's manifest stay source
+   material, which is what all of assets/notation used to be. */
+export const NOTATION_ASSETS = [
+  "assets/notation/LICENSE-bravura.txt",
+  ...Core.RUDIMENTS.map(Core.notationCard),
+];
 
 /* An explicit allowlist, copied into dist/, and the reason is not tidiness.
    This site used to publish through GitHub Pages with `path: '.'` — the whole
@@ -21,6 +36,7 @@ export const SITE_ASSETS = [
   "manifest.webmanifest",
   "robots.txt",
   "sitemap.xml",
+  ...NOTATION_ASSETS,
 ];
 
 /* Whole directories, copied recursively. The brand token file and the font
@@ -29,8 +45,8 @@ export const SITE_ASSETS = [
    stylesheet names them and nothing else supplies them — before this pass they
    were named and never shipped, so every visitor got a fallback face. The OFL
    licence texts travel with the fonts, which is why this ships the directory
-   rather than four named files. assets/notation stays out: its library is
-   inlined where it is used, and the PAS rudiment cards are a source asset. */
+   rather than four named files. assets/notation is not a directory entry: only
+   part of it ships, through NOTATION_ASSETS above. */
 export const SITE_DIRECTORIES = ["assets/brand", "assets/fonts"];
 
 /* Written by the build rather than copied from the tree, so it is in neither

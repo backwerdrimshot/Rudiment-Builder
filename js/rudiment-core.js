@@ -216,6 +216,17 @@ function withLead(rudiment, lead) {
   };
 }
 
+/* ---------------- notation card ----------------
+   The drawn card for a rudiment, relative to the site root. The cards are
+   rendered upstream from this data (assets/notation/README.md) and named by
+   PAS number and id; the page asks for this path and build.mjs ships exactly
+   the paths this returns, so the two cannot name different files. Every card
+   is written with a right-hand lead — there is no left-lead drawing. */
+function notationCard(rudiment) {
+  const n = rudiment.pas < 10 ? "0" + rudiment.pas : String(rudiment.pas);
+  return "assets/notation/rudiments/rudiment-" + n + "-" + rudiment.id + ".svg";
+}
+
 /* ---------------- expansion ----------------
    Pattern -> ordered playable events, positioned in BEATS from the cycle
    start (tempo-free: changing BPM rescales seconds, never this list).
@@ -535,6 +546,7 @@ const RudimentCore = {
   validateRudiment: validateRudiment,
   assertValidRegistry: assertValidRegistry,
   withLead: withLead,
+  notationCard: notationCard,
   expandPattern: expandPattern,
   describePattern: describePattern,
   countingFor: countingFor,
