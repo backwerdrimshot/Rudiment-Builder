@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-23`
+- **Build:** `2026-09-23.2`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -92,8 +92,13 @@ the app (see *Sources & educational lineage* below).
 - Leading-hand control — left lead is a hand-swapped copy of the pattern
   (grace hands included); the source definition is frozen and never mutated
 - Four-beat count-in in the family's soft "listen" voice
-- Right and left strokes distinguishable by pitch **and** gentle stereo
-  placement; accents brighter and louder; grace notes tucked underneath
+- Two **stroke sounds**, synthesized with no audio files: **Snare** (the
+  default) sounds like the drum, accents louder and brighter; **Tones** plays
+  the right hand higher than the left so the sticking can be heard. Both keep
+  gentle stereo placement and tuck grace notes underneath, and picking one
+  while stopped plays a short sample. Switching never stops playback
+- Buzz strokes (the multiple bounce roll) sound as bounces that fill their
+  written length, so a buzz roll sounds closed rather than like single strokes
 - Optional **pulse under the sticking** (a soft click on every beat, so the
   grid never disappears through rests and ringing releases) or a lighter
   downbeat-only cue

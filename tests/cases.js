@@ -633,6 +633,41 @@ function getCases(core) {
     assert.ok(core.describePattern(core.withLead(r, "R")).indexOf("buzz") !== -1, "narrated as a buzz");
   }},
 
+  { name: "expansion: every event carries its written length, and a cycle's lengths fill it", fn: function (assert) {
+    // A buzz is sounded for its written length, so that length has to be right.
+    assert.deepEqual(core.expandPattern(core.withLead(MAP["multiple-bounce-roll"], "R"))
+      .map(function (e) { return e.lengthBeats; }), [0.5, 0.5, 0.5, 0.5], "four buzzed eighths");
+    const five = core.expandPattern(core.withLead(MAP["five-stroke-roll"], "R"));
+    assert.equal(five[4].lengthBeats, 1, "the accented release rings through its beat");
+    core.RUDIMENTS.forEach(function (r) {
+      const ev = core.expandPattern(core.withLead(r, "R"));
+      ev.forEach(function (e, i) {
+        const next = i + 1 < ev.length ? ev[i + 1].beatPos : r.cycleBeats;
+        assert.ok(e.lengthBeats > 0 && e.beatPos + e.lengthBeats <= next + 1e-9,
+          r.id + " stroke " + i + " ends by the next stroke");
+      });
+    });
+  }},
+
+  { name: "buzz: one pressed stroke becomes bounces that fill its note and never reach the next", fn: function (assert) {
+    const b = core.buzzBounces(10, 0.375, 0.62); // a buzzed eighth at 80 BPM
+    assert.deepEqual(b[0], { t: 10, velocity: 0.62 }, "the first bounce is the stroke itself");
+    assert.ok(b.length >= 12, "an eighth at 80 BPM is a closed buzz, not a flam (" + b.length + " bounces)");
+    for (let i = 1; i < b.length; i++) {
+      assert.ok(b[i].t > b[i - 1].t, "bounces are in time order");
+      assert.ok(b[i].t - b[i - 1].t >= 0.016 - 1e-9, "never closer than 16 ms");
+      assert.ok(b[i].velocity < b[i - 1].velocity, "each bounce is quieter than the last");
+    }
+    assert.ok(b[b.length - 1].t < 10 + 0.375, "the buzz stops before the next stroke");
+    assert.equal(core.buzzBounces(0, 0.02, 1).length, 1, "a note too short to bounce is just the stroke");
+    // Across #4's whole suggested range the buzz stays a buzz and stays bounded.
+    const r = MAP["multiple-bounce-roll"];
+    [r.tempo.suggestedLo, r.tempo.suggestedHi, core.BPM_MAX].forEach(function (bpm) {
+      const n = core.buzzBounces(0, 0.5 * core.beatSeconds(bpm), 1).length;
+      assert.ok(n >= 4 && n <= 32, bpm + " BPM gives " + n + " bounces");
+    });
+  }},
+
   { name: "buzz: validation rejects a non-boolean buzz and a buzz that also carries a grace", fn: function (assert) {
     expectInvalid(assert, function (r) { r.strokes[0].buzz = "yes"; }, "buzz must be a boolean");
     expectInvalid(assert, function (r) { r.strokes[0].buzz = true; r.strokes[0].grace = [{ hand: "L" }]; },

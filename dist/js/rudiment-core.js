@@ -230,13 +230,15 @@ function notationCard(rudiment) {
 /* ---------------- expansion ----------------
    Pattern -> ordered playable events, positioned in BEATS from the cycle
    start (tempo-free: changing BPM rescales seconds, never this list).
-   strokeIndex ties each event back to its visual cell. */
+   strokeIndex ties each event back to its visual cell; lengthBeats is the
+   written length, which a buzz fills with bounces (buzzBounces). */
 function expandPattern(pattern) {
   return pattern.strokes.map(function (s, i) {
     return {
       kind: "stroke",
       strokeIndex: i,
       beatPos: s.slot / pattern.slotsPerBeat,
+      lengthBeats: s.duration / pattern.slotsPerBeat,
       hand: s.hand,
       accent: s.accent,
       buzz: !!s.buzz,
@@ -303,6 +305,26 @@ function graceLeadSeconds(bpm, slotsPerBeat) {
 function graceTimes(t, n, lead) {
   const out = [];
   for (let i = n; i >= 1; i--) out.push(t - i * lead);
+  return out;
+}
+
+// A buzz (multiple bounce) is one pressed stroke that bounces until its
+// written length runs out, so consecutive buzzes join into a closed roll. The
+// first bounce is the stroke itself; the rest start 30 ms apart and tighten as
+// the stick settles (never closer than 16 ms), falling away from just over
+// half its level. They stop short of the note's end, so a buzz never runs
+// into the next stroke. Returns [{ t, velocity }] in time order.
+const BUZZ = { firstGap: 0.03, tighten: 0.9, minGap: 0.016, settle: 0.55, decay: 0.95, fill: 0.9, max: 32 };
+function buzzBounces(t, seconds, velocity) {
+  const out = [{ t: t, velocity: velocity }];
+  const end = t + seconds * BUZZ.fill;
+  let gap = BUZZ.firstGap, at = t + gap, v = velocity * BUZZ.settle;
+  while (at < end && out.length < BUZZ.max) {
+    out.push({ t: at, velocity: v });
+    gap = Math.max(BUZZ.minGap, gap * BUZZ.tighten);
+    at += gap;
+    v *= BUZZ.decay;
+  }
   return out;
 }
 
@@ -554,6 +576,7 @@ const RudimentCore = {
   cycleSeconds: cycleSeconds,
   graceLeadSeconds: graceLeadSeconds,
   graceTimes: graceTimes,
+  buzzBounces: buzzBounces,
   buildLadderRungs: buildLadderRungs,
   buildOcoRungs: buildOcoRungs,
   buildPlan: buildPlan,

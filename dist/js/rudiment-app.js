@@ -19,6 +19,7 @@ var DEFAULTS = {
   cue: true,
   pulse: false,
   muted: false,
+  sound: "snare",
   bpm: 80,
   ladder: { startBpm: 60, endBpm: 100, stepBpm: 5, repsPerStep: 4 },
   oco: { startBpm: 60, peakBpm: 100, stepBpm: 5, repsPerStep: 2 },
@@ -93,36 +94,115 @@ function updateMuteBtn() {
   b.classList.toggle("muted", settings.muted);
 }
 
-/* Stroke voices: right and left take different pitches and a gentle opposite
-   pan; accents are brighter (square) and louder; grace notes reuse the hand's
-   voice at the quiet grace tier. Count-in/transition blocks use the family's
-   soft sine "listen" voice so the student HEARS "don't play yet". */
-var STROKE_VOICE = {
+/* Stroke voices. Every stroke goes through playStroke, which picks the voice
+   the student chose and turns a buzz into its bounces (Core.buzzBounces) —
+   before that, a buzz sounded as one plain stroke. Loudness always comes from
+   the core's velocity tiers (accent > normal > grace); count-in/transition
+   blocks keep the family's soft sine "listen" voice in either setting, so the
+   student HEARS "don't play yet". A voice change is picked up by the next
+   stroke scheduled, so it never needs to stop playback. */
+function playStroke(time, hand, velocity, accent, buzzSeconds) {
+  var hit = settings.sound === "tones" ? toneHit : snareHit;
+  if (!buzzSeconds) { hit(time, hand, velocity, accent); return; }
+  Core.buzzBounces(time, buzzSeconds, velocity).forEach(function (b, i) {
+    hit(b.t, hand, b.velocity, accent && i === 0);
+  });
+}
+// One output per stroke, panned toward the playing hand; each sounding part
+// of the stroke feeds it through its own enveloped gain.
+function handOutput(pan) {
+  if (!canPan) return master;
+  var p = audio.createStereoPanner();
+  p.pan.value = pan;
+  p.connect(master);
+  return p;
+}
+function envGain(dest, time, peak, dur) {
+  var g = audio.createGain();
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), time + 0.0015);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+  g.connect(dest);
+  return g;
+}
+
+/* Tones: right and left take different pitches and a gentle opposite pan, so
+   the sticking can be heard as well as seen; accents are brighter (square). */
+var TONE_VOICE = {
   R: { f: 784, pan: 0.28 },   // G5, nudged right
   L: { f: 587, pan: -0.28 },  // D5, nudged left
 };
-function strokeSound(time, hand, velocity, accent) {
-  var v = STROKE_VOICE[hand];
+function toneHit(time, hand, velocity, accent) {
+  var v = TONE_VOICE[hand];
   var osc = audio.createOscillator();
-  var g = audio.createGain();
   osc.frequency.value = v.f;
   osc.type = accent ? "square" : "triangle";
-  var peak = 0.9 * velocity; // tiers come from the core (accent > normal > grace)
   var d = accent ? 0.07 : 0.05;
-  g.gain.setValueAtTime(0.0001, time);
-  g.gain.exponentialRampToValueAtTime(peak, time + 0.0015);
-  g.gain.exponentialRampToValueAtTime(0.0001, time + d);
-  osc.connect(g);
-  var out = g;
-  if (canPan) {
-    var p = audio.createStereoPanner();
-    p.pan.value = v.pan;
-    g.connect(p);
-    out = p;
-  }
-  out.connect(master);
+  osc.connect(envGain(handOutput(v.pan), time, 0.9 * velocity, d));
   osc.start(time);
   osc.stop(time + d + 0.02);
+}
+
+/* Snare: synthesized, no sample files. A short pitched thump for the head,
+   high-passed noise for the wires, and a stick crack on top. Louder strokes
+   also open the wires brighter and let them ring longer, which is most of
+   what makes an accent sound like one. Both hands sound like the same drum;
+   they differ only by a gentle pan and a whisker of tuning. */
+var SNARE_VOICE = {
+  R: { head: 196, pan: 0.2 },
+  L: { head: 188, pan: -0.2 },
+};
+var noiseBuf = null;
+function noiseBuffer() {
+  if (!noiseBuf) {
+    noiseBuf = audio.createBuffer(1, Math.floor(audio.sampleRate * 0.6), audio.sampleRate);
+    var d = noiseBuf.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+function noiseBurst(time, dur, filters, out) {
+  var src = audio.createBufferSource();
+  src.buffer = noiseBuffer();
+  var node = src;
+  filters.forEach(function (f) {
+    var bq = audio.createBiquadFilter();
+    bq.type = f[0]; bq.frequency.value = f[1];
+    if (f[2]) bq.Q.value = f[2];
+    node.connect(bq);
+    node = bq;
+  });
+  node.connect(out);
+  src.start(time, Math.random() * 0.3); // a different stretch of noise each hit
+  src.stop(time + dur + 0.02);
+}
+function snareHit(time, hand, velocity) {
+  var v = SNARE_VOICE[hand];
+  var out = handOutput(v.pan);
+  var ring = 0.07 + 0.16 * velocity;          // grace ~0.1 s, accent ~0.23 s
+  noiseBurst(time, ring, [["highpass", 1800], ["lowpass", 2500 + 8000 * velocity]],
+    envGain(out, time, 0.5 * velocity, ring));
+  noiseBurst(time, 0.012, [["bandpass", 5000, 0.8]],
+    envGain(out, time, 0.35 * velocity * velocity, 0.012));
+
+  var head = audio.createOscillator();
+  head.type = "triangle";
+  head.frequency.setValueAtTime(v.head * 1.5, time);
+  head.frequency.exponentialRampToValueAtTime(v.head, time + 0.025);
+  head.connect(envGain(out, time, 0.42 * velocity, 0.05 + 0.05 * velocity));
+  head.start(time);
+  head.stop(time + 0.12);
+}
+// A two-stroke sample of the chosen voice when it is picked while nothing is
+// playing. Never while paused: resuming the context to sound it would also
+// unfreeze the paused plan.
+function previewVoice() {
+  if (live.status !== "idle" && live.status !== "complete") return;
+  try { initAudio(); } catch (e) { return; }
+  if (audio.state === "suspended") audio.resume();
+  var t = audio.currentTime + 0.05;
+  playStroke(t, "R", Core.VELOCITY.accent, true, 0);
+  playStroke(t + 0.22, "L", Core.VELOCITY.normal, false, 0);
 }
 function listenClick(time, isDown) {
   var s = isDown ? { f: 1319, g: 0.6, d: 0.075 } : { f: 880, g: 0.42, d: 0.05 };
@@ -284,10 +364,11 @@ function scheduleEntry(en, t, st, pb) {
     if (ev.graces.length) {
       var lead = Core.graceLeadSeconds(st.bpm, live.pattern.slotsPerBeat);
       Core.graceTimes(t, ev.graces.length, lead).forEach(function (gt, i) {
-        strokeSound(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, ev.graces[i].velocity, false);
+        playStroke(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, ev.graces[i].velocity, false, 0);
       });
     }
-    strokeSound(t, ev.hand, ev.velocity, ev.accent);
+    playStroke(t, ev.hand, ev.velocity, ev.accent,
+      ev.buzz ? ev.lengthBeats * Core.beatSeconds(st.bpm) : 0);
     live.visualQ.push(Object.assign(
       { t: t, type: "stroke", strokeIndex: ev.strokeIndex, beat: Math.floor(ev.beatPos) }, snap));
   }
@@ -889,6 +970,18 @@ function applyMode(mode) {
   syncPlanPreview();
   primeDisplay();
 }
+/* Not structural: the next stroke scheduled takes the new voice, so this
+   never stops playback — and it is not part of a shared drill. */
+var SOUND_HINT = {
+  snare: "Both hands sound like the drum; the right sits a little right, the left a little left.",
+  tones: "The right hand plays a higher tone than the left, so you can hear the sticking.",
+};
+function applySound(sound) {
+  settings.sound = sound;
+  persistSettings();
+  $("soundHint").textContent = SOUND_HINT[sound];
+  previewVoice();
+}
 function applyLead(lead) {
   stopIfActive();
   settings.lead = lead;
@@ -961,6 +1054,7 @@ function coerceSettings(raw) {
   if (typeof raw.cue === "boolean") settings.cue = raw.cue;
   if (typeof raw.pulse === "boolean") settings.pulse = raw.pulse;
   if (typeof raw.muted === "boolean") settings.muted = raw.muted;
+  if (raw.sound === "snare" || raw.sound === "tones") settings.sound = raw.sound;
   var n;
   if ((n = toInt(raw.bpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.bpm = n;
   var lad = raw.ladder || {}, oco = raw.oco || {};
@@ -980,7 +1074,8 @@ function queryToRaw() {
     rudimentId: q.get("r"), lead: q.get("lead"), mode: q.get("mode"),
     cue: q.get("cue") === null ? undefined : q.get("cue") === "1",
     pulse: q.get("pulse") === null ? undefined : q.get("pulse") === "1",
-    // muted is deliberately NOT read from links — a shared drill never arrives silent
+    // muted is deliberately NOT read from links — a shared drill never arrives silent.
+    // Nor is sound: which voice plays the strokes is the listener's choice, not the drill's.
     bpm: q.get("bpm"),
     ladder: { startBpm: q.get("ls"), endBpm: q.get("le"), stepBpm: q.get("lst"), repsPerStep: q.get("lr") },
     oco: { startBpm: q.get("os"), peakBpm: q.get("op"), stepBpm: q.get("ost"), repsPerStep: q.get("or") },
@@ -1047,6 +1142,8 @@ function hydrateControls() {
   updateMuteBtn();
   setSeg("segLead", settings.lead);
   setSeg("segMode", settings.mode);
+  setSeg("segSound", settings.sound);
+  $("soundHint").textContent = SOUND_HINT[settings.sound];
   $("settingsFixed").hidden = settings.mode !== "fixed";
   $("settingsLadder").hidden = settings.mode !== "ladder";
   $("settingsOco").hidden = settings.mode !== "oco";
@@ -1066,6 +1163,7 @@ function wireEvents() {
 
   wireSeg("segLead", applyLead);
   wireSeg("segMode", applyMode);
+  wireSeg("segSound", applySound);
 
   document.querySelectorAll("button.step").forEach(function (b) {
     b.addEventListener("click", function () {
