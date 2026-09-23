@@ -70,7 +70,9 @@ machine advanced by the scheduler **only at block boundaries**.
   lead change ends the claim. Core `markClean` keeps the best per rudiment per
   lead and never mutates; `sanitizeBestLog` cleans what storage returns. Own
   key (`rudimentroom-best`), never in share links. Clearing takes two presses,
-  not `confirm()`, which would block the scheduler tick mid-play.
+  not `confirm()`, which would block the scheduler tick mid-play. "Start at
+  your best" (Fixed mode, beside "Start at N") only sets the tempo, through
+  `onBpmChanged`, so mid-play it lands at the next cycle like any tempo edit.
 - Scheduling: 25 ms tick, 0.12 s horizon, absolute times accumulated exactly
   from `AudioContext.currentTime` — never schedule audio off `setInterval`
   time. Visuals ride a timestamped queue flushed from BOTH rAF and the tick.

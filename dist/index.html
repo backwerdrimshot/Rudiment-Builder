@@ -390,6 +390,7 @@
   .cue-row input[type=checkbox]:disabled+label{opacity:.5}
   .btn.muted{border-color:var(--accent-ink);color:var(--accent-ink)}
   .suggested-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .suggested-row .btn{min-height:44px}
   .btn.mini{padding:8px 14px;font-size:.82rem}
   .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
 
@@ -572,6 +573,7 @@
           <div class="suggested-row wide">
             <span class="hint" id="suggestedText"></span>
             <button class="btn ghost mini" id="btnSuggested" type="button"></button>
+            <button class="btn ghost mini" id="btnBest" type="button" hidden></button>
           </div>
         </div>
       </div>
@@ -703,7 +705,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-23.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-23.4";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {

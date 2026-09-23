@@ -596,6 +596,11 @@ function markClean(log, rudimentId, lead, bpm, date) {
   }
   return { log: next, improved: improved, best: improved ? { bpm: bpm, date: date } : prev };
 }
+// The best clean tempo for one rudiment and hand, or null when none is logged.
+function bestTempo(log, rudimentId, lead) {
+  const e = log[rudimentId] && log[rudimentId][lead];
+  return e ? e.bpm : null;
+}
 function clearBest(log, rudimentId) {
   const next = Object.assign({}, log);
   delete next[rudimentId];
@@ -631,6 +636,7 @@ const RudimentCore = {
   createPracticePlayback: createPracticePlayback,
   sanitizeBestLog: sanitizeBestLog,
   markClean: markClean,
+  bestTempo: bestTempo,
   clearBest: clearBest,
 };
 

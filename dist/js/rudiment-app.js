@@ -890,7 +890,13 @@ function loadBest() {
 function saveBest() {
   try { localStorage.setItem(BEST_KEY, JSON.stringify(bestLog)); } catch (e) { /* private mode */ }
 }
-function effectiveLead() { return live.pattern && live.pattern.mirrored ? "L" : "R"; }
+// The hand a best is filed under: the chosen lead, unless the rudiment ignores
+// the control (same rule as Core.withLead). Read from settings rather than the
+// rendered pattern, so it is right whichever of the renders runs first.
+function effectiveLead() {
+  var r = Core.RUDIMENT_MAP[settings.rudimentId];
+  return r.leadingHand === "mirror" && settings.lead === "L" ? "L" : "R";
+}
 
 // Called at hear-time for every played stroke (never count-in or listen
 // clicks), so the tempo on the button is the one the student just heard.
@@ -954,12 +960,29 @@ function renderBest() {
     : "Best clean: not logged yet. While you are playing it cleanly, press \u201cClean at\u201d.";
   $("btnClearBest").hidden = !rec;
   disarmClear();
+  renderBestStart();
   cardIndex.forEach(function (c) {
     var r = bestLog[c.id];
     c.best.hidden = !r;
     c.best.textContent = r ? "Best clean " +
       [r.R ? "R " + r.R.bpm : "", r.L ? "L " + r.L.bpm : ""].filter(Boolean).join(" \u00b7 ") : "";
   });
+}
+// "Start at your best", beside "Start at N" in Fixed mode: sets the tempo to
+// this rudiment's best clean tempo for the current hand, and only exists when
+// there is one. Like the suggested tempo it only sets the tempo, so mid-play
+// it lands at the next cycle.
+function renderBestStart() {
+  var bpm = Core.bestTempo(bestLog, settings.rudimentId, effectiveLead());
+  var b = $("btnBest");
+  b.hidden = bpm == null;
+  if (bpm != null) b.textContent = "Start at your best (" + bpm + ")";
+}
+function onBestStart() {
+  var bpm = Core.bestTempo(bestLog, settings.rudimentId, effectiveLead());
+  if (bpm == null) return;
+  $("bpm").value = bpm;
+  onBpmChanged();
 }
 // Clearing takes two presses, a few seconds apart at most. Not confirm(): a
 // modal dialog blocks the scheduler's tick and the audio would drop out.
@@ -1106,6 +1129,7 @@ function applyLead(lead) {
   syncPlanPreview();
   primeDisplay();
   forgetHeard();
+  renderBestStart();
 }
 
 function fmtDuration(secs) {
@@ -1308,6 +1332,7 @@ function wireEvents() {
   $("btnMute").addEventListener("click", toggleMute);
   $("btnClean").addEventListener("click", onClean);
   $("btnClearBest").addEventListener("click", onClearBest);
+  $("btnBest").addEventListener("click", onBestStart);
   $("btnSuggested").addEventListener("click", function () {
     var r = Core.RUDIMENT_MAP[settings.rudimentId];
     $("bpm").value = r.tempo.suggestedLo;

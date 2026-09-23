@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-23.3`
+- **Build:** `2026-09-23.4`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -113,7 +113,8 @@ the app (see *Sources & educational lineage* below).
   once a run completes), **Clean at N** records the tempo just heard as one
   played cleanly. Each rudiment keeps its fastest mark per leading hand, shown
   in the rudiment panel and on its card in the chooser. The app never listens —
-  "clean" is the student's call — and the log stays on the device
+  "clean" is the student's call — and the log stays on the device. In Fixed
+  mode, **Start at your best** sets the tempo to that best for the current hand
 - Settings persist locally; **Copy link** shares one exact drill
 - Keyboard: **Space** starts/pauses, **R** resets; visible focus states;
   respects reduced-motion preferences; screen wake lock while playing

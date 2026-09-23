@@ -999,6 +999,15 @@ function getCases(core) {
     assert.ok(log["flam-tap"], "clearing copies too");
   }},
 
+  { name: "best clean: the tempo to start at is the logged best for that rudiment and hand", fn: function (assert) {
+    let log = core.markClean({}, "flam-tap", "R", 104, "2026-09-23").log;
+    log = core.markClean(log, "flam-tap", "R", 96, "2026-09-24").log;
+    assert.equal(core.bestTempo(log, "flam-tap", "R"), 104, "the best, not the latest");
+    assert.equal(core.bestTempo(log, "flam-tap", "L"), null, "no left-lead best yet");
+    assert.equal(core.bestTempo(log, "single-paradiddle", "R"), null, "no best for another rudiment");
+    assert.equal(core.bestTempo({}, "flam-tap", "R"), null, "an empty log has none");
+  }},
+
   { name: "best clean: a mark outside the rules is refused, not stored", fn: function (assert) {
     assert.ok(threw(function () { core.markClean({}, "no-such-rudiment", "R", 100, "2026-09-23"); }), "unknown rudiment");
     assert.ok(threw(function () { core.markClean({}, "flam-tap", "X", 100, "2026-09-23"); }), "unknown lead");
