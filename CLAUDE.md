@@ -58,8 +58,19 @@ machine advanced by the scheduler **only at block boundaries**.
   `startPlayback` is idempotent: it tears down timers and orphans scheduled
   audio first. Structural changes during playback (rudiment/lead/mode/ladder
   numbers) call `stopIfActive()`; only fixed-mode BPM, the pulse/downbeat-cue
-  toggles (picked up at the next block), and mute (master gain only; never in
-  share links) apply without stopping.
+  toggles (picked up at the next block), the stroke sound (Snare/Tones, picked
+  up by the next stroke scheduled; never in share links), and mute (master gain
+  only; never in share links) apply without stopping. Choosing a sound while
+  idle or complete plays a sample — never while paused, where resuming the
+  context would unfreeze the plan.
+- Best clean tempo is the student's claim, never a judgement (nothing listens).
+  "Clean at N" offers only a tempo actually HEARD in a played block (set from
+  `renderNow`, so count-in, listen blocks and a pending fixed-mode change do
+  not count); once a run completes it offers the run's peak. A rudiment or
+  lead change ends the claim. Core `markClean` keeps the best per rudiment per
+  lead and never mutates; `sanitizeBestLog` cleans what storage returns. Own
+  key (`rudimentroom-best`), never in share links. Clearing takes two presses,
+  not `confirm()`, which would block the scheduler tick mid-play.
 - Scheduling: 25 ms tick, 0.12 s horizon, absolute times accumulated exactly
   from `AudioContext.currentTime` — never schedule audio off `setInterval`
   time. Visuals ride a timestamped queue flushed from BOTH rAF and the tick.
@@ -79,7 +90,8 @@ slotsPerBeat` grid; `duration` (default 1) may not cross a beat boundary (MVP
 display constraint — the cell spans its beat group). Diddle = **exactly two**
 same-hand strokes on consecutive slots sharing a `diddle` id; `group` = a
 bracket of **2+** same-hand consecutive strokes (e.g. the triple stroke roll).
-`buzz:true` marks a multiple-bounce stroke (can't also carry a grace). Grace
+`buzz:true` marks a multiple-bounce stroke (can't also carry a grace); it
+sounds as `buzzBounces` over the event's `lengthBeats`, in either voice. Grace
 hands must oppose the primary (`grace:[{hand}]`, 1 = flam, 2 = drag). `counting`
 is **optional** — when omitted the core generates it from `slotsPerBeat`
 (`countingFor`); when present it must match the grid length. Velocity tiers:

@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-23`
+- **Build:** `2026-09-23.3`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -92,8 +92,13 @@ the app (see *Sources & educational lineage* below).
 - Leading-hand control — left lead is a hand-swapped copy of the pattern
   (grace hands included); the source definition is frozen and never mutated
 - Four-beat count-in in the family's soft "listen" voice
-- Right and left strokes distinguishable by pitch **and** gentle stereo
-  placement; accents brighter and louder; grace notes tucked underneath
+- Two **stroke sounds**, synthesized with no audio files: **Snare** (the
+  default) sounds like the drum, accents louder and brighter; **Tones** plays
+  the right hand higher than the left so the sticking can be heard. Both keep
+  gentle stereo placement and tuck grace notes underneath, and picking one
+  while stopped plays a short sample. Switching never stops playback
+- Buzz strokes (the multiple bounce roll) sound as bounces that fill their
+  written length, so a buzz roll sounds closed rather than like single strokes
 - Optional **pulse under the sticking** (a soft click on every beat, so the
   grid never disappears through rests and ringing releases) or a lighter
   downbeat-only cue
@@ -104,6 +109,11 @@ the app (see *Sources & educational lineage* below).
   clear indication before every tempo change
 - Pause = frozen audio clock (no duplicate events, exact resume); Reset always
   returns to a clean start
+- **Best clean tempo**, the student's own log: while playing (or paused, or
+  once a run completes), **Clean at N** records the tempo just heard as one
+  played cleanly. Each rudiment keeps its fastest mark per leading hand, shown
+  in the rudiment panel and on its card in the chooser. The app never listens —
+  "clean" is the student's call — and the log stays on the device
 - Settings persist locally; **Copy link** shares one exact drill
 - Keyboard: **Space** starts/pauses, **R** resets; visible focus states;
   respects reduced-motion preferences; screen wake lock while playing
@@ -167,12 +177,12 @@ timestamped visual queue drives the display at hear-time.
 
 ## Privacy and accessibility
 
-Rudiment Room requires no account or backend. Settings stay in the browser's local
-storage. One script does load: a Cloudflare Web Analytics beacon that counts page views
+Rudiment Room requires no account or backend. Settings and the best-clean-tempo log stay
+in the browser's local storage, and neither travels in a share link. One script does load: a Cloudflare Web Analytics beacon that counts page views
 and nothing else — no cookies, no fingerprinting, no following anyone to another site.
 It carries the same site token as the rest of backwerdrhythmshop.com so this app's
-numbers land beside the page that describes it, and it never sees a rudiment, a tempo or
-a stored setting. The shop site's `/privacy/` describes it for visitors. Keyboard controls, visible focus, reduced-motion support, responsive layouts,
+numbers land beside the page that describes it, and it never sees a rudiment, a tempo,
+a stored setting or a logged tempo. The shop site's `/privacy/` describes it for visitors. Keyboard controls, visible focus, reduced-motion support, responsive layouts,
 and screen wake lock support individual and classroom use.
 
 ## Deployment

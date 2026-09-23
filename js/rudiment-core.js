@@ -230,13 +230,15 @@ function notationCard(rudiment) {
 /* ---------------- expansion ----------------
    Pattern -> ordered playable events, positioned in BEATS from the cycle
    start (tempo-free: changing BPM rescales seconds, never this list).
-   strokeIndex ties each event back to its visual cell. */
+   strokeIndex ties each event back to its visual cell; lengthBeats is the
+   written length, which a buzz fills with bounces (buzzBounces). */
 function expandPattern(pattern) {
   return pattern.strokes.map(function (s, i) {
     return {
       kind: "stroke",
       strokeIndex: i,
       beatPos: s.slot / pattern.slotsPerBeat,
+      lengthBeats: s.duration / pattern.slotsPerBeat,
       hand: s.hand,
       accent: s.accent,
       buzz: !!s.buzz,
@@ -303,6 +305,26 @@ function graceLeadSeconds(bpm, slotsPerBeat) {
 function graceTimes(t, n, lead) {
   const out = [];
   for (let i = n; i >= 1; i--) out.push(t - i * lead);
+  return out;
+}
+
+// A buzz (multiple bounce) is one pressed stroke that bounces until its
+// written length runs out, so consecutive buzzes join into a closed roll. The
+// first bounce is the stroke itself; the rest start 30 ms apart and tighten as
+// the stick settles (never closer than 16 ms), falling away from just over
+// half its level. They stop short of the note's end, so a buzz never runs
+// into the next stroke. Returns [{ t, velocity }] in time order.
+const BUZZ = { firstGap: 0.03, tighten: 0.9, minGap: 0.016, settle: 0.55, decay: 0.95, fill: 0.9, max: 32 };
+function buzzBounces(t, seconds, velocity) {
+  const out = [{ t: t, velocity: velocity }];
+  const end = t + seconds * BUZZ.fill;
+  let gap = BUZZ.firstGap, at = t + gap, v = velocity * BUZZ.settle;
+  while (at < end && out.length < BUZZ.max) {
+    out.push({ t: at, velocity: v });
+    gap = Math.max(BUZZ.minGap, gap * BUZZ.tighten);
+    at += gap;
+    v *= BUZZ.decay;
+  }
   return out;
 }
 
@@ -533,6 +555,53 @@ function createPracticePlayback(plan) {
   return pb;
 }
 
+/* ---------------- best clean tempo (the student's own log) ----------------
+   The fastest tempo a student says they played a rudiment cleanly, kept per
+   leading hand. "Clean" is theirs to judge: the app never listens, so a mark
+   is a claim, and the log keeps the best claim for each hand. It lives on the
+   device only. These never mutate the log they are given, and sanitizeBestLog
+   is what stands between the page and whatever storage hands back.
+     log shape: { "<rudimentId>": { R: { bpm, date }, L: { bpm, date } } }
+   `date` is the local calendar day, YYYY-MM-DD. */
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+function bestEntry(e) {
+  return !!e && Number.isInteger(e.bpm) && e.bpm >= BPM_MIN && e.bpm <= BPM_MAX &&
+    typeof e.date === "string" && ISO_DAY.test(e.date);
+}
+function sanitizeBestLog(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  Object.keys(raw).forEach(function (id) {
+    if (!Data.RUDIMENT_MAP[id] || !raw[id] || typeof raw[id] !== "object") return;
+    ["R", "L"].forEach(function (lead) {
+      const e = raw[id][lead];
+      if (bestEntry(e)) (out[id] = out[id] || {})[lead] = { bpm: e.bpm, date: e.date };
+    });
+  });
+  return out;
+}
+// Mark `bpm` as played cleanly. Returns the new log, whether it is a new best,
+// and the best that now stands for that rudiment and hand.
+function markClean(log, rudimentId, lead, bpm, date) {
+  if (!Data.RUDIMENT_MAP[rudimentId]) throw new Error("unknown rudiment " + rudimentId);
+  if (lead !== "R" && lead !== "L") throw new Error('lead must be "R" or "L"');
+  intIn(bpm, BPM_MIN, BPM_MAX, "bpm");
+  if (typeof date !== "string" || !ISO_DAY.test(date)) throw new Error("date must be YYYY-MM-DD");
+  const prev = log[rudimentId] && log[rudimentId][lead];
+  const improved = !prev || bpm > prev.bpm;
+  const next = Object.assign({}, log);
+  if (improved) {
+    next[rudimentId] = Object.assign({}, log[rudimentId]);
+    next[rudimentId][lead] = { bpm: bpm, date: date };
+  }
+  return { log: next, improved: improved, best: improved ? { bpm: bpm, date: date } : prev };
+}
+function clearBest(log, rudimentId) {
+  const next = Object.assign({}, log);
+  delete next[rudimentId];
+  return next;
+}
+
 /* ---------------- export ---------------- */
 const RudimentCore = {
   RUDIMENTS: Data.RUDIMENTS,
@@ -554,11 +623,15 @@ const RudimentCore = {
   cycleSeconds: cycleSeconds,
   graceLeadSeconds: graceLeadSeconds,
   graceTimes: graceTimes,
+  buzzBounces: buzzBounces,
   buildLadderRungs: buildLadderRungs,
   buildOcoRungs: buildOcoRungs,
   buildPlan: buildPlan,
   totalSeconds: totalSeconds,
   createPracticePlayback: createPracticePlayback,
+  sanitizeBestLog: sanitizeBestLog,
+  markClean: markClean,
+  clearBest: clearBest,
 };
 
 if (typeof module !== "undefined" && module.exports) module.exports = RudimentCore;
