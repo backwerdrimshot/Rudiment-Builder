@@ -11,7 +11,7 @@
 <!-- The Backwerd Rhythm Shop token file, copied verbatim from
      assets/brand/design-tokens.css in backwerd-rhythm-shop-site (its own
      instruction is to copy the whole file, never retype values). Linked ahead
-     of the inline stylesheet so every colour below resolves from it, in light
+     of the inline stylesheet so every color below resolves from it, in light
      and, under prefers-color-scheme, dark. -->
 <link rel="stylesheet" href="./assets/brand/design-tokens.css" />
 <link rel="canonical" href="https://rudiment-builder.backwerdrhythmshop.com/" />
@@ -38,12 +38,12 @@
      app's category alias, the one surface the shared file has no name for, and
      the furniture. Those shared names take dark values under
      prefers-color-scheme in the token file, so nothing here needs a second
-     colour path. The letterpress furniture — 2px Ink borders, hard offset
+     color path. The letterpress furniture — 2px Ink borders, hard offset
      shadows with no blur, Palatino italic captions — is the app's own and
      stays. */
 
   /* The brand faces, self-hosted from ./assets/fonts. No font service is
-     contacted. Licensed OFL 1.1 — the licence texts sit beside the files. */
+     contacted. Licensed OFL 1.1 — the license texts sit beside the files. */
   @font-face{font-family:"Big Shoulders Display";font-style:normal;font-weight:800;font-display:swap;src:url("./assets/fonts/big-shoulders-display-800-latin.woff2") format("woff2")}
   @font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:400;font-display:swap;src:url("./assets/fonts/barlow-condensed-400-latin.woff2") format("woff2")}
   @font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:600;font-display:swap;src:url("./assets/fonts/barlow-condensed-600-latin.woff2") format("woff2")}
@@ -310,7 +310,7 @@
   .cell.current.rest{background:var(--tan);transform:none}
   #sticking.listening{opacity:.45}
   /* Your turn: the student plays, so the current stroke is outlined rather
-     than filled — a change of shape, not only of colour, and the banner and
+     than filled — a change of shape, not only of color, and the banner and
      status line say it in words. */
   #sticking.your-turn .cell.current{background:var(--warm-white);box-shadow:inset 0 0 0 4px var(--accent-ink)}
   #sticking.your-turn .cell.current .letter,#sticking.your-turn .cell.current .acc,
@@ -725,7 +725,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-24.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-24.4";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
