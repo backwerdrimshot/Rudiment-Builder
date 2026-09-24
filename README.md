@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-24.2`
+- **Build:** `2026-09-24.3`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -128,6 +128,14 @@ the app (see *Sources & educational lineage* below).
   in the rudiment panel and on its card in the chooser. The app never listens —
   "clean" is the student's call — and the log stays on the device. In Fixed
   mode, **Start at your best** sets the tempo to that best for the current hand
+- **Works offline** after one visit: a service worker (`sw.js`) stores the
+  whole build — page, scripts, fonts, all 40 notation cards and the marching
+  snare, about 1.3 MB — and answers from it with no connection, share links
+  included. One build is served at a time, never a mix; a new deploy is
+  stored in full before it takes over, and an open tab says "reload when you
+  finish practising" rather than reloading itself. The footer says when the
+  build is saved for offline use. Not over `file://`, which already runs from
+  disk
 - Settings persist locally; **Copy link** shares one exact drill
 - Keyboard: **Space** starts/pauses, **R** resets; visible focus states;
   respects reduced-motion preferences; screen wake lock while playing
@@ -182,6 +190,8 @@ js/rudiment-core.js   validation · withLead (leading hand) · expandPattern ·
 js/rudiment-app.js    Web Audio look-ahead scheduler · voices · visual queue ·
                       transport · settings persistence + share links
 tests/                cases.js (shared) · test.html (browser) · core.test.cjs (Node)
+sw.js                 offline service worker; build.mjs writes dist/sw.js with
+                      the build number and the files to store
 serve.ps1             tiny PowerShell dev server
 ```
 
@@ -194,7 +204,9 @@ timestamped visual queue drives the display at hear-time.
 ## Privacy and accessibility
 
 Rudiment Room requires no account or backend. Settings and the best-clean-tempo log stay
-in the browser's local storage, and neither travels in a share link. One script does load: a Cloudflare Web Analytics beacon that counts page views
+in the browser's local storage, and neither travels in a share link. For offline use the
+browser also keeps a copy of the app's own files (Cache Storage, via `sw.js`); it holds
+nothing about the student and sends nothing anywhere. One script does load: a Cloudflare Web Analytics beacon that counts page views
 and nothing else — no cookies, no fingerprinting, no following anyone to another site.
 It carries the same site token as the rest of backwerdrhythmshop.com so this app's
 numbers land beside the page that describes it, and it never sees a rudiment, a tempo,
