@@ -20,6 +20,7 @@ var DEFAULTS = {
   pulse: false,
   muted: false,
   sound: "marching",
+  turn: 0,
   bpm: 80,
   ladder: { startBpm: 60, endBpm: 100, stepBpm: 5, repsPerStep: 4 },
   oco: { startBpm: 60, peakBpm: 100, stepBpm: 5, repsPerStep: 2 },
@@ -372,21 +373,27 @@ var live = {
 /* One block's schedule. Listen blocks (count-in / transition) walk quarter
    clicks; play blocks walk the pattern's stroke events plus the optional
    downbeat cue. Rebuilt at every block boundary, so a tempo change or a cue
-   toggle lands exactly on the boundary — never mid-cycle. */
+   toggle lands exactly on the boundary — never mid-cycle.
+
+   Your turn: on the student's cycles the strokes are still walked, but silent
+   — they carry the highlight so the student can check themselves — and the
+   pulse clicks every beat whatever its toggle says, because nothing else is
+   holding the time. */
 function buildEntries() {
-  var st = live.playback.currentStage();
+  var pb = live.playback, st = pb.currentStage();
   var list = [];
+  var response = pb.isResponse();
   if (st.kind !== "play") {
     for (var b = 0; b < st.beatsPerBlock; b++) list.push({ tBeats: b, type: "beat", beat: b });
   } else {
-    if (settings.pulse) {
+    if (settings.pulse || response) {
       // The pulse covers every beat (including the downbeat), so it supersedes
       // the lighter downbeat-only cue.
       for (var p = 0; p < st.beatsPerBlock; p++) list.push({ tBeats: p, type: "pulse", beat: p });
     } else if (settings.cue) {
       list.push({ tBeats: 0, type: "cue" });
     }
-    live.events.forEach(function (e) { list.push({ tBeats: e.beatPos, type: "stroke", ev: e }); });
+    live.events.forEach(function (e) { list.push({ tBeats: e.beatPos, type: "stroke", ev: e, silent: response }); });
     list.sort(function (a, b) { return a.tBeats - b.tBeats || (a.type !== "stroke" ? -1 : 1); });
   }
   live.entries = list;
@@ -432,6 +439,7 @@ function snapshotState(pb, st) {
     kind: st.kind, bpm: st.bpm, phase: st.phase,
     step: pb.stepNumber(), stepCount: pb.stepCount(),
     rep: pb.repNumber(), reps: pb.repsInStage(),
+    turn: st.turn || 0, turnIndex: pb.turnIndex(), response: pb.isResponse(),
     finalBlock: pb.isFinalBlockOfStage(),
     nextStageBpm: next ? next.bpm : null,
     nextStageKind: next ? next.kind : null,
@@ -452,6 +460,10 @@ function scheduleEntry(en, t, st, pb) {
   } else if (en.type === "cue") {
     cueClick(t);
     // no visual event — the downbeat pip lights from the strokes themselves
+  } else if (en.silent) {
+    // The student's turn: the highlight moves, nothing sounds.
+    live.visualQ.push(Object.assign(
+      { t: t, type: "stroke", strokeIndex: en.ev.strokeIndex, beat: Math.floor(en.ev.beatPos) }, snap));
   } else {
     var ev = en.ev;
     if (ev.graces.length) {
@@ -550,6 +562,7 @@ function renderNow(ev) {
   lightPip(ev.beat);
 
   $("sticking").classList.toggle("listening", ev.kind !== "play");
+  $("sticking").classList.toggle("your-turn", !!ev.response);
   if (ev.type === "stroke") highlightCell(ev.strokeIndex);
   else clearCellHighlight();
   if (ev.type === "stroke" && ev.kind === "play") noteHeard(ev.bpm);
@@ -561,17 +574,24 @@ function renderNow(ev) {
     setBanner("listen", "Listen — next tempo: " + ev.bpm + " BPM");
     setStatus("Reset — into step " + ev.step + " of " + ev.stepCount);
   } else {
+    var turnWord = !ev.turn ? "" : !ev.response ? "Listen"
+                 : "Your turn" + (ev.turn > 1 ? " " + ev.turnIndex + " of " + ev.turn : "");
     if (ev.pendingBpm != null) {
-      setBanner("warn", "Tempo change at the next cycle → " + ev.pendingBpm + " BPM");
+      setBanner("warn", (ev.turn ? "Tempo change when the app next plays → "
+                                 : "Tempo change at the next cycle → ") + ev.pendingBpm + " BPM");
     } else if (ev.finalBlock && ev.nextStageKind === "play" &&
                ev.nextStageBpm != null && ev.nextStageBpm !== ev.bpm) {
       // Open-close-open changes seamlessly — warn on the final cycle.
       setBanner("warn", "Tempo change next cycle → " + ev.nextStageBpm + " BPM");
+    } else if (ev.turn) {
+      if (ev.response) setBanner("turn", turnWord + " — play it back");
+      else setBanner("listen", "Listen — then play it back");
     } else {
       setBanner("", "");
     }
     setStatus("Rep <strong>" + ev.rep + "</strong>" + (ev.reps ? " of " + ev.reps : "") +
-      (ev.stepCount > 1 ? " · Step <strong>" + ev.step + "</strong> of " + ev.stepCount : ""));
+      (ev.stepCount > 1 ? " · Step <strong>" + ev.step + "</strong> of " + ev.stepCount : "") +
+      (turnWord ? " · " + turnWord : ""));
   }
 }
 
@@ -845,9 +865,10 @@ function buildPlanFromSettings() {
   // the student-facing rule is stricter and clearer.
   if (settings.mode === "oco" && settings.oco.peakBpm <= settings.oco.startBpm)
     throw new Error("Peak BPM must be higher than the starting BPM.");
-  if (settings.mode === "fixed") return Core.buildPlan("fixed", { bpm: settings.bpm }, live.pattern);
-  if (settings.mode === "ladder") return Core.buildPlan("ladder", settings.ladder, live.pattern);
-  return Core.buildPlan("oco", settings.oco, live.pattern);
+  var turn = { turn: settings.turn };
+  if (settings.mode === "fixed") return Core.buildPlan("fixed", { bpm: settings.bpm, turn: settings.turn }, live.pattern);
+  if (settings.mode === "ladder") return Core.buildPlan("ladder", Object.assign({}, settings.ladder, turn), live.pattern);
+  return Core.buildPlan("oco", Object.assign({}, settings.oco, turn), live.pattern);
 }
 
 function startPlayback() {
@@ -1221,6 +1242,23 @@ function applySound(sound) {
   $("soundHint").textContent = soundHint(sound);
   previewVoice();
 }
+/* Structural, like the mode: it changes how many cycles a plan holds, so a
+   change mid-run stops playback. It travels in share links — how a drill is
+   practised is part of the drill. */
+var TURN_HINT = [
+  "Off — the app plays every cycle with you.",
+  "The app plays a cycle, then clicks while you play it back once. The highlight keeps going so you can check yourself.",
+  "The app plays a cycle, then clicks while you play it back twice. The highlight keeps going so you can check yourself.",
+  "The app plays a cycle, then clicks while you play it back three times. The highlight keeps going so you can check yourself.",
+];
+function applyTurn(val) {
+  stopIfActive();
+  settings.turn = +val;
+  persistSettings();
+  $("turnHint").textContent = TURN_HINT[settings.turn];
+  syncPlanPreview();
+  primeDisplay();
+}
 function applyLead(lead) {
   stopIfActive();
   settings.lead = lead;
@@ -1249,9 +1287,12 @@ function syncPlanPreview() {
     return;
   }
   live.previewPlan = plan;
+  var trade = settings.turn
+    ? " · the app plays one, then you play " + (settings.turn === 1 ? "one" : settings.turn) + " alone"
+    : "";
   if (settings.mode === "fixed") {
     wrap.innerHTML = '<span class="rung">' + settings.bpm + ' BPM</span> <span class="hint">— loops until you stop it</span>';
-    meta.textContent = "One cycle = " + live.pattern.cycleBeats + " beats · count-in first";
+    meta.textContent = "One cycle = " + live.pattern.cycleBeats + " beats · count-in first" + trade;
     return;
   }
   var peak = Math.max.apply(null, plan.rungs);
@@ -1265,7 +1306,9 @@ function syncPlanPreview() {
   wrap.innerHTML = html;
   var secs = Core.totalSeconds(plan);
   var cycles = plan.stages.reduce(function (a, s) { return a + (s.kind === "play" ? s.blocks : 0); }, 0);
-  meta.textContent = plan.rungs.length + " steps · " + cycles + " cycles · about " + fmtDuration(secs) + " total";
+  var yours = settings.turn ? cycles * settings.turn / (1 + settings.turn) : 0;
+  meta.textContent = plan.rungs.length + " steps · " + cycles + " cycles" +
+    (yours ? " (" + yours + " of them yours)" : "") + " · about " + fmtDuration(secs) + " total";
 }
 
 /* ---------------- remembered settings + shareable link ----------------
@@ -1297,6 +1340,7 @@ function coerceSettings(raw) {
   if (typeof raw.muted === "boolean") settings.muted = raw.muted;
   if (raw.sound === "marching" || raw.sound === "snare" || raw.sound === "tones") settings.sound = raw.sound;
   var n;
+  if ((n = toInt(raw.turn, 0, Core.TURN_MAX)) !== null) settings.turn = n;
   if ((n = toInt(raw.bpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.bpm = n;
   var lad = raw.ladder || {}, oco = raw.oco || {};
   if ((n = toInt(lad.startBpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.ladder.startBpm = n;
@@ -1315,6 +1359,7 @@ function queryToRaw() {
     rudimentId: q.get("r"), lead: q.get("lead"), mode: q.get("mode"),
     cue: q.get("cue") === null ? undefined : q.get("cue") === "1",
     pulse: q.get("pulse") === null ? undefined : q.get("pulse") === "1",
+    turn: q.get("turn"),
     // muted is deliberately NOT read from links — a shared drill never arrives silent.
     // Nor is sound: which voice plays the strokes is the listener's choice, not the drill's.
     bpm: q.get("bpm"),
@@ -1329,6 +1374,7 @@ function shareUrl() {
   p.set("mode", settings.mode);
   p.set("cue", settings.cue ? "1" : "0");
   p.set("pulse", settings.pulse ? "1" : "0");
+  p.set("turn", settings.turn);
   if (settings.mode === "fixed") p.set("bpm", settings.bpm);
   if (settings.mode === "ladder") {
     p.set("ls", settings.ladder.startBpm); p.set("le", settings.ladder.endBpm);
@@ -1384,6 +1430,8 @@ function hydrateControls() {
   setSeg("segLead", settings.lead);
   setSeg("segMode", settings.mode);
   setSeg("segSound", settings.sound);
+  setSeg("segTurn", String(settings.turn));
+  $("turnHint").textContent = TURN_HINT[settings.turn];
   if (settings.sound === "marching") loadMarching();
   $("soundHint").textContent = soundHint(settings.sound);
   $("settingsFixed").hidden = settings.mode !== "fixed";
@@ -1406,6 +1454,7 @@ function wireEvents() {
   wireSeg("segLead", applyLead);
   wireSeg("segMode", applyMode);
   wireSeg("segSound", applySound);
+  wireSeg("segTurn", applyTurn);
 
   document.querySelectorAll("button.step").forEach(function (b) {
     b.addEventListener("click", function () {

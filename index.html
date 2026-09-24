@@ -264,7 +264,7 @@
   .lead-row{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
   .lead-row .lbl{margin:0;font-weight:700;font-size:.9rem}
   .lead-row .seg{flex:1;min-width:170px;max-width:240px}
-  .sound-row + .hint{margin-top:8px}
+  .sound-row + .hint,.turn-row + .hint{margin-top:8px}
 
   /* Sticking display */
   .stick-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -309,6 +309,12 @@
   .cell.current .grace{color:var(--warm-white)}
   .cell.current.rest{background:var(--tan);transform:none}
   #sticking.listening{opacity:.45}
+  /* Your turn: the student plays, so the current stroke is outlined rather
+     than filled — a change of shape, not only of colour, and the banner and
+     status line say it in words. */
+  #sticking.your-turn .cell.current{background:var(--warm-white);box-shadow:inset 0 0 0 4px var(--accent-ink)}
+  #sticking.your-turn .cell.current .letter,#sticking.your-turn .cell.current .acc,
+  #sticking.your-turn .cell.current .grace{color:var(--accent-ink)}
   #sticking{transition:opacity .15s ease}
 
   .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;color:var(--ink-soft);font-size:.78rem;font-weight:700}
@@ -363,6 +369,7 @@
     background:var(--warm-white);color:var(--ink);box-shadow:2px 2px 0 var(--ink);
   }
   .banner.listen{background:var(--accent-ink);color:var(--warm-white)}
+  .banner.turn{background:var(--forest);color:var(--warm-white)}
   .banner.warn{background:var(--tan-line);color:var(--ink)}
   .banner.countin{background:var(--tan);color:var(--ink)}
   .banner.complete{background:var(--forest);color:var(--warm-white)}
@@ -652,6 +659,17 @@
         </div>
       </div>
 
+      <div class="lead-row turn-row">
+        <span class="lbl" id="turnLbl">Your turn</span>
+        <div class="seg" role="group" aria-labelledby="turnLbl" aria-describedby="turnHint" id="segTurn">
+          <button type="button" data-val="0" aria-pressed="true">Off</button>
+          <button type="button" data-val="1" aria-pressed="false" aria-label="Play it back once">1</button>
+          <button type="button" data-val="2" aria-pressed="false" aria-label="Play it back twice">2</button>
+          <button type="button" data-val="3" aria-pressed="false" aria-label="Play it back three times">3</button>
+        </div>
+      </div>
+      <p class="hint" id="turnHint"></p>
+
       <div class="plan-preview" id="planPreview" aria-live="polite"></div>
       <p class="plan-meta" id="planMeta"></p>
 
@@ -706,7 +724,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-24";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-24.2";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {

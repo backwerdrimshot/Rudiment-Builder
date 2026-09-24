@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-24`
+- **Build:** `2026-09-24.2`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -105,6 +105,13 @@ the app (see *Sources & educational lineage* below).
   roll sounds closed rather than like single strokes: Marching plays MDL's own
   recorded buzz stroke, tight for a short note and open for a long one; the
   synthesized voices play it as bounces
+- **Your turn** — call and response in any mode: the app plays a cycle, then
+  clicks while the student plays it back alone once, twice or three times. The
+  highlight keeps moving (outlined rather than filled) so they can check
+  themselves; the app never listens. Each rep becomes a trade, the tempo path
+  and total time count it, a fixed-mode tempo change waits for the app's next
+  cycle so a new tempo is always heard before it is played alone, and a share
+  link carries it
 - Optional **pulse under the sticking** (a soft click on every beat, so the
   grid never disappears through rests and ringing releases) or a lighter
   downbeat-only cue

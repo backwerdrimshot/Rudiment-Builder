@@ -40,6 +40,10 @@ const REPS_MIN = 1, REPS_MAX = 64;
 const COUNT_IN_BEATS = 4;
 const TRANSITION_BEATS = 4;
 
+// "Your turn": after each cycle the app plays, the student plays this many
+// cycles alone (0 = off). One model cycle plus its answers is a "trade".
+const TURN_MAX = 3;
+
 /* ---------------- small helpers ---------------- */
 function intIn(v, lo, hi, name) {
   if (!Number.isInteger(v) || v < lo || v > hi)
@@ -384,7 +388,7 @@ function ocoPhaseAt(i, peakIndex) {
    Resolve a mode + its settings + the pattern's cycle length into the concrete
    stage list the position machine walks. Each stage:
 
-     { kind, bpm, blocks, beatsPerBlock, stepIndex, stepCount, phase }
+     { kind, bpm, blocks, beatsPerBlock, stepIndex, stepCount, phase, turn }
 
    kind:
      "count-in"   one 4-beat click-only block at the starting tempo.
@@ -393,26 +397,33 @@ function ocoPhaseAt(i, peakIndex) {
                   clicking at the UPCOMING tempo (physical reset + count-in).
    Open-close-open has no transitions — the tempo changes seamlessly at the
    cycle boundary; the final cycle of a stage carries a visual warning
-   (derived by the app from isFinalBlockOfStage + nextStage). */
+   (derived by the app from isFinalBlockOfStage + nextStage).
+
+   turn (settings.turn, 0..TURN_MAX, absent = 0) is "Your turn": each rep of a
+   play stage becomes a trade — one cycle the app plays, then `turn` cycles the
+   student plays alone — so a play stage holds reps × (1 + turn) blocks and
+   every stage opens on a cycle the app plays. Listen stages carry turn 0. */
 function buildPlan(mode, settings, pattern) {
   if (!MODES[mode]) throw new Error('unknown practice mode "' + mode + '"');
   if (!pattern || !Number.isInteger(pattern.cycleBeats) || pattern.cycleBeats < 1)
     throw new Error("buildPlan needs a pattern from withLead()");
   const cb = pattern.cycleBeats;
+  const turn = settings.turn === undefined ? 0 : intIn(settings.turn, 0, TURN_MAX, "turn");
 
   function listen(kind, bpm, stepIndex, stepCount, phase) {
     return { kind: kind, bpm: bpm, blocks: 1,
              beatsPerBlock: kind === "count-in" ? COUNT_IN_BEATS : TRANSITION_BEATS,
-             stepIndex: stepIndex, stepCount: stepCount, phase: phase };
+             stepIndex: stepIndex, stepCount: stepCount, phase: phase, turn: 0 };
   }
-  function play(bpm, blocks, stepIndex, stepCount, phase) {
-    return { kind: "play", bpm: bpm, blocks: blocks, beatsPerBlock: cb,
-             stepIndex: stepIndex, stepCount: stepCount, phase: phase };
+  function play(bpm, reps, stepIndex, stepCount, phase) {
+    return { kind: "play", bpm: bpm, blocks: reps === null ? null : reps * (1 + turn),
+             beatsPerBlock: cb, stepIndex: stepIndex, stepCount: stepCount, phase: phase,
+             turn: turn };
   }
 
   if (mode === "fixed") {
     const bpm = intIn(settings.bpm, BPM_MIN, BPM_MAX, "bpm");
-    return { mode: mode, rungs: [bpm], stages: [
+    return { mode: mode, turn: turn, rungs: [bpm], stages: [
       listen("count-in", bpm, 0, 1, "steady"),
       play(bpm, null, 0, 1, "steady"),
     ]};
@@ -429,7 +440,7 @@ function buildPlan(mode, settings, pattern) {
       if (i > 0) stages.push(listen("transition", bpm, i, rungs.length, phase));
       stages.push(play(bpm, reps, i, rungs.length, phase));
     });
-    return { mode: mode, rungs: rungs, stages: stages };
+    return { mode: mode, turn: turn, rungs: rungs, stages: stages };
   }
 
   // open-close-open
@@ -439,7 +450,7 @@ function buildPlan(mode, settings, pattern) {
   rungs.forEach(function (bpm, i) {
     stages.push(play(bpm, reps, i, rungs.length, ocoPhaseAt(i, peakIdx)));
   });
-  return { mode: mode, rungs: rungs, stages: stages };
+  return { mode: mode, turn: turn, rungs: rungs, stages: stages };
 }
 
 // Total wall-clock seconds of a finite plan (null for endless fixed mode).
@@ -459,7 +470,13 @@ function totalSeconds(plan) {
    events. snapshot()/restore() give pause & resume an exact position to hold.
 
    Fixed mode extra: requestBpm(n) parks a pending tempo that is applied at the
-   NEXT block boundary — a tempo change never lands mid-cycle. */
+   NEXT block boundary — a tempo change never lands mid-cycle. With Your turn
+   on it waits for the next boundary that opens a trade, so the student always
+   hears the app play a new tempo before playing it alone.
+
+   Your turn: reps count trades, not blocks. turnIndex() is 0 on the cycle the
+   app plays and 1..turn on the student's cycles; isResponse() is true on the
+   student's cycles. */
 function createPracticePlayback(plan) {
   if (!plan || !Array.isArray(plan.stages) || plan.stages.length === 0)
     throw new Error("createPracticePlayback needs a plan from buildPlan()");
@@ -479,8 +496,14 @@ function createPracticePlayback(plan) {
     phase() { return pb.currentStage().phase; },
     stepNumber() { return pb.currentStage().stepIndex + 1; },
     stepCount() { return pb.currentStage().stepCount; },
-    repNumber() { return pb.blockInStage + 1; },
-    repsInStage() { return pb.currentStage().blocks; }, // null = endless
+    tradeLength() { return 1 + (pb.currentStage().turn || 0); },
+    repNumber() { return Math.floor(pb.blockInStage / pb.tradeLength()) + 1; },
+    repsInStage() { // null = endless
+      const b = pb.currentStage().blocks;
+      return b === null ? null : b / pb.tradeLength();
+    },
+    turnIndex() { return pb.blockInStage % pb.tradeLength(); },
+    isResponse() { return pb.currentStage().kind === "play" && pb.turnIndex() > 0; },
 
     // True while sitting in a click-only block (count-in or ladder transition).
     isListening() { return pb.currentStage().kind !== "play"; },
@@ -526,7 +549,9 @@ function createPracticePlayback(plan) {
         }
         result = "stage";
       }
-      if (pb.pendingBpm !== null) { // fixed mode: tempo lands ON the boundary
+      // Fixed mode: tempo lands ON the boundary, and with Your turn on, only
+      // on one that opens a trade.
+      if (pb.pendingBpm !== null && !pb.isResponse()) {
         pb.currentStage().bpm = pb.pendingBpm;
         pb.pendingBpm = null;
       }
@@ -617,6 +642,7 @@ const RudimentCore = {
   STEP_MIN: STEP_MIN, STEP_MAX: STEP_MAX,
   REPS_MIN: REPS_MIN, REPS_MAX: REPS_MAX,
   COUNT_IN_BEATS: COUNT_IN_BEATS, TRANSITION_BEATS: TRANSITION_BEATS,
+  TURN_MAX: TURN_MAX,
   validateRudiment: validateRudiment,
   assertValidRegistry: assertValidRegistry,
   withLead: withLead,
