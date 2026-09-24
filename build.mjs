@@ -10,7 +10,7 @@ const Core = createRequire(import.meta.url)("./js/rudiment-core.js");
    are named by the same function the page uses to ask for them, so the build
    cannot ship a set the page does not request, and a card that is missing
    fails the existence check below instead of breaking a page. Only the
-   drawings and the Bravura licence their outlines are under ship: the glyph
+   drawings and the Bravura license their outlines are under ship: the glyph
    library, the vendoring README and the composer's manifest stay source
    material, which is what all of assets/notation used to be. */
 export const NOTATION_ASSETS = [
@@ -55,7 +55,7 @@ export const SITE_ASSETS = [
    served copy matches the site's byte for byte, and the fonts because the
    stylesheet names them and nothing else supplies them — before this pass they
    were named and never shipped, so every visitor got a fallback face. The OFL
-   licence texts travel with the fonts, which is why this ships the directory
+   license texts travel with the fonts, which is why this ships the directory
    rather than four named files. assets/notation is not a directory entry: only
    part of it ships, through NOTATION_ASSETS above. */
 export const SITE_DIRECTORIES = ["assets/brand", "assets/fonts"];
@@ -70,7 +70,7 @@ export const GENERATED_ASSETS = ["capabilities.json", "sw.js"];
 /* What the offline service worker stores: every file a visit can ask for.
    The page is stored as "./" — the hostname serves it there, and /index.html
    only redirects to it — and the rest by path. Left out: text a visitor never
-   loads (licences, robots.txt, the sitemap), capabilities.json, which is for
+   loads (licenses, robots.txt, the sitemap), capabilities.json, which is for
    the shop site's audit and must always be fetched fresh, and the worker
    itself. Derived from what the build actually wrote, so a file added to the
    allowlist is stored offline without anyone remembering to list it twice. */

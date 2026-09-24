@@ -8,10 +8,10 @@
        which is neither a rudiment nor anything else in the set.
 
        The grace note is Deep Brick #8b3a3a. It was #6d2d2d, which reads better
-       on Tan (5.16:1 against 3.85:1) but is not one of the seven colours in the
+       on Tan (5.16:1 against 3.85:1) but is not one of the seven colors in the
        brand identity system; it is a shade the site invented for its own
        brick-deep token. 3.85:1 clears the 3:1 WCAG threshold for non-text
-       graphics, so the official colour costs contrast without costing
+       graphics, so the official color costs contrast without costing
        compliance. Ink is not available here: the main note already uses it, and
        the two notes have to stay apart. -->
   <rect width="1024" height="1024" fill="#d2b48c"/>

@@ -7,7 +7,7 @@ Rudiment Room trims their silent tails, applies MDL's own level balance and
 stores them as 16-bit PCM (tools/pack-marching-snare.py in the app's
 repository); the sound is otherwise as MDL recorded it.
 
-MDL's licence, quoted from license.txt in that repository:
+MDL's license, quoted from license.txt in that repository:
 
   MuseScore Drumline
   License: Creative Commons 0 (CC0)

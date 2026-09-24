@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   deploy:
-    # A failed or cancelled CI run must not publish. A manual dispatch is an
+    # A failed or canceled CI run must not publish. A manual dispatch is an
     # explicit human decision and carries no workflow_run to inspect.
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest

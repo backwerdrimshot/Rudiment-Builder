@@ -71,7 +71,7 @@ machine advanced by the scheduler **only at block boundaries**.
   every beat regardless of its toggle. A fixed-mode tempo change waits for the
   next boundary that opens a trade. Turn is structural (`stopIfActive`) and
   travels in share links. Nothing listens: it's practice structure, not a
-  judgement.
+  judgment.
 - Ladder transitions are 4-beat listen blocks clicking **at the upcoming
   tempo**. Open-close-open has no transitions — seamless change + visual
   warning on the final cycle of a stage. Count-in is always 4 beats.
@@ -88,7 +88,7 @@ machine advanced by the scheduler **only at block boundaries**.
   apply without stopping. Choosing a sound while idle or complete plays a
   sample — never while paused, where resuming the context would unfreeze the
   plan.
-- Best clean tempo is the student's claim, never a judgement (nothing listens).
+- Best clean tempo is the student's claim, never a judgment (nothing listens).
   "Clean at N" offers only a tempo actually HEARD in a played block (set from
   `renderNow`, so count-in, listen blocks and a pending fixed-mode change do
   not count); once a run completes it offers the run's peak. A rudiment or
@@ -159,7 +159,7 @@ that carries type and fills on Warm White — raw Terra is 2.82:1 there), the on
 surface the shared file has no name for (`--tan-soft`), and the furniture.
 
 Dark mode is the token file's `prefers-color-scheme` remap: the same names take
-dark values, so app code needs no second colour path. The app's own dark block
+dark values, so app code needs no second color path. The app's own dark block
 covers only what the shared file cannot know — `--accent-ink` inverts (Terra
 Cotta Deep is 3.53:1 on Ink and fails as type; full Terra is 5.97:1),
 `--tan-soft` moves nearer Ink Raised, and the offset shadows go black, since an
@@ -176,7 +176,7 @@ The sticking panel shows each rudiment's drawn card from
 upstream). Cards are right-hand lead only, fill with `currentColor` so they take
 `--ink` when inlined, and fall back to an `<img>` over `file://`. The page and
 the build share `Core.notationCard(r)` for the path; only the 40 cards and the
-Bravura licence ship (`NOTATION_ASSETS`), and a missing card fails the build.
+Bravura license ship (`NOTATION_ASSETS`), and a missing card fails the build.
 
 The Marching sound is MuseScore Drumline's solo snare (CC0), packed by
 `tools/pack-marching-snare.py` into `assets/audio/marching-snare.js` — 16-bit

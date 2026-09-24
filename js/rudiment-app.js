@@ -1244,7 +1244,7 @@ function applySound(sound) {
 }
 /* Structural, like the mode: it changes how many cycles a plan holds, so a
    change mid-run stops playback. It travels in share links — how a drill is
-   practised is part of the drill. */
+   practiced is part of the drill. */
 var TURN_HINT = [
   "Off — the app plays every cycle with you.",
   "The app plays a cycle, then clicks while you play it back once. The highlight keeps going so you can check yourself.",
@@ -1522,7 +1522,7 @@ function initOffline() {
   var hadController = !!sw.controller;
   var say = function (text) { var n = $("offlineNote"); n.textContent = text; n.hidden = false; };
   sw.addEventListener("controllerchange", function () {
-    if (hadController) say("A new build is ready. Reload when you finish practising to use it.");
+    if (hadController) say("A new build is ready. Reload when you finish practicing to use it.");
     hadController = true;
   });
   // After the page has loaded, so storing the build never competes with it.

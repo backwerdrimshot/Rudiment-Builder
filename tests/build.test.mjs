@@ -42,7 +42,7 @@ test("the production build publishes only the explicit allowlist", async () => {
 
   /* Two ways to be allowlisted, and nothing else ships: named in SITE_ASSETS,
      or sitting under a directory SITE_DIRECTORIES names. The directories exist
-     because the brand token file and the fonts have to be served, and a licence
+     because the brand token file and the fonts have to be served, and a license
      has to travel with its fonts — an allowlist of individual woff2 files would
      drop the OFL text the first time a face was added. */
   assert.deepEqual(
@@ -61,7 +61,7 @@ test("the production build publishes only the explicit allowlist", async () => {
 
 /* assets/notation used to stay off the web entirely. Since the sticking panel
    shows each rudiment's drawn card, part of it ships: one card per rudiment and
-   the Bravura licence the card outlines are under. The rest is source material
+   the Bravura license the card outlines are under. The rest is source material
    for regenerating the cards upstream, and this keeps it that way. */
 test("the notation cards ship, one per rudiment, and nothing else from assets/notation", async () => {
   await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
@@ -104,9 +104,9 @@ test("the marching snare ships with its credit, in the shape the voice plays", a
   assert.equal(app.match(/var MARCHING_SRC = "([^"]+)";/)[1], "assets/audio/marching-snare.js");
   assert.ok(AUDIO_ASSETS.includes("assets/audio/marching-snare.js"));
 
-  const licence = await readFile(new URL("assets/audio/LICENSE-marching-snare.txt", dist), "utf8");
-  assert.match(licence, /Creative Commons 0 \(CC0\)/);
-  assert.match(licence, /MuseScore Drumline/);
+  const license = await readFile(new URL("assets/audio/LICENSE-marching-snare.txt", dist), "utf8");
+  assert.match(license, /Creative Commons 0 \(CC0\)/);
+  assert.match(license, /MuseScore Drumline/);
 
   const pack = require("../dist/assets/audio/marching-snare.js");
   assert.equal(pack.rate, 44100);
@@ -202,7 +202,7 @@ const manifestOf = (src) => ({
 });
 
 /* The offline worker is only as good as its list: a file missing from it is a
-   blank card or a silent drum the first time a student practises without wifi,
+   blank card or a silent drum the first time a student practices without wifi,
    and nothing online would show it. So the list is pinned to what the build
    actually ships, and to the files a visit is known to ask for. */
 test("the offline worker stores every file a visit can ask for, from this build", async () => {
@@ -232,7 +232,7 @@ test("the offline worker stores every file a visit can ask for, from this build"
   for (const never of ["capabilities.json", "sw.js", "robots.txt", "sitemap.xml"]) {
     assert.ok(!assets.includes(never), `${never} is not stored`);
   }
-  assert.ok(!assets.some((f) => f.endsWith(".txt")), "licence texts are not stored");
+  assert.ok(!assets.some((f) => f.endsWith(".txt")), "license texts are not stored");
 });
 
 /* Only the manifest block may differ between the repo copy and the shipped
