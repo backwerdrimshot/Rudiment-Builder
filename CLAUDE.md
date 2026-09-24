@@ -18,6 +18,20 @@ caveat (the public hostname is a Workers route over a stale GitHub Pages DNS
 record; do not remove the route). The app has been off GitHub Pages since
 August 2026.
 
+- Offline: `sw.js` is a service worker that stores the whole build (see its
+  header). `build.mjs` writes `dist/sw.js` with the build stamp and
+  `precacheList()` of what it shipped — so the list can't drift from the
+  allowlist — and the repo-root copy (build "dev", empty list) passes every
+  request through, so serving the repo root never pins a build. Test offline
+  by serving `dist/`. Rules: one build's cache answers everything (file names
+  don't change between builds, so a mix would run code the page wasn't written
+  for — a tab open across a deploy fetches later files from the new build, so
+  the page asks for a reload); a failed store leaves the old worker serving;
+  navigations to the root get the stored page whatever the query; other
+  origins and `capabilities.json` go to the network; the page never reloads
+  itself.
+  Retire it with a worker that deletes the `rudimentroom-` caches and
+  unregisters — never by deleting `sw.js`, which leaves the old worker serving.
 - Serve: any static server at the repo root — `serve.ps1` (PowerShell,
   port 8523), `python3 -m http.server`, or `npx serve`.
 - Tests: `node --test tests/*.test.mjs` (Node 22+; the bare directory form

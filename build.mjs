@@ -65,7 +65,21 @@ export const SITE_DIRECTORIES = ["assets/brand", "assets/fonts"];
    an unnamed file in dist. Declared here so the boundary stays exhaustive: the
    history in this file is a deploy that served the whole repository root, and
    the fix for that only holds while everything published is named somewhere. */
-export const GENERATED_ASSETS = ["capabilities.json"];
+export const GENERATED_ASSETS = ["capabilities.json", "sw.js"];
+
+/* What the offline service worker stores: every file a visit can ask for.
+   The page is stored as "./" — the hostname serves it there, and /index.html
+   only redirects to it — and the rest by path. Left out: text a visitor never
+   loads (licences, robots.txt, the sitemap), capabilities.json, which is for
+   the shop site's audit and must always be fetched fresh, and the worker
+   itself. Derived from what the build actually wrote, so a file added to the
+   allowlist is stored offline without anyone remembering to list it twice. */
+export function precacheList(shipped) {
+  return shipped
+    .filter((file) => !/\.(txt|xml)$/.test(file) && file !== "capabilities.json" && file !== "sw.js")
+    .map((file) => (file === "index.html" ? "./" : file))
+    .sort();
+}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const output = path.join(here, "dist");
@@ -99,7 +113,31 @@ fs.writeFileSync(
   JSON.stringify(capabilities(stamp), null, 2) + "\n",
 );
 
+/* The offline service worker: sw.js with its manifest block filled in. The
+   build number is what makes each deploy a new worker (and a new cache), and
+   the list is every file this build wrote that a visit can ask for. */
+function filesIn(dir, prefix = "") {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const name = prefix ? `${prefix}/${entry.name}` : entry.name;
+    return entry.isDirectory() ? filesIn(path.join(dir, entry.name), name) : [name];
+  });
+}
+const precache = precacheList(filesIn(output));
+const workerSource = fs.readFileSync(path.join(here, "sw.js"), "utf8");
+const manifestBlock = /\/\/ BUILD MANIFEST[^\n]*\n[\s\S]*?\/\/ END BUILD MANIFEST\n/g;
+if ((workerSource.match(manifestBlock) || []).length !== 1) {
+  throw new Error("sw.js must carry exactly one BUILD MANIFEST block for the build to fill in");
+}
+fs.writeFileSync(
+  path.join(output, "sw.js"),
+  workerSource.replace(manifestBlock,
+    "// BUILD MANIFEST — written by build.mjs; do not edit in dist.\n" +
+    `var BUILD = ${JSON.stringify(stamp)};\n` +
+    `var ASSETS = ${JSON.stringify(precache, null, 2)};\n` +
+    "// END BUILD MANIFEST\n"),
+);
+
 console.log(
-  `Built ${SITE_ASSETS.length} site assets, ${SITE_DIRECTORIES.length} asset directories ` +
-    `and capabilities.json for build ${stamp} in dist.`,
+  `Built ${SITE_ASSETS.length} site assets, ${SITE_DIRECTORIES.length} asset directories, ` +
+    `capabilities.json and sw.js (${precache.length} files offline) for build ${stamp} in dist.`,
 );

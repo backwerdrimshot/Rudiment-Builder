@@ -1508,6 +1508,36 @@ function wireEvents() {
   });
 }
 
+/* ---------------- offline ----------------
+   sw.js stores this build so the app opens and plays with no connection (its
+   header has the rules). Not over file://, which has no worker and already
+   runs from disk. The footer says so once the build is stored, and if a newer
+   build takes over while this tab is open it says a reload will bring it in.
+   It never reloads by itself: that would stop a student mid-practice. The
+   check is for a stored page, not merely a worker, so the development copy of
+   sw.js (which stores nothing) never claims to work offline. */
+function initOffline() {
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  var sw = navigator.serviceWorker;
+  var hadController = !!sw.controller;
+  var say = function (text) { var n = $("offlineNote"); n.textContent = text; n.hidden = false; };
+  sw.addEventListener("controllerchange", function () {
+    if (hadController) say("A new build is ready. Reload when you finish practising to use it.");
+    hadController = true;
+  });
+  // After the page has loaded, so storing the build never competes with it.
+  var register = function () { sw.register("sw.js").catch(function () {}); };
+  if (document.readyState === "complete") register();
+  else window.addEventListener("load", register);
+  sw.ready.then(function () { return window.caches ? caches.match("./") : null; })
+    .then(function (page) {
+      if (page && !/new build/.test($("offlineNote").textContent)) {
+        say("Saved for offline use: Rudiment Room opens and plays without a connection.");
+      }
+    })
+    .catch(function () {});
+}
+
 /* ---------------- boot ----------------
    Validate the registry FIRST — bad rudiment data must fail loudly, not play
    wrong strokes. Then: defaults < saved settings < share-link params. */
@@ -1533,4 +1563,5 @@ function wireEvents() {
   syncPlanPreview();
   primeDisplay();
   updateStartBtn();
+  initOffline();
 })();

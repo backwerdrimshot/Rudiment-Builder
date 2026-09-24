@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import { promisify } from "node:util";
+import vm from "node:vm";
 import test from "node:test";
 
 import { createRequire } from "node:module";
-import { AUDIO_ASSETS, GENERATED_ASSETS, NOTATION_ASSETS, SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
+import { AUDIO_ASSETS, GENERATED_ASSETS, NOTATION_ASSETS, SITE_ASSETS, SITE_DIRECTORIES, precacheList } from "../build.mjs";
 
 const require = createRequire(import.meta.url);
 const Core = require("../js/rudiment-core.js");
@@ -190,4 +191,127 @@ test("the published version is read from the page, not repeated", async () => {
 
   const built = JSON.parse(await readFile(new URL("../dist/capabilities.json", import.meta.url), "utf8"));
   assert.equal(built.version, stamp);
+});
+
+/* ---------------- offline (sw.js) ----------------
+   In this file, not their own: node --test runs files in parallel, and every
+   build rewrites dist/, so two files building at once would race. */
+const manifestOf = (src) => ({
+  build: JSON.parse(src.match(/^var BUILD = (".*");$/m)[1]),
+  assets: JSON.parse(src.match(/^var ASSETS = (\[[\s\S]*?\]);$/m)[1]),
+});
+
+/* The offline worker is only as good as its list: a file missing from it is a
+   blank card or a silent drum the first time a student practises without wifi,
+   and nothing online would show it. So the list is pinned to what the build
+   actually ships, and to the files a visit is known to ask for. */
+test("the offline worker stores every file a visit can ask for, from this build", async () => {
+  await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
+  const src = await readFile(new URL("sw.js", dist), "utf8");
+  const { build, assets } = manifestOf(src);
+  const shipped = await filesBelow(dist);
+
+  const { buildStamp } = await import("../capabilities.mjs");
+  assert.equal(build, buildStamp(await readFile(new URL("../index.html", import.meta.url), "utf8")),
+    "the worker carries the page's build, so every deploy is a new worker and a new cache");
+  assert.deepEqual(assets, precacheList(shipped), "the list is derived from what the build wrote");
+  assert.equal(new Set(assets).size, assets.length, "no file listed twice");
+
+  for (const url of assets) {
+    assert.ok(shipped.includes(url === "./" ? "index.html" : url), `${url} is shipped`);
+  }
+  for (const needed of ["./", "js/rudiment-app.js", "js/rudiment-core.js", "js/rudiment-data.js",
+    "assets/brand/design-tokens.css", "assets/audio/marching-snare.js", "manifest.webmanifest"]) {
+    assert.ok(assets.includes(needed), `${needed} is stored offline`);
+  }
+  for (const card of Core.RUDIMENTS.map(Core.notationCard)) assert.ok(assets.includes(card), `${card} is stored offline`);
+  const fonts = shipped.filter((f) => f.endsWith(".woff2"));
+  assert.ok(fonts.length >= 4 && fonts.every((f) => assets.includes(f)), "every font face is stored offline");
+
+  assert.ok(!assets.includes("index.html"), "the page is stored as ./, where it is served");
+  for (const never of ["capabilities.json", "sw.js", "robots.txt", "sitemap.xml"]) {
+    assert.ok(!assets.includes(never), `${never} is not stored`);
+  }
+  assert.ok(!assets.some((f) => f.endsWith(".txt")), "licence texts are not stored");
+});
+
+/* Only the manifest block may differ between the repo copy and the shipped
+   one: the logic that ships is the logic that was reviewed. And the repo copy
+   stores nothing, so serving the repo root for development never pins a
+   stale build in a developer's browser. */
+test("the shipped worker is the repo's, with only the manifest filled in", async () => {
+  await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
+  const block = /\/\/ BUILD MANIFEST[^\n]*\n[\s\S]*?\/\/ END BUILD MANIFEST\n/;
+  const repo = await readFile(new URL("sw.js", root), "utf8");
+  const shipped = await readFile(new URL("sw.js", dist), "utf8");
+  assert.equal(repo.replace(block, ""), shipped.replace(block, ""));
+  assert.deepEqual(manifestOf(repo), { build: "dev", assets: [] }, "the development copy stores nothing");
+
+  const app = await readFile(new URL("../js/rudiment-app.js", import.meta.url), "utf8");
+  assert.match(app, /sw\.register\("sw\.js"\)/, "the page registers the worker beside it");
+  assert.match(app, /location\.protocol === "file:"/, "and not over file://");
+});
+
+/* The worker's routing, run against fakes: what it answers from the cache and
+   what it leaves to the network. */
+function loadWorker(src, origin = "https://rudiment-builder.backwerdrhythmshop.com") {
+  const handlers = {};
+  const stored = new Map(); // absolute URL -> response
+  const matches = [];
+  const fetched = [];
+  const self = {
+    location: new URL(`${origin}/sw.js`),
+    addEventListener: (type, fn) => { handlers[type] = fn; },
+    skipWaiting: () => Promise.resolve(),
+    clients: { claim: () => Promise.resolve() },
+  };
+  const cache = {
+    addAll: (reqs) => { reqs.forEach((r) => stored.set(new URL(r.url, self.location).href, `body of ${r.url}`)); return Promise.resolve(); },
+    match: (key, opts) => {
+      const url = new URL(typeof key === "string" ? key : key.url, self.location);
+      if (opts && opts.ignoreSearch) url.search = "";
+      matches.push(url.href);
+      return Promise.resolve(stored.get(url.href));
+    },
+  };
+  const sandbox = {
+    self, URL,
+    caches: { open: () => Promise.resolve(cache), keys: () => Promise.resolve([]), delete: () => Promise.resolve(true) },
+    Request: class { constructor(url, init) { this.url = new URL(url, self.location).href; this.init = init; } },
+    fetch: (req) => { fetched.push(req.url); return Promise.resolve(`network ${req.url}`); },
+    Promise,
+  };
+  sandbox.self.caches = sandbox.caches;
+  vm.runInNewContext(src, sandbox);
+  return { handlers, stored, matches, fetched, origin };
+}
+async function request(w, url, mode = "no-cors", method = "GET") {
+  let answered = null;
+  const event = { request: { url, mode, method }, respondWith: (p) => { answered = p; } };
+  w.handlers.fetch(event);
+  return answered ? await answered : "not handled";
+}
+
+test("offline routing: the page for any drill link, stored files from the cache, the rest untouched", async () => {
+  await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
+  const w = loadWorker(await readFile(new URL("sw.js", dist), "utf8"));
+  const o = w.origin;
+  await new Promise((done) => w.handlers.install({ waitUntil: (p) => p.then(done) }));
+
+  assert.equal(await request(w, `${o}/?r=flam-tap&mode=ladder&turn=2`, "navigate"), `body of ${o}/`,
+    "a share link opens the stored page");
+  assert.equal(await request(w, `${o}/`, "navigate"), `body of ${o}/`);
+  assert.equal(await request(w, `${o}/index.html`, "navigate"), `body of ${o}/`);
+  assert.equal(await request(w, `${o}/assets/audio/marching-snare.js`), `body of ${o}/assets/audio/marching-snare.js`);
+  assert.equal(await request(w, `${o}/js/rudiment-app.js`), `body of ${o}/js/rudiment-app.js`);
+
+  assert.equal(await request(w, `${o}/capabilities.json`), `network ${o}/capabilities.json`,
+    "capabilities.json is fetched fresh");
+  assert.equal(await request(w, "https://static.cloudflareinsights.com/beacon.min.js"), "not handled", "other origins pass by");
+  assert.equal(await request(w, "https://counter.backwerdrhythmshop.com/hit?app=rudiment-builder"), "not handled");
+  assert.equal(await request(w, `${o}/sw.js`, "no-cors", "POST"), "not handled", "only GETs");
+  assert.equal(await request(w, `${o}/robots.txt`, "navigate"), "not handled", "only the page is a navigation it answers");
+
+  const dev = loadWorker(await readFile(new URL("sw.js", root), "utf8"));
+  assert.equal(await request(dev, `${dev.origin}/`, "navigate"), "not handled", "the development copy passes everything through");
 });
