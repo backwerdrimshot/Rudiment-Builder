@@ -941,6 +941,93 @@ function getCases(core) {
     assert.equal(warnings, changes, "exactly one warning per tempo change");
   }},
 
+  /* ================= Your turn (call and response) ================= */
+
+  { name: "your turn: a plan with no turn setting is unchanged, and turn is range-checked", fn: function (assert) {
+    const a = plan("ladder", { startBpm: 60, endBpm: 70, stepBpm: 5, repsPerStep: 2 }, "single-paradiddle");
+    const b = plan("ladder", { startBpm: 60, endBpm: 70, stepBpm: 5, repsPerStep: 2, turn: 0 }, "single-paradiddle");
+    assert.deepEqual(a, b, "absent turn = turn 0");
+    assert.equal(a.turn, 0, "plan carries turn 0");
+    assert.equal(core.TURN_MAX, 3, "up to three cycles alone");
+    assert.ok(threw(function () { plan("fixed", { bpm: 80, turn: 4 }, "single-paradiddle"); }), "turn above the max");
+    assert.ok(threw(function () { plan("fixed", { bpm: 80, turn: -1 }, "single-paradiddle"); }), "negative turn");
+    assert.ok(threw(function () { plan("fixed", { bpm: 80, turn: 1.5 }, "single-paradiddle"); }), "fractional turn");
+  }},
+
+  { name: "your turn: each rep becomes a trade, so a play stage holds reps x (1 + turn) cycles", fn: function (assert) {
+    const p = plan("ladder", { startBpm: 60, endBpm: 70, stepBpm: 5, repsPerStep: 4, turn: 2 }, "single-paradiddle");
+    assert.equal(p.turn, 2, "plan carries turn");
+    p.stages.forEach(function (s) {
+      if (s.kind === "play") { assert.equal(s.blocks, 12, "4 trades of 3 cycles"); assert.equal(s.turn, 2, "play stage turn"); }
+      else { assert.equal(s.blocks, 1, s.kind + " stays one block"); assert.equal(s.turn, 0, s.kind + " has no turn"); }
+    });
+    const off = plan("ladder", { startBpm: 60, endBpm: 70, stepBpm: 5, repsPerStep: 4 }, "single-paradiddle");
+    const listenSecs = 4 * core.beatSeconds(60) + 4 * core.beatSeconds(65) + 4 * core.beatSeconds(70);
+    assert.ok(Math.abs((core.totalSeconds(p) - listenSecs) - 3 * (core.totalSeconds(off) - listenSecs)) < 1e-9,
+      "played time triples with turn 2; count-in and transitions do not");
+    const f = plan("fixed", { bpm: 80, turn: 1 }, "single-paradiddle");
+    assert.equal(f.stages[1].blocks, null, "fixed stays endless");
+    assert.equal(f.stages[1].turn, 1, "fixed carries turn");
+  }},
+
+  { name: "your turn: the app plays, then the student answers, and every stage opens on the app", fn: function (assert) {
+    const p = plan("oco", { startBpm: 60, peakBpm: 70, stepBpm: 10, repsPerStep: 2, turn: 2 }, "single-paradiddle");
+    const pb = core.createPracticePlayback(p);
+    const rows = [];
+    while (!pb.done) {
+      rows.push({ kind: pb.currentStage().kind, bpm: pb.currentBpm(), resp: pb.isResponse(),
+                  ti: pb.turnIndex(), rep: pb.repNumber(), reps: pb.repsInStage(), final: pb.isFinalBlockOfStage() });
+      pb.advanceBlock();
+    }
+    assert.equal(rows[0].kind, "count-in", "count-in first");
+    assert.equal(rows[0].resp, false, "the count-in is never the student's turn");
+    const plays = rows.filter(function (r) { return r.kind === "play"; });
+    assert.equal(plays.length, 3 * 2 * 3, "3 rungs x 2 trades x 3 cycles");
+    assert.deepEqual(plays.slice(0, 6).map(function (r) { return r.resp ? "you" : "app"; }),
+      ["app", "you", "you", "app", "you", "you"], "app, then two cycles alone, twice");
+    assert.deepEqual(plays.slice(0, 6).map(function (r) { return r.ti; }), [0, 1, 2, 0, 1, 2], "turn index");
+    assert.deepEqual(plays.slice(0, 6).map(function (r) { return r.rep; }), [1, 1, 1, 2, 2, 2], "reps count trades");
+    assert.ok(plays.every(function (r) { return r.reps === 2; }), "reps in stage = trades, not cycles");
+    for (let i = 1; i < plays.length; i++) {
+      if (plays[i].bpm !== plays[i - 1].bpm) {
+        assert.equal(plays[i].resp, false, "a new tempo opens on the app's cycle");
+        assert.equal(plays[i - 1].final, true, "and follows the final cycle of the stage");
+        assert.equal(plays[i - 1].resp, true, "which is the student's");
+      }
+    }
+  }},
+
+  { name: "your turn: a fixed-mode tempo change waits for the app's next cycle", fn: function (assert) {
+    const pb = core.createPracticePlayback(plan("fixed", { bpm: 80, turn: 2 }, "single-paradiddle"));
+    pb.advanceBlock(); // leave the count-in -> app's cycle
+    assert.equal(pb.isResponse(), false, "app's cycle");
+    pb.requestBpm(96);
+    pb.advanceBlock(); // -> student's first cycle
+    assert.equal(pb.isResponse(), true, "student's cycle");
+    assert.equal(pb.currentBpm(), 80, "not applied on the student's cycle");
+    assert.equal(pb.pendingBpm, 96, "still pending");
+    pb.advanceBlock(); // -> student's second cycle
+    assert.equal(pb.currentBpm(), 80, "still not applied");
+    pb.advanceBlock(); // -> app's cycle
+    assert.equal(pb.isResponse(), false, "app's cycle again");
+    assert.equal(pb.currentBpm(), 96, "applied where the app plays it first");
+    assert.equal(pb.pendingBpm, null, "pending cleared");
+    const off = core.createPracticePlayback(plan("fixed", { bpm: 80 }, "single-paradiddle"));
+    off.advanceBlock(); off.requestBpm(96); off.advanceBlock();
+    assert.equal(off.currentBpm(), 96, "with Your turn off, the next boundary as before");
+  }},
+
+  { name: "your turn: snapshot/restore keeps the place inside a trade", fn: function (assert) {
+    const p = plan("ladder", { startBpm: 60, endBpm: 70, stepBpm: 10, repsPerStep: 3, turn: 3 }, "flam-accent");
+    const pb = core.createPracticePlayback(p);
+    for (let i = 0; i < 7; i++) pb.advanceBlock();
+    const pb2 = core.createPracticePlayback(p);
+    pb2.restore(pb.snapshot());
+    assert.equal(pb2.isResponse(), pb.isResponse(), "same side of the trade");
+    assert.equal(pb2.turnIndex(), pb.turnIndex(), "same turn index");
+    assert.equal(pb2.repNumber(), pb.repNumber(), "same trade");
+  }},
+
   /* ================= timing ================= */
 
   { name: "timing: no drift — closed-form total equals the per-beat walk", fn: function (assert) {

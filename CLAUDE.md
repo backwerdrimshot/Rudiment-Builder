@@ -48,6 +48,16 @@ machine advanced by the scheduler **only at block boundaries**.
 - The registry is deep-frozen. Transforms copy; nothing mutates a definition.
 - A tempo change never alters the pattern and never lands mid-cycle. Fixed
   mode uses `requestBpm()` → applied at the next `advanceBlock()`.
+- Your turn (`settings.turn`, 0–`TURN_MAX` = 3, 0 = off) is call and
+  response, decided in the core: each rep of a play stage is a **trade** — one
+  cycle the app plays, then `turn` cycles the student plays alone — so a play
+  stage holds reps × (1 + turn) blocks, reps count trades, and every stage
+  opens on the app's cycle. On the student's cycles the strokes are walked
+  silent (they still drive the highlight, drawn outlined) and the pulse clicks
+  every beat regardless of its toggle. A fixed-mode tempo change waits for the
+  next boundary that opens a trade. Turn is structural (`stopIfActive`) and
+  travels in share links. Nothing listens: it's practice structure, not a
+  judgement.
 - Ladder transitions are 4-beat listen blocks clicking **at the upcoming
   tempo**. Open-close-open has no transitions — seamless change + visual
   warning on the final cycle of a stage. Count-in is always 4 beats.
