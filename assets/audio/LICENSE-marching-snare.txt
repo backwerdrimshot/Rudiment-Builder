@@ -1,0 +1,30 @@
+Marching snare samples — MuseScore Drumline (MDL)
+
+The recorded marching snare in marching-snare.js is the solo snare from
+MuseScore Drumline: hit_1-4, crush_short_1-4 and crush_long_1-4 from
+https://github.com/musescore/mdl (resources/sound/MDL_samples/snare).
+Rudiment Room trims their silent tails, applies MDL's own level balance and
+stores them as 16-bit PCM (tools/pack-marching-snare.py in the app's
+repository); the sound is otherwise as MDL recorded it.
+
+MDL's licence, quoted from license.txt in that repository:
+
+  MuseScore Drumline
+  License: Creative Commons 0 (CC0)
+
+  Sample programming by S. Christian Collins
+  Samples used include:
+   . Original samples recorded by Amir Oosman and S. Christian Collins.
+   . NSA Drumkit by Dean
+   . VCSL
+   . VSCO2
+
+  To the extent possible under law, the person who associated CC0 with
+  MuseScore Drumline has waived all copyright and related or neighboring rights
+  to MuseScore Drumline.
+
+  You should have received a copy of the CC0 legalcode along with this
+  work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+CC0 asks for no credit. It is given anyway: thank you to S. Christian Collins,
+Amir Oosman and the MuseScore project.

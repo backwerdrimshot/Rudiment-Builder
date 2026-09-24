@@ -5,9 +5,10 @@ import { promisify } from "node:util";
 import test from "node:test";
 
 import { createRequire } from "node:module";
-import { GENERATED_ASSETS, NOTATION_ASSETS, SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
+import { AUDIO_ASSETS, GENERATED_ASSETS, NOTATION_ASSETS, SITE_ASSETS, SITE_DIRECTORIES } from "../build.mjs";
 
-const Core = createRequire(import.meta.url)("../js/rudiment-core.js");
+const require = createRequire(import.meta.url);
+const Core = require("../js/rudiment-core.js");
 
 const execFileAsync = promisify(execFile);
 const root = new URL("../", import.meta.url);
@@ -85,6 +86,46 @@ test("the notation cards ship, one per rudiment, and nothing else from assets/no
     assert.match(svg, /<g fill="currentColor">/, `${r.id} card is filled with currentColor`);
     assert.doesNotMatch(svg, /<script|\son[a-z]+=/i, `${r.id} card carries no script (the page inlines it)`);
   }
+});
+
+/* The Marching sound: MuseScore Drumline's solo snare, packed as PCM in a
+   classic script. The page asks for it by a path of its own, so this pins that
+   path to the file the build ships, and pins the shape the voice indexes into:
+   two takes per hand in every set, each starting on the stick (a take that
+   opened on silence would land late on every stroke) and ending in silence
+   (or every stroke would end in a click). The waiver ships beside it. */
+test("the marching snare ships with its credit, in the shape the voice plays", async () => {
+  await execFileAsync(process.execPath, ["build.mjs"], { cwd: root });
+  const shipped = await filesBelow(dist);
+  assert.deepEqual(shipped.filter((file) => file.startsWith("assets/audio/")).sort(), [...AUDIO_ASSETS].sort());
+
+  const app = await readFile(new URL("../js/rudiment-app.js", import.meta.url), "utf8");
+  assert.equal(app.match(/var MARCHING_SRC = "([^"]+)";/)[1], "assets/audio/marching-snare.js");
+  assert.ok(AUDIO_ASSETS.includes("assets/audio/marching-snare.js"));
+
+  const licence = await readFile(new URL("assets/audio/LICENSE-marching-snare.txt", dist), "utf8");
+  assert.match(licence, /Creative Commons 0 \(CC0\)/);
+  assert.match(licence, /MuseScore Drumline/);
+
+  const pack = require("../dist/assets/audio/marching-snare.js");
+  assert.equal(pack.rate, 44100);
+  assert.ok(pack.gain > 0 && pack.gain < 4, "gain restores MDL's level");
+  let bytes = 0;
+  for (const set of ["hit", "crush", "crushLong"]) {
+    assert.equal(pack[set].length, 4, `${set}: two takes per hand`);
+    for (const b64 of pack[set]) {
+      const raw = Buffer.from(b64, "base64");
+      bytes += raw.length;
+      assert.equal(raw.length % 2, 0, `${set}: whole 16-bit samples`);
+      const pcm = new Int16Array(raw.buffer, raw.byteOffset, raw.length / 2);
+      const peak = pcm.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+      const head = pcm.subarray(0, Math.round(pack.rate * 0.003)).reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+      assert.ok(head > peak * 0.25, `${set}: a take starts on the stick, not on silence`);
+      assert.ok(Math.abs(pcm[pcm.length - 1]) < 64, `${set}: a take ends in silence`);
+      assert.ok(pcm.length / pack.rate < 1, `${set}: a take is a stroke, not a phrase`);
+    }
+  }
+  assert.ok(bytes < 600 * 1024, "the takes stay small enough to load on a phone");
 });
 
 /* Named individually rather than left to the deepEqual above, because these are
