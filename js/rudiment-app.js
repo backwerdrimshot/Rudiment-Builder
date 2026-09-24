@@ -19,7 +19,7 @@ var DEFAULTS = {
   cue: true,
   pulse: false,
   muted: false,
-  sound: "snare",
+  sound: "marching",
   bpm: 80,
   ladder: { startBpm: 60, endBpm: 100, stepBpm: 5, repsPerStep: 4 },
   oco: { startBpm: 60, peakBpm: 100, stepBpm: 5, repsPerStep: 2 },
@@ -95,13 +95,18 @@ function updateMuteBtn() {
 }
 
 /* Stroke voices. Every stroke goes through playStroke, which picks the voice
-   the student chose and turns a buzz into its bounces (Core.buzzBounces) —
-   before that, a buzz sounded as one plain stroke. Loudness always comes from
-   the core's velocity tiers (accent > normal > grace); count-in/transition
-   blocks keep the family's soft sine "listen" voice in either setting, so the
+   the student chose. Marching plays a recorded buzz stroke for a buzz; the two
+   synthesized voices turn it into its bounces (Core.buzzBounces) — before
+   that, a buzz sounded as one plain stroke. Loudness always comes from the
+   core's velocity tiers (accent > normal > grace); count-in/transition blocks
+   keep the family's soft sine "listen" voice whatever the setting, so the
    student HEARS "don't play yet". A voice change is picked up by the next
    stroke scheduled, so it never needs to stop playback. */
 function playStroke(time, hand, velocity, accent, buzzSeconds) {
+  if (settings.sound === "marching" && marchingBuffers()) {
+    marchingHit(time, hand, velocity, buzzSeconds);
+    return;
+  }
   var hit = settings.sound === "tones" ? toneHit : snareHit;
   if (!buzzSeconds) { hit(time, hand, velocity, accent); return; }
   Core.buzzBounces(time, buzzSeconds, velocity).forEach(function (b, i) {
@@ -193,11 +198,98 @@ function snareHit(time, hand, velocity) {
   head.start(time);
   head.stop(time + 0.12);
 }
+/* Marching: MuseScore Drumline's recorded solo snare (CC0; the credit ships in
+   assets/audio). The takes arrive as PCM inside a classic script, so they load
+   from disk as well as from the site, and only once Marching is chosen. Until
+   they have loaded — or if they never do — a Marching stroke is played by the
+   synth snare rather than dropped.
+
+   Each hand has two takes of a stroke and alternates between them, so a run of
+   single strokes never repeats one recording back to back. Softer strokes are
+   darker as well as quieter, the way a stick from a lower height sounds; an
+   accent is the recording as made. A buzz is MDL's own buzz stroke (a "crush"):
+   the tight one while the note is short, the longer, open one once it is long
+   enough that the tight one would die away before the next stroke. Either is
+   cut off where the written note ends, so buzzes join into a roll rather than
+   piling up. */
+var MARCHING_SRC = "assets/audio/marching-snare.js";
+var MARCHING = {
+  pan: { R: 0.2, L: -0.2 },
+  level: 0.9,       // near the synth snare by RMS, with headroom: recorded accents peak harder
+  curve: 1.3,       // gain = velocity^curve: normal ~-5 dB, grace ~-18 dB under an accent
+  longBuzz: 0.15,   // seconds; a buzz this long or longer takes the open crush
+  buzzLift: 1.5,    // MDL records a crush softer than a hit; +3.5 dB sits a roll with the strokes around it
+  release: 0.03,
+};
+var marchingState = "none", marchingBufs = null, marchingTurn = { R: 0, L: 0 }, marchingPreview = false;
+// A load that failed is tried again the next time Marching is chosen.
+function loadMarching() {
+  if (marchingState === "loading" || marchingState === "ready") return;
+  marchingState = "loading";
+  var s = document.createElement("script");
+  s.src = MARCHING_SRC;
+  s.onload = function () { marchingSettled(window.RudimentMarchingSnare ? "ready" : "failed"); };
+  s.onerror = function () { marchingSettled("failed"); };
+  document.head.appendChild(s);
+}
+function marchingSettled(state) {
+  var preview = marchingPreview;
+  marchingState = state;
+  marchingPreview = false;
+  if (settings.sound !== "marching") return;
+  $("soundHint").textContent = soundHint("marching");
+  if (preview) previewVoice();
+}
+// Built on first use, once an AudioContext exists; null until the takes load.
+function marchingBuffers() {
+  if (marchingBufs) return marchingBufs;
+  if (marchingState !== "ready" || !audio) return null;
+  var data = window.RudimentMarchingSnare;
+  var take = function (b64) {
+    var bin = atob(b64), n = bin.length >> 1;
+    var buf = audio.createBuffer(1, n, data.rate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) {
+      var v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); // little-endian
+      d[i] = (v >= 0x8000 ? v - 0x10000 : v) / 32768;
+    }
+    return buf;
+  };
+  marchingBufs = { hit: data.hit.map(take), crush: data.crush.map(take), crushLong: data.crushLong.map(take), gain: data.gain };
+  return marchingBufs;
+}
+function marchingHit(time, hand, velocity, buzzSeconds) {
+  var bufs = marchingBufs;
+  var set = !buzzSeconds ? bufs.hit : buzzSeconds < MARCHING.longBuzz ? bufs.crush : bufs.crushLong;
+  var src = audio.createBufferSource();
+  src.buffer = set[(hand === "R" ? 0 : 1) + 2 * (marchingTurn[hand]++ % 2)];
+
+  var node = src;
+  var cutoff = 3500 * Math.pow(2, (velocity - 0.2) * 3.95); // grace ~3.5 kHz, normal ~11 kHz
+  if (cutoff < Math.min(18000, audio.sampleRate / 2)) {
+    var lp = audio.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = cutoff; lp.Q.value = 0;
+    node.connect(lp);
+    node = lp;
+  }
+  var g = audio.createGain();
+  var level = bufs.gain * MARCHING.level * Math.pow(velocity, MARCHING.curve) * (buzzSeconds ? MARCHING.buzzLift : 1);
+  g.gain.setValueAtTime(level, time);
+  node.connect(g);
+  g.connect(handOutput(MARCHING.pan[hand]));
+  src.start(time);
+  if (buzzSeconds) {
+    g.gain.setValueAtTime(level, time + buzzSeconds);
+    g.gain.linearRampToValueAtTime(0, time + buzzSeconds + MARCHING.release);
+    src.stop(time + buzzSeconds + MARCHING.release + 0.01);
+  }
+}
+
 // A two-stroke sample of the chosen voice when it is picked while nothing is
 // playing. Never while paused: resuming the context to sound it would also
 // unfreeze the paused plan.
 function previewVoice() {
   if (live.status !== "idle" && live.status !== "complete") return;
+  if (settings.sound === "marching" && marchingState === "loading") { marchingPreview = true; return; }
   try { initAudio(); } catch (e) { return; }
   if (audio.state === "suspended") audio.resume();
   var t = audio.currentTime + 0.05;
@@ -1112,13 +1204,21 @@ function applyMode(mode) {
 /* Not structural: the next stroke scheduled takes the new voice, so this
    never stops playback — and it is not part of a shared drill. */
 var SOUND_HINT = {
-  snare: "Both hands sound like the drum; the right sits a little right, the left a little left.",
+  marching: "A recorded marching snare, buzz strokes included. The right hand sits a little right, the left a little left.",
+  snare: "A synthesized snare, lighter than the marching drum. The right hand sits a little right, the left a little left.",
   tones: "The right hand plays a higher tone than the left, so you can hear the sticking.",
 };
+function soundHint(sound) {
+  if (sound === "marching" && marchingState === "failed") {
+    return "The marching snare recording did not load, so the synth snare is playing instead.";
+  }
+  return SOUND_HINT[sound];
+}
 function applySound(sound) {
   settings.sound = sound;
   persistSettings();
-  $("soundHint").textContent = SOUND_HINT[sound];
+  if (sound === "marching") loadMarching();
+  $("soundHint").textContent = soundHint(sound);
   previewVoice();
 }
 function applyLead(lead) {
@@ -1195,7 +1295,7 @@ function coerceSettings(raw) {
   if (typeof raw.cue === "boolean") settings.cue = raw.cue;
   if (typeof raw.pulse === "boolean") settings.pulse = raw.pulse;
   if (typeof raw.muted === "boolean") settings.muted = raw.muted;
-  if (raw.sound === "snare" || raw.sound === "tones") settings.sound = raw.sound;
+  if (raw.sound === "marching" || raw.sound === "snare" || raw.sound === "tones") settings.sound = raw.sound;
   var n;
   if ((n = toInt(raw.bpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.bpm = n;
   var lad = raw.ladder || {}, oco = raw.oco || {};
@@ -1284,7 +1384,8 @@ function hydrateControls() {
   setSeg("segLead", settings.lead);
   setSeg("segMode", settings.mode);
   setSeg("segSound", settings.sound);
-  $("soundHint").textContent = SOUND_HINT[settings.sound];
+  if (settings.sound === "marching") loadMarching();
+  $("soundHint").textContent = soundHint(settings.sound);
   $("settingsFixed").hidden = settings.mode !== "fixed";
   $("settingsLadder").hidden = settings.mode !== "ladder";
   $("settingsOco").hidden = settings.mode !== "oco";

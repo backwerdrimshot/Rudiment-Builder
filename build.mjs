@@ -18,6 +18,16 @@ export const NOTATION_ASSETS = [
   ...Core.RUDIMENTS.map(Core.notationCard),
 ];
 
+/* The recorded marching snare: MuseScore Drumline's solo-snare takes (CC0),
+   packed as PCM inside a classic script by tools/pack-marching-snare.py so a
+   page opened from disk can load it too. The page loads it only when Marching
+   is the chosen sound. The waiver and credit ship beside it; the packer does
+   not ship. */
+export const AUDIO_ASSETS = [
+  "assets/audio/marching-snare.js",
+  "assets/audio/LICENSE-marching-snare.txt",
+];
+
 /* An explicit allowlist, copied into dist/, and the reason is not tidiness.
    This site used to publish through GitHub Pages with `path: '.'` — the whole
    repository root — so CLAUDE.md, REVIEW.md, README.md and serve.ps1 were all
@@ -37,6 +47,7 @@ export const SITE_ASSETS = [
   "robots.txt",
   "sitemap.xml",
   ...NOTATION_ASSETS,
+  ...AUDIO_ASSETS,
 ];
 
 /* Whole directories, copied recursively. The brand token file and the font

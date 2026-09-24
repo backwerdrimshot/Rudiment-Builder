@@ -58,11 +58,12 @@ machine advanced by the scheduler **only at block boundaries**.
   `startPlayback` is idempotent: it tears down timers and orphans scheduled
   audio first. Structural changes during playback (rudiment/lead/mode/ladder
   numbers) call `stopIfActive()`; only fixed-mode BPM, the pulse/downbeat-cue
-  toggles (picked up at the next block), the stroke sound (Snare/Tones, picked
-  up by the next stroke scheduled; never in share links), and mute (master gain
-  only; never in share links) apply without stopping. Choosing a sound while
-  idle or complete plays a sample — never while paused, where resuming the
-  context would unfreeze the plan.
+  toggles (picked up at the next block), the stroke sound (Marching/Synth/Tones,
+  stored as `marching|snare|tones`, picked up by the next stroke scheduled;
+  never in share links), and mute (master gain only; never in share links)
+  apply without stopping. Choosing a sound while idle or complete plays a
+  sample — never while paused, where resuming the context would unfreeze the
+  plan.
 - Best clean tempo is the student's claim, never a judgement (nothing listens).
   "Clean at N" offers only a tempo actually HEARD in a played block (set from
   `renderNow`, so count-in, listen blocks and a pending fixed-mode change do
@@ -93,8 +94,9 @@ display constraint — the cell spans its beat group). Diddle = **exactly two**
 same-hand strokes on consecutive slots sharing a `diddle` id; `group` = a
 bracket of **2+** same-hand consecutive strokes (e.g. the triple stroke roll).
 `buzz:true` marks a multiple-bounce stroke (can't also carry a grace); it
-sounds as `buzzBounces` over the event's `lengthBeats`, in either voice. Grace
-hands must oppose the primary (`grace:[{hand}]`, 1 = flam, 2 = drag). `counting`
+fills the event's `lengthBeats` — as MDL's recorded buzz stroke in Marching,
+as `buzzBounces` in the two synthesized voices. Grace hands must oppose the
+primary (`grace:[{hand}]`, 1 = flam, 2 = drag). `counting`
 is **optional** — when omitted the core generates it from `slotsPerBeat`
 (`countingFor`); when present it must match the grid length. Velocity tiers:
 accent 1.0 / normal 0.62 / grace 0.2 (per-stroke `velocity` overrides). Invalid
@@ -151,6 +153,14 @@ upstream). Cards are right-hand lead only, fill with `currentColor` so they take
 `--ink` when inlined, and fall back to an `<img>` over `file://`. The page and
 the build share `Core.notationCard(r)` for the path; only the 40 cards and the
 Bravura licence ship (`NOTATION_ASSETS`), and a missing card fails the build.
+
+The Marching sound is MuseScore Drumline's solo snare (CC0), packed by
+`tools/pack-marching-snare.py` into `assets/audio/marching-snare.js` — 16-bit
+PCM in a classic script, so it loads from `file://` too and needs no decoder.
+The pack is generated: never edit it by hand, re-run the packer. The page
+injects it only when Marching is chosen, and until it loads (or if it fails)
+a Marching stroke is played by the synth snare, never dropped. The pack and its
+credit ship through `AUDIO_ASSETS`.
 
 The letterpress furniture is the app's own: 2px Ink borders, hard offset shadows
 with no blur, Palatino italic captions (`--serif`, not governed by the brand
