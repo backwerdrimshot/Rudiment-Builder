@@ -1,7 +1,7 @@
 "use strict";
 /* Rudiment Room — audio scheduler + UI on top of RudimentCore.
    The lookahead scheduler, listen voice, pause-by-suspend, and visual queue
-   are adapted from Tempo Ladder / Click Drop / Pulse Pocket. Layer boundaries:
+   are adapted from Click Drop / Pulse Pocket. Layer boundaries:
      Core       — data, withLead, expandPattern, buildPlan, playback machine
      scheduler  — schedules strokes on the AudioContext timeline (truth)
      visual Q   — timestamped events flushed at hear-time
@@ -971,7 +971,7 @@ function finishSession() {
   $("nextBpm").innerHTML = "—";
   setBanner("complete", settings.mode === "oco"
     ? "Open–close–open complete ✓"
-    : "Ladder complete ✓");
+    : "Tempo steps complete ✓");
   setStatus("Nice work. Start again, or change the settings.");
 }
 
@@ -1208,7 +1208,7 @@ function setSeg(segId, val) {
 
 var MODE_HINT = {
   fixed: "Loop the rudiment at one tempo. Nudge the tempo while playing — the change lands at the next cycle.",
-  ladder: "Climb (or descend) from start to end. Between tempos: four listen-only clicks at the NEW tempo.",
+  ladder: "Step from start to end, up or down. Between tempos: four listen-only clicks at the NEW tempo.",
   oco: "Slow to the peak and back down, in steps. Tempo changes are seamless at a cycle boundary — watch for the warning.",
 };
 function applyMode(mode) {
@@ -1356,7 +1356,9 @@ function queryToRaw() {
   var q = new URLSearchParams(location.search);
   if (![...q.keys()].length) return null;
   return {
-    rudimentId: q.get("r"), lead: q.get("lead"), mode: q.get("mode"),
+    // Steps mode is "ladder" inside the app and in saved settings; its links say
+    // mode=steps, and links shared before the rename (mode=ladder) still open it.
+    rudimentId: q.get("r"), lead: q.get("lead"), mode: q.get("mode") === "steps" ? "ladder" : q.get("mode"),
     cue: q.get("cue") === null ? undefined : q.get("cue") === "1",
     pulse: q.get("pulse") === null ? undefined : q.get("pulse") === "1",
     turn: q.get("turn"),
@@ -1371,7 +1373,7 @@ function shareUrl() {
   var p = new URLSearchParams();
   p.set("r", settings.rudimentId);
   p.set("lead", settings.lead);
-  p.set("mode", settings.mode);
+  p.set("mode", settings.mode === "ladder" ? "steps" : settings.mode);
   p.set("cue", settings.cue ? "1" : "0");
   p.set("pulse", settings.pulse ? "1" : "0");
   p.set("turn", settings.turn);

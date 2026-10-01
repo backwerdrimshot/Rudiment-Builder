@@ -6,7 +6,7 @@
    Choose the rudiment. See the sticking. Build the hands. Control the tempo.
 
    Classic script (works over file://); exports for Node at the bottom.
-   Layering (mirrors Click Drop / Tempo Ladder):
+   Layering (mirrors Click Drop):
      0. rudiment-data.js        — frozen rudiment records
      1. validate / withLead     — data checked at boot, lead applied by copy
      2. expandPattern           — strokes -> beat-positioned playable events
@@ -351,7 +351,7 @@ function buildLadderRungs(opts) {
   return rungs;
 }
 
-// Symmetric open-close-open path (same semantics as Tempo Ladder's buildLadder):
+// Symmetric open-close-open path (exact peak once, descent retraces the ascent):
 // climb from start toward the peak, hit the exact peak once, retrace back down.
 function buildOcoRungs(opts) {
   const start = intIn(opts.startBpm, BPM_MIN, BPM_MAX, "startBpm");
