@@ -10,7 +10,7 @@ hears and watches the stroke sequence, and practices it three ways:
 
 - **Fixed tempo** — loop continuously at one tempo; tempo nudges land at the
   next cycle boundary, never mid-pattern.
-- **Tempo ladder** — climb (or descend) from a starting BPM to an ending BPM
+- **Steps** — step up (or down) from a starting BPM to an ending BPM
   in steps, with a chosen number of repetitions at each tempo and a four-beat
   "listen" transition that clicks **at the new tempo**.
 - **Open–close–open** — slow → peak → slow as a predictable state sequence
@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-09-24.4`
+- **Build:** `2026-10-01`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -318,12 +318,12 @@ affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
 ## Family
 
-Twelve free apps, all listed at
+Eleven free apps, all listed at
 <https://apps.backwerdrhythmshop.com/>:
 
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
-Tempo Ladder · Count It · Mallet Board · Mallet Map · Scale Trail ·
-Drum Map · **Rudiment Room**
+Count It · Mallet Board · Mallet Map · Scale Trail · Drum Map ·
+**Rudiment Room**
 
 ## Visit counter
 

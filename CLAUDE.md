@@ -72,11 +72,12 @@ machine advanced by the scheduler **only at block boundaries**.
   next boundary that opens a trade. Turn is structural (`stopIfActive`) and
   travels in share links. Nothing listens: it's practice structure, not a
   judgment.
-- Ladder transitions are 4-beat listen blocks clicking **at the upcoming
+- Steps-mode transitions (`ladder` internally; links say `mode=steps` and
+  still read `mode=ladder`) are 4-beat listen blocks clicking **at the upcoming
   tempo**. Open-close-open has no transitions — seamless change + visual
   warning on the final cycle of a stage. Count-in is always 4 beats.
 - Open-close-open path: exact peak exactly once, descent retraces the ascent
-  (`buildOcoRungs`, same semantics as Tempo Ladder's `buildLadder`).
+  (`buildOcoRungs`).
 - Pause = `audio.suspend()` (clock freezes → duplicate events impossible);
   stop/reset = `killPending()` (orphan the master gain) + state reset.
   `startPlayback` is idempotent: it tears down timers and orphans scheduled

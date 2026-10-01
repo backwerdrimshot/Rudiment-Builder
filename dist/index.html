@@ -31,7 +31,7 @@
   /* Rudiment Room — Backwerd Rhythm Shop base identity + the Train Your Hands
      category accent (Terra Cotta), per the Suite Visual Unification decisions
      of 2026-08. Until 2026-08-15 this file carried an invented navy/cream/
-     orange palette, matching Tempo Ladder's pre-correction values exactly;
+     orange palette, matching a sibling app's pre-correction values exactly;
      that pass corrected the values under the old names, and this one retires
      the names for the shared ones and takes the brand faces too. Every hue now
      comes from the linked design-tokens.css. The block below holds only this
@@ -560,7 +560,7 @@
       <h2 id="hMode">Practice mode</h2>
       <div class="seg" role="group" aria-label="Practice mode" id="segMode">
         <button type="button" data-val="fixed" aria-pressed="true">Fixed</button>
-        <button type="button" data-val="ladder" aria-pressed="false">Ladder</button>
+        <button type="button" data-val="ladder" aria-pressed="false">Steps</button>
         <button type="button" data-val="oco" aria-pressed="false">Open‑Close‑Open</button>
       </div>
       <p class="hint mode-hint" id="modeHint"></p>
@@ -725,7 +725,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-09-24.4";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-01";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
