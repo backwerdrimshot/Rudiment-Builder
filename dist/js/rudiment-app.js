@@ -31,6 +31,8 @@ var settings = JSON.parse(JSON.stringify(DEFAULTS));
 var audio = null, master = null, canPan = false;
 function initAudio() {
   if (audio) return;
+  // iOS: let Web Audio play with the ring/silent switch on (Safari 16.4+; ignored elsewhere).
+  try { navigator.audioSession.type = "playback"; } catch (e) { /* not supported */ }
   var AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) throw new Error("no-audio");
   audio = new AC();

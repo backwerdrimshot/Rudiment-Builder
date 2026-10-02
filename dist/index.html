@@ -444,6 +444,20 @@
     *{transition:none !important}
     .cell.current{transform:none}
   }
+/* Touch targets: on touch screens, keep controls at least 44px tall (WCAG 2.5.8 / Apple HIG).
+   Instrument keys and bars, and dense note cells, are left alone on purpose. */
+@media (pointer: coarse) {
+  :where(button, select, summary, [role="button"], [role="tab"], input[type="range"], input[type="number"]):not(.mallet-bar):not(.key-bar):not(.note):not(.light) {
+    min-height: 44px;
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    width: 24px;
+    height: 24px;
+  }
+  :where(label):has(> input[type="checkbox"], > input[type="radio"]) {
+    min-height: 44px;
+  }
+}
 </style>
 </head>
 <body>
@@ -725,7 +739,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-01";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-02";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
