@@ -444,6 +444,20 @@
     *{transition:none !important}
     .cell.current{transform:none}
   }
+/* Touch targets: on touch screens, keep controls at least 44px tall (WCAG 2.5.8 / Apple HIG).
+   Instrument keys and bars, and dense note cells, are left alone on purpose. */
+@media (pointer: coarse) {
+  :where(button, select, summary, [role="button"], [role="tab"], input[type="range"], input[type="number"]):not(.mallet-bar):not(.key-bar):not(.note):not(.light) {
+    min-height: 44px;
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    width: 24px;
+    height: 24px;
+  }
+  :where(label):has(> input[type="checkbox"], > input[type="radio"]) {
+    min-height: 44px;
+  }
+}
 </style>
 </head>
 <body>
