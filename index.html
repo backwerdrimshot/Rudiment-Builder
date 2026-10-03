@@ -458,6 +458,15 @@
     min-height: 44px;
   }
 }
+/* iPhone Safari: no automatic text resizing in landscape; no double-tap zoom or tap delay on
+   controls; form fields at 16px so focusing one does not zoom the whole page. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@media (pointer: coarse) {
+  :where(button, [role="button"], [role="tab"], summary, label, select, input, a) { touch-action: manipulation; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="button"]):not([type="submit"]),
+  select,
+  textarea { font-size: max(16px, 1em) !important; }
+}
 </style>
 </head>
 <body>
@@ -739,7 +748,7 @@
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-02";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-03";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
