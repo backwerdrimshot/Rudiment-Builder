@@ -120,10 +120,10 @@
   .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
   .brand .fs{margin-left:auto}
   /* Backwerd Rhythm Shop monogram: the way back to the shop. */
-  .brs-home{display:inline-flex;flex:none;align-items:center;justify-content:center;border-radius:50%}
-  .brs-home img{display:block;width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+  .brs-home{display:inline-flex;flex:none;margin-left:-4px;align-items:center;justify-content:center;border-radius:50%}
+  .brs-home img{display:block;width:28px;height:28px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
   .brs-home:focus-visible{outline:3px solid var(--forest);outline-offset:3px}
-  @media (pointer: coarse){.brs-home{padding:5px;margin:-5px -1px -5px -5px}}
+  @media (pointer: coarse){.brs-home{padding:8px;margin:-8px -8px -8px -12px}}
   @media print{.brs-home{display:none}}
   :fullscreen .brs-home{display:none}
   :-webkit-full-screen .brs-home{display:none}
@@ -481,7 +481,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 <div class="wrap">
 
   <header class="brand">
-    <a class="brs-home" href="https://backwerdrhythmshop.com/" aria-label="Backwerd Rhythm Shop home"><img src="./brs-monogram.svg" alt="" width="34" height="34"></a>
     <span class="logo" aria-hidden="true">
       <img src="./icon-192.png" alt="" />
     </span>
@@ -490,6 +489,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <p>Backwerd Rhythm Shop</p>
     </div>
     <button class="btn ghost fs" id="btnFull" type="button" title="Full screen">⛶ Full screen</button>
+    <a class="brs-home" href="https://backwerdrhythmshop.com/" aria-label="Backwerd Rhythm Shop home"><img src="./brs-monogram.svg" alt="" width="28" height="28"></a>
   </header>
   <p class="tagline">Choose the rudiment. See the sticking. Build the hands. Control the tempo.</p>
 
@@ -757,7 +757,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-03.2";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-03.3";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
