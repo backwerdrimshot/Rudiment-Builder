@@ -119,6 +119,14 @@
   .brand h1 span{color:var(--accent-ink)}
   .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
   .brand .fs{margin-left:auto}
+  /* Backwerd Rhythm Shop monogram: the way back to the shop. */
+  .brs-home{display:inline-flex;flex:none;align-items:center;justify-content:center;border-radius:50%}
+  .brs-home img{display:block;width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+  .brs-home:focus-visible{outline:3px solid var(--forest);outline-offset:3px}
+  @media (pointer: coarse){.brs-home{padding:5px;margin:-5px -1px -5px -5px}}
+  @media print{.brs-home{display:none}}
+  :fullscreen .brs-home{display:none}
+  :-webkit-full-screen .brs-home{display:none}
   .tagline{color:var(--ink-soft);font-size:.92rem;margin:10px 0 20px;font-family:var(--serif);font-style:italic}
 
   /* Layout: one column on phones; practice display leads on big screens */
@@ -473,6 +481,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 <div class="wrap">
 
   <header class="brand">
+    <a class="brs-home" href="https://backwerdrhythmshop.com/" aria-label="Backwerd Rhythm Shop home"><img src="./brs-monogram.svg" alt="" width="34" height="34"></a>
     <span class="logo" aria-hidden="true">
       <img src="./icon-192.png" alt="" />
     </span>
@@ -748,7 +757,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-03";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-03.2";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
