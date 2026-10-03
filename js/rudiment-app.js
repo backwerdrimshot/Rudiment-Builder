@@ -46,11 +46,11 @@ function initAudio() {
   // arriving late (after a rapid pause→reset→start) or an OS audio blip — try
   // to pull the context back first, and only pause if it will not run.
   audio.addEventListener("statechange", function () {
-    if (live.status !== "playing" || audio.state !== "suspended") return;
+    if (live.status !== "playing" || (audio.state !== "suspended" && audio.state !== "interrupted")) return;
     if (!document.hidden) {
       audio.resume().catch(function () {});
       setTimeout(function () {
-        if (live.status === "playing" && audio.state === "suspended") externalPause();
+        if (live.status === "playing" && audio.state !== "running") externalPause();
       }, 250);
       return;
     }
@@ -294,7 +294,7 @@ function previewVoice() {
   if (live.status !== "idle" && live.status !== "complete") return;
   if (settings.sound === "marching" && marchingState === "loading") { marchingPreview = true; return; }
   try { initAudio(); } catch (e) { return; }
-  if (audio.state === "suspended") audio.resume();
+  if (audio.state !== "running") audio.resume();
   var t = audio.currentTime + 0.05;
   playStroke(t, "R", Core.VELOCITY.accent, true, 0);
   playStroke(t + 0.22, "L", Core.VELOCITY.normal, false, 0);
@@ -882,7 +882,7 @@ function startPlayback() {
 
   try { initAudio(); }
   catch (e) { setErr("This browser can't play audio here. Try Chrome, Edge, Firefox, or Safari."); return; }
-  if (audio.state === "suspended") audio.resume();
+  if (audio.state !== "running") audio.resume();
 
   // Idempotent: tear down any running scheduler + orphan scheduled sources so
   // rapid Start presses (or Start again) can never stack schedulers or double
@@ -935,7 +935,7 @@ function stopPlayback() {
   releaseWakeLock();
   live.visualQ = [];
   live.doneQueued = false;
-  if (audio) { killPending(); if (audio.state === "suspended") audio.resume(); }
+  if (audio) { killPending(); if (audio.state !== "running") audio.resume(); }
   live.status = "idle";
   live.playback = null;
   live.heard = null;
