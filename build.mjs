@@ -36,6 +36,8 @@ export const AUDIO_ASSETS = [
    publishes it by accident. */
 export const SITE_ASSETS = [
   "index.html",
+  "workspace-layout.css",
+  "workspace-info.js",
   "js/rudiment-app.js",
   "js/rudiment-core.js",
   "js/rudiment-data.js",

@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-04.2`
+- **Build:** `2026-10-04.3`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -349,3 +349,7 @@ These three links also appear as icon buttons in the app footer.
 ## Ownership
 
 © 2026 Backwerd Rimshot, LLC. All rights reserved.
+
+## Compact practice workspace
+
+The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions and About contains the app, support, and build information. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.
