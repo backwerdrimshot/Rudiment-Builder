@@ -598,6 +598,7 @@ function renderNow(ev) {
 }
 
 /* ---------------- sticking display ---------------- */
+var WIDE_STAGE = window.matchMedia("(min-width: 1180px)");
 function renderSticking() {
   live.pattern = Core.withLead(Core.RUDIMENT_MAP[settings.rudimentId], settings.lead);
   live.events = Core.expandPattern(live.pattern);
@@ -609,7 +610,10 @@ function renderSticking() {
   currentCell = null;
 
   var spb = p.slotsPerBeat;
-  var beatsPerRow = Math.max(1, Math.floor(8 / spb)); // keep rows phone-sized
+  // Rows stay phone-sized (8 slots) unless the stage has the whole wide column, where a
+  // 16-slot row keeps a long cycle short enough that the stage fits the window's height.
+  var beatsPerRow = Math.max(1, Math.floor((WIDE_STAGE.matches ? 16 : 8) / spb));
+  host.style.setProperty("--rows", Math.ceil(p.cycleBeats / beatsPerRow));
 
   var bySlot = {};
   p.strokes.forEach(function (s, i) { bySlot[s.slot] = { s: s, i: i }; });
@@ -1238,6 +1242,7 @@ function soundHint(sound) {
   return SOUND_HINT[sound];
 }
 function applySound(sound) {
+  renderSummary();
   settings.sound = sound;
   persistSettings();
   if (sound === "marching") loadMarching();
@@ -1278,7 +1283,26 @@ function fmtDuration(secs) {
   return mm + ":" + (ss < 10 ? "0" : "") + ss;
 }
 
+/* The one-line summary the setup toggle shows, and the tempo chip in the
+   docked bar. The tempo stepper only means something in Fixed mode: the
+   other two modes walk their own tempos. */
+var SOUND_NAME = { marching: "Marching snare", snare: "Synth snare", tones: "Tones" };
+function renderSummary() {
+  var r = Core.RUDIMENT_MAP[settings.rudimentId];
+  var mode;
+  if (settings.mode === "fixed") mode = "Fixed " + settings.bpm + " BPM";
+  else if (settings.mode === "ladder")
+    mode = "Steps " + settings.ladder.startBpm + "\u2192" + settings.ladder.endBpm + " BPM";
+  else mode = "Open\u2011Close\u2011Open " + settings.oco.startBpm + "\u2192" + settings.oco.peakBpm + " BPM";
+  $("summaryTop").textContent = (r ? r.name : "Rudiment") + " \u00b7 " + (settings.lead === "L" ? "Left" : "Right") + " lead";
+  $("summarySub").textContent = mode + " \u00b7 " + (SOUND_NAME[settings.sound] || "") +
+    (settings.turn ? " \u00b7 Your turn x" + settings.turn : "");
+  $("bpmQuick").textContent = settings.bpm;
+  $("tempoStep").hidden = settings.mode !== "fixed";
+}
+
 function syncPlanPreview() {
+  renderSummary();
   var wrap = $("planPreview"), meta = $("planMeta");
   var plan;
   try { plan = buildPlanFromSettings(); }
@@ -1444,6 +1468,33 @@ function hydrateControls() {
   $("modeHint").textContent = MODE_HINT[settings.mode];
 }
 
+/* The rudiment list and the settings float over the page, so the panel closes the way
+   a popover does: Escape (focus returns to the toggle), a tap outside, or full screen. */
+function wireSetupPanel() {
+  var toggle = $("setupToggle"), panel = $("setupPanel"), chev = $("setupChevron");
+  function setOpen(open) {
+    panel.setAttribute("data-open", open ? "true" : "false");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    chev.textContent = open ? "Close" : "Rudiments & settings";
+  }
+  toggle.addEventListener("click", function () {
+    setOpen(panel.getAttribute("data-open") !== "true");
+  });
+  document.addEventListener("click", function (e) {
+    if (panel.getAttribute("data-open") !== "true") return;
+    if (panel.contains(e.target) || toggle.contains(e.target)) return;
+    setOpen(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || panel.getAttribute("data-open") !== "true") return;
+    setOpen(false);
+    toggle.focus();
+  });
+  document.addEventListener("fullscreenchange", function () {
+    if (document.fullscreenElement) setOpen(false);
+  });
+}
+
 /* ---------------- events ---------------- */
 function wireEvents() {
   $("btnStart").addEventListener("click", onStartButton);
@@ -1469,6 +1520,21 @@ function wireEvents() {
     });
   });
   $("bpm").addEventListener("change", onBpmChanged);
+  // Tempo stays on the main screen, in the docked bar, while the full control sits in the panel.
+  [["bpmDown", -5], ["bpmUp", 5]].forEach(function (p) {
+    $(p[0]).addEventListener("click", function () {
+      $("bpm").value = (Math.round(+$("bpm").value) || 0) + p[1];
+      onBpmChanged();
+    });
+  });
+  wireSetupPanel();
+  // A window resized across the wide-stage breakpoint re-lays the sticking rows, but never
+  // under a running drill (the highlight lives on the cells).
+  var onStageWidth = function () {
+    if (live.status === "idle" || live.status === "complete") renderSticking();
+  };
+  if (WIDE_STAGE.addEventListener) WIDE_STAGE.addEventListener("change", onStageWidth);
+  else if (WIDE_STAGE.addListener) WIDE_STAGE.addListener(onStageWidth);
   ["ladStart", "ladEnd", "ladStep", "ladReps", "ocoStart", "ocoPeak", "ocoStep", "ocoReps"]
     .forEach(function (id) { $(id).addEventListener("change", onModeFieldChanged); });
 
