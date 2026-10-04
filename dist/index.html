@@ -558,8 +558,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   textarea { font-size: max(16px, 1em) !important; }
 }
 </style>
+<link rel="stylesheet" href="./workspace-layout.css">
 </head>
-<body>
+<body data-workspace-name="Rudiment Room" data-workspace-intro="Choose a rudiment and practice format in Rudiments &amp; settings. Start the count-in, then play along. Mark Clean when the repetition meets your standard." data-workspace-help=".area-about">
 <div class="wrap">
 
   <header class="brand">
@@ -872,7 +873,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-04.2";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-04.3";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
@@ -1028,5 +1029,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
      to another site. Settings still stay in local storage and nothing a player
      does reaches it. -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "4c76fa6f3023401899bbeb30fa4eebd3"}'></script>
+<script src="./workspace-info.js"></script>
 </body>
 </html>

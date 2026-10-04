@@ -33,7 +33,7 @@
 "use strict";
 
 // BUILD MANIFEST — written by build.mjs; do not edit in dist.
-var BUILD = "2026-10-04.2";
+var BUILD = "2026-10-04.3";
 var ASSETS = [
   "./",
   "apple-touch-icon.png",
@@ -90,7 +90,9 @@ var ASSETS = [
   "js/rudiment-app.js",
   "js/rudiment-core.js",
   "js/rudiment-data.js",
-  "manifest.webmanifest"
+  "manifest.webmanifest",
+  "workspace-info.js",
+  "workspace-layout.css"
 ];
 // END BUILD MANIFEST
 

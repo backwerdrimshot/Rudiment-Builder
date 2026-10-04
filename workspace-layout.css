@@ -1,0 +1,26 @@
+/* Shared on-demand information panels; app-specific laptop rules follow. */
+.workspace-actions { display:flex; align-items:center; gap:8px; margin-left:auto; flex:none; }
+.workspace-actions button,.workspace-dialog-heading button { min-height:44px; padding:8px 14px; border:1px solid var(--line,var(--ink,#171717)); border-radius:8px; background:var(--card,var(--panel,var(--white,#fff))); color:var(--text,var(--ink,#171717)); font:600 1rem var(--body,system-ui); cursor:pointer; }
+.workspace-actions button:focus-visible,.workspace-dialog :focus-visible { outline:3px solid var(--accent,var(--forest,#416034)); outline-offset:3px; }
+header .brs-home { margin-left:4px; }
+.workspace-dialog { box-sizing:border-box; width:min(720px,calc(100% - 32px)); max-height:calc(100dvh - 32px); padding:22px; overflow:auto; overscroll-behavior:contain; border:2px solid var(--line,var(--ink,#171717)); border-radius:14px; background:var(--card,var(--panel,var(--white,#fff))); color:var(--text,var(--ink,#171717)); font:1rem/1.5 var(--body,system-ui); }
+.workspace-dialog::backdrop { background:rgba(0,0,0,.5); }
+.workspace-dialog-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+.workspace-dialog-heading h2 { margin:0; padding:0; border:0; font-size:1.5rem; color:inherit; }
+dialog.workspace-dialog footer { width:100%; max-width:none; margin:0; padding:0; border:0; text-align:left; color:inherit; background:transparent; }
+.workspace-dialog footer p,.workspace-dialog footer strong,.workspace-dialog footer span {color:inherit;}
+.workspace-dialog [hidden] {display:none;}
+.workspace-dialog footer .foot-links { justify-content:flex-start; }
+.workspace-dialog .field-note,.workspace-dialog .area-about { margin:0; }
+.workspace-dialog .field-note { display:block; padding:0; border:0; }
+.workspace-dialog .kb-hint { display:block; }
+.workspace-dialog .cols { display:grid; grid-template-columns:1fr; gap:14px; }
+.workspace-dialog .panel { margin-bottom:12px; }
+@media(max-width:700px) { .workspace-actions {gap:4px;} .workspace-actions button {padding-inline:8px;font-size:.88rem;} .workspace-dialog {padding:16px;} }
+@media print { .workspace-actions,.workspace-dialog {display:none;} }
+
+/* Keep the laptop workspace visible; narrow and zoomed views retain normal scrolling. */
+@media (min-width:1000px) and (min-height:560px) {
+body{padding:8px 16px}
+.layout{height:calc(100dvh - 88px);min-height:0}.wrap>header.brand{margin-bottom:10px}.area-sticking,.area-status{min-height:0}.area-about{margin:0}.dock{margin-bottom:0}
+}
