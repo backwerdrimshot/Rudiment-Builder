@@ -170,7 +170,13 @@
   .setup-panel .panel{border:0;box-shadow:none;padding:0;background:transparent}
   .setup-panel .rud-cards{max-height:min(30vh,300px)}
   .setup-panel .area-practice{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .panel-help{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:16px;padding-top:6px;border-top:1px solid var(--line)}
+  .panel-help a{display:inline-flex;align-items:center;min-height:36px;font-size:.88rem;font-weight:700;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
+  .panel-help a:hover{color:var(--ink)}
+  @media(pointer:coarse){.panel-help a{min-height:44px;min-width:44px;padding:0 6px}}
+  @media print{.panel-help{display:none}}
   @media(min-width:980px){
+    .panel-help{grid-column:1 / -1;margin-top:0}
     .setup-panel{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
     .setup-panel[data-open="false"]{display:none}
     .setup-panel .area-practice{margin-top:0;padding-top:0;border-top:0}
@@ -751,6 +757,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
     </section>
 
+        <nav class="panel-help" aria-label="Help and more apps">
+          <a href="https://guides.backwerdrhythmshop.com/rudiment-builder/">Guide</a>
+          <a href="https://apps.backwerdrhythmshop.com/">More apps</a>
+        </nav>
       </div>
     </section>
 
@@ -862,7 +872,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-04";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-04.2";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
