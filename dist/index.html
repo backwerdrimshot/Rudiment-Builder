@@ -95,7 +95,7 @@
     color:var(--ink);
     font-family:var(--body);
     min-height:100vh;
-    padding:26px 16px 56px;
+    padding:12px 16px 28px;
   }
   .wrap{max-width:1160px;margin:0 auto}
   [hidden]{display:none !important}
@@ -103,22 +103,23 @@
 
   /* Brand header */
   header.brand{
-    display:flex;align-items:center;gap:16px;margin-bottom:8px;
-    padding-bottom:16px;border-bottom:3px double var(--ink);flex-wrap:wrap;
+    display:flex;align-items:center;gap:12px;margin-bottom:10px;
+    padding-bottom:8px;border-bottom:3px double var(--ink);flex-wrap:nowrap;
   }
   .logo{
-    width:56px;height:56px;border-radius:14px;flex:0 0 auto;
+    width:40px;height:40px;border-radius:10px;flex:0 0 auto;
     border:2px solid var(--ink);overflow:hidden;
-    display:block;box-shadow:3px 3px 0 var(--ink);
+    display:block;box-shadow:2px 2px 0 var(--ink);
   }
   .logo img{width:100%;height:100%;display:block;object-fit:cover}
-  .brand h1{margin:0;font-size:1.7rem;letter-spacing:.2px;font-family:var(--display);font-weight:800}
+  .brand h1{margin:0;font-size:1.4rem;line-height:1.1;letter-spacing:.2px;font-family:var(--display);font-weight:800}
   /* Terra Cotta is 2.82:1 on Warm White — under the 3:1 large-text floor even
      at 27px — so the wordmark takes --accent-ink, which clears it at 4.78:1 and
      still reads as the same mark. */
   .brand h1 span{color:var(--accent-ink)}
-  .brand p{margin:3px 0 0;color:var(--ink-soft);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
-  .brand .fs{margin-left:auto}
+  .brand p{margin:2px 0 0;color:var(--ink-soft);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+  .brand > div{min-width:0}
+  .brand .fs{margin-left:auto;padding:8px 14px;font-size:.85rem;white-space:nowrap}
   /* Backwerd Rhythm Shop monogram: the way back to the shop. */
   .brs-home{display:inline-flex;flex:none;margin-left:-4px;align-items:center;justify-content:center;border-radius:50%}
   .brs-home img{display:block;width:28px;height:28px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
@@ -127,20 +128,95 @@
   @media print{.brs-home{display:none}}
   :fullscreen .brs-home{display:none}
   :-webkit-full-screen .brs-home{display:none}
-  .tagline{color:var(--ink-soft);font-size:.92rem;margin:10px 0 20px;font-family:var(--serif);font-style:italic}
+  .tagline{color:var(--ink-soft);font-size:.92rem;margin:0 0 14px;font-family:var(--serif);font-style:italic}
 
-  /* Layout: one column on phones; practice display leads on big screens */
-  .layout{display:flex;flex-direction:column;gap:18px}
+  /* Layout. HEIGHT is the constraint, so the first screen is: slim header, one summary row, the
+     stage (sticking + practice readout), and the docked action bar. The rudiment list and every
+     setting sit behind the summary row in a panel that floats OVER the page; the explanatory
+     text and the drawn notation card live below the fold. */
+  .layout{display:flex;flex-direction:column;gap:12px;min-height:calc(100vh - 68px);min-height:calc(100dvh - 68px)}
+  .dock{margin-top:auto}
+  .area-about{margin-top:22px}
   @media(min-width:980px){
     .layout{
-      display:grid;gap:20px;align-items:start;
+      display:grid;gap:14px;align-items:stretch;
       grid-template-columns:1.45fr 1fr;
-      grid-template-areas:"sticking rudiment" "status rudiment" "status practice" ". practice";
+      grid-template-rows:auto 1fr auto;
+      grid-template-areas:"setup setup" "sticking status" "dock dock";
     }
-    .area-rudiment{grid-area:rudiment}
+    .setup-card{grid-area:setup}
     .area-sticking{grid-area:sticking}
     .area-status{grid-area:status}
-    .area-practice{grid-area:practice}
+    .dock{grid-area:dock}
+    /* The window's height is the budget: the stage takes what is left between the summary row
+       and the dock, and a stage that still does not fit scrolls inside itself as a last resort. */
+    .layout{height:min(calc(100vh - 68px),740px);height:min(calc(100dvh - 68px),740px);min-height:440px;grid-template-rows:auto minmax(0,1fr) auto}
+    .area-sticking,.area-status{min-height:0;display:flex;flex-direction:column}
+    .area-sticking #sticking{min-height:0;overflow-y:auto;padding:6px 6px 10px;margin:0 -6px}
+    .area-status{overflow:auto}
+  }
+  @media(min-width:1180px){ .layout{grid-template-columns:2.2fr 1fr} }
+
+  /* Summary row + the panel it opens (every width) */
+  .setup-card{position:relative}
+  .setup-toggle{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:8px 14px;text-align:left;border:2px solid var(--ink);border-radius:var(--radius);background:var(--white);color:var(--ink);font:inherit;cursor:pointer;box-shadow:var(--shadow-cell)}
+  .setup-toggle:hover{background:var(--tan)}
+  .settings-summary{display:grid;gap:2px;min-width:0}
+  .settings-summary b{font-family:var(--serif);font-size:1.08rem}
+  .settings-summary span{font-size:.82rem;color:var(--ink-soft);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .settings-chevron{flex:none;font-size:.82rem;font-weight:800;text-decoration:underline}
+  .setup-panel{position:absolute;left:0;right:0;top:100%;z-index:30;margin-top:6px;padding:18px;background:var(--white);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:0 18px 50px rgba(0,0,0,.35);max-height:min(74vh,700px);overflow:auto;overscroll-behavior:contain}
+  .setup-panel[data-open="false"]{display:none}
+  .setup-panel .panel{border:0;box-shadow:none;padding:0;background:transparent}
+  .setup-panel .rud-cards{max-height:min(30vh,300px)}
+  .setup-panel .area-practice{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  @media(min-width:980px){
+    .setup-panel{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+    .setup-panel[data-open="false"]{display:none}
+    .setup-panel .area-practice{margin-top:0;padding-top:0;border-top:0}
+    .setup-panel .rud-cards{max-height:min(38vh,380px)}
+  }
+
+  /* Stage readouts stay compact so the stage fits a laptop window */
+  .area-sticking,.area-status{padding:14px 18px}
+  .area-sticking h2,.area-status h2{margin-bottom:8px;padding-bottom:6px}
+  .stick-rows{margin:10px 0 2px;gap:12px}
+  .legend{margin-top:10px}
+  .area-status .beats{margin:10px 0 2px}
+  .area-status .banner{margin:8px 0 2px;padding:9px 14px}
+  .area-status .status-line{margin:6px 0 2px}
+  .area-status .clean-note{min-height:0;margin:2px 0 0}
+  .area-status .err:empty{display:none}
+
+  /* Docked action bar: transport + tempo stepper, always on screen */
+  .dock{position:sticky;bottom:0;z-index:25;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+  .dock .transport{margin-top:0;gap:10px;justify-content:flex-start;align-items:center}
+  .dock .btn.big{padding:12px 28px;min-width:0}
+  .dock .btn.ghost{padding:10px 16px}
+  .tempo-step{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+  .tempo-step[hidden]{display:none}
+  .tempo-step .btn{min-width:48px;min-height:44px;padding:0 12px;font-size:1rem}
+  .tempo-quick{min-width:4.2em;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tempo-quick b{font-size:1.25rem}
+  .tempo-quick small{color:var(--ink-soft);font-weight:800}
+
+  /* Below the fold */
+  .about-grid{display:grid;gap:18px}
+  .area-about .notation{margin:0;padding-top:0;border-top:0}
+  @media(min-width:980px){
+    .about-grid{grid-template-columns:1fr 1fr;align-items:start}
+  }
+  @media(max-width:700px){
+    .settings-chevron{max-width:6.5em;text-align:right}
+  }
+  @media(max-width:480px){
+    .brand .fs .fs-label{display:none}
+    .brand .fs{min-width:44px}
+  }
+  :fullscreen .setup-card{display:none}
+  :-webkit-full-screen .setup-card{display:none}
+  @media print{
+    .setup-card,.dock{display:none}
   }
 
   .panel{
@@ -289,7 +365,7 @@
   .count.on-stroke{color:var(--ink)}
   .cell{
     position:relative;border:2px solid var(--ink);border-radius:9px;background:var(--warm-white);
-    min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:clamp(40px,7vh,64px);display:flex;flex-direction:column;align-items:center;justify-content:center;
     box-shadow:var(--shadow-cell);padding:4px 2px 8px;
     transition:background .08s linear,transform .08s linear;
   }
@@ -347,9 +423,9 @@
   @media (prefers-color-scheme:dark){.notation-card img{filter:invert(1)}}
 
   /* Status + transport */
-  .status-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+  .status-grid{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
   @media(max-width:560px){.status-grid{grid-template-columns:1fr;text-align:center}}
-  .bpm-huge{font-size:clamp(3.4rem,13vw,7rem);font-weight:800;line-height:.92;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .bpm-huge{font-size:clamp(2.6rem,min(10vw,9vh),5rem);font-weight:800;line-height:.92;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
   .bpm-huge small{font-size:.24em;color:var(--ink-soft);font-weight:800;letter-spacing:.1em;vertical-align:.7em;margin-left:.15em}
   .phase-word{font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,3.6vw,1.7rem);color:var(--ink-soft);min-height:1.3em}
   /* Also Terra as TEXT. This one only passed on a wide screen, where the clamp
@@ -358,11 +434,11 @@
   .phase-word.peak{color:var(--accent-ink);font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-family:inherit}
   .next-chip{
     justify-self:end;text-align:center;border:2px solid var(--ink);border-radius:12px;
-    padding:10px 18px;background:var(--warm-white);box-shadow:var(--shadow);min-width:112px;
+    padding:6px 14px;background:var(--warm-white);box-shadow:var(--shadow);min-width:112px;
   }
   @media(max-width:560px){.next-chip{justify-self:center}}
   .next-chip .lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-soft);font-weight:800}
-  .next-chip .val{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+  .next-chip .val{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
   .next-chip .val small{font-size:.85rem;color:var(--ink-soft)}
 
   .beats{display:flex;gap:12px;justify-content:center;margin:18px 0 2px;min-height:24px}
@@ -488,13 +564,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <h1>Rudiment <span>Room</span></h1>
       <p>Backwerd Rhythm Shop</p>
     </div>
-    <button class="btn ghost fs" id="btnFull" type="button" title="Full screen">⛶ Full screen</button>
+    <button class="btn ghost fs" id="btnFull" type="button" title="Full screen" aria-label="Full screen"><span aria-hidden="true">⛶</span> <span class="fs-label">Full screen</span></button>
     <a class="brs-home" href="https://backwerdrhythmshop.com/" aria-label="Backwerd Rhythm Shop home"><img src="./brs-monogram.svg" alt="" width="28" height="28"></a>
   </header>
-  <p class="tagline">Choose the rudiment. See the sticking. Build the hands. Control the tempo.</p>
 
   <main class="layout">
 
+    <!-- ============ SETUP: rudiment list + practice settings, one panel over the page ============ -->
+    <section class="setup-card">
+      <button type="button" class="setup-toggle" id="setupToggle" aria-expanded="false" aria-controls="setupPanel">
+        <span class="settings-summary"><b id="summaryTop"></b><span id="summarySub"></span></span>
+        <span class="settings-chevron" id="setupChevron" aria-hidden="true">Rudiments &amp; settings</span>
+      </button>
+      <div class="setup-panel" id="setupPanel" data-open="false">
     <!-- ============ RUDIMENT ============ -->
     <section class="panel area-rudiment" aria-labelledby="hRudiment">
       <h2 id="hRudiment">Choose the rudiment</h2>
@@ -517,15 +599,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
       <div class="rud-cards" role="group" aria-label="Rudiment" id="rudCards"></div>
       <p class="rud-empty" id="rudEmpty" hidden>No rudiments match. Try clearing the search or filters.</p>
-      <div class="rud-info">
-        <div class="chips" id="rudChips"></div>
-        <p class="teaching" id="teachingNote"></p>
-        <p class="hint" id="tempoHint"></p>
-        <div class="best-row">
-          <p class="hint" id="bestLine"></p>
-          <button class="btn ghost mini" id="btnClearBest" type="button" hidden>Clear</button>
-        </div>
-      </div>
       <div class="lead-row">
         <span class="lbl" id="leadLbl">Leading hand</span>
         <div class="seg" role="group" aria-labelledby="leadLbl" id="segLead">
@@ -535,57 +608,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
     </section>
 
-    <!-- ============ STICKING ============ -->
-    <section class="panel area-sticking" aria-labelledby="hSticking">
-      <h2 id="hSticking">The sticking</h2>
-      <div class="stick-head">
-        <div>
-          <p class="stick-title" id="stickName"></p>
-          <span class="stick-sub" id="stickSub"></span>
-        </div>
-      </div>
-      <p class="sr-only" id="stickingDesc"></p>
-      <div id="sticking" role="img" aria-describedby="stickingDesc" aria-label="Sticking pattern"></div>
-      <div class="legend" aria-hidden="true">
-        <span class="key"><span class="k-acc">&gt;</span> accent</span>
-        <span class="key"><span class="k-grace">L</span>R flam grace</span>
-        <span class="key"><span class="k-diddle">R R</span> diddle</span>
-        <span class="key"><span class="k-rest">·</span> rest / ring</span>
-      </div>
-      <figure class="notation" id="notation">
-        <div class="notation-card" id="notationCard"></div>
-        <figcaption class="notation-cap" id="notationCap"></figcaption>
-      </figure>
-    </section>
-
-    <!-- ============ STATUS + TRANSPORT ============ -->
-    <section class="panel area-status" aria-labelledby="hPractice">
-      <h2 id="hPractice">Practice</h2>
-      <div class="status-grid">
-        <div>
-          <div class="bpm-huge" id="curBpm" aria-live="off">80<small>BPM</small></div>
-          <div class="phase-word" id="phaseWord">Ready</div>
-        </div>
-        <div class="next-chip">
-          <div class="lbl">Next tempo</div>
-          <div class="val" id="nextBpm">—</div>
-        </div>
-      </div>
-
-      <div class="beats" id="beats" aria-hidden="true"></div>
-
-      <div class="banner hidden" id="banner" aria-live="assertive"></div>
-      <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
-
-      <div class="transport">
-        <button class="btn big primary" id="btnStart" type="button">Start</button>
-        <button class="btn big ghost" id="btnReset" type="button">Reset</button>
-        <button class="btn ghost" id="btnMute" type="button" aria-pressed="false">Sound on</button>
-        <button class="btn ghost" id="btnClean" type="button" disabled><span aria-hidden="true">✓ </span><span id="cleanLabel">Clean at —</span></button>
-      </div>
-      <p class="hint clean-note" id="cleanNote" aria-live="polite"></p>
-      <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
-    </section>
 
     <!-- ============ MODE + SETTINGS ============ -->
     <section class="panel area-practice" aria-labelledby="hMode">
@@ -729,7 +751,90 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
     </section>
 
+      </div>
+    </section>
+
+    <!-- ============ STICKING ============ -->
+    <section class="panel area-sticking" aria-labelledby="hSticking">
+      <h2 id="hSticking">The sticking</h2>
+      <div class="stick-head">
+        <div>
+          <p class="stick-title" id="stickName"></p>
+          <span class="stick-sub" id="stickSub"></span>
+        </div>
+      </div>
+      <p class="sr-only" id="stickingDesc"></p>
+      <div id="sticking" role="img" aria-describedby="stickingDesc" aria-label="Sticking pattern"></div>
+      <div class="legend" aria-hidden="true">
+        <span class="key"><span class="k-acc">&gt;</span> accent</span>
+        <span class="key"><span class="k-grace">L</span>R flam grace</span>
+        <span class="key"><span class="k-diddle">R R</span> diddle</span>
+        <span class="key"><span class="k-rest">·</span> rest / ring</span>
+      </div>
+    </section>
+
+    <!-- ============ STATUS + TRANSPORT ============ -->
+    <section class="panel area-status" aria-labelledby="hPractice">
+      <h2 id="hPractice">Practice</h2>
+      <div class="status-grid">
+        <div>
+          <div class="bpm-huge" id="curBpm" aria-live="off">80<small>BPM</small></div>
+          <div class="phase-word" id="phaseWord">Ready</div>
+        </div>
+        <div class="next-chip">
+          <div class="lbl">Next tempo</div>
+          <div class="val" id="nextBpm">—</div>
+        </div>
+      </div>
+
+      <div class="beats" id="beats" aria-hidden="true"></div>
+
+      <div class="banner hidden" id="banner" aria-live="assertive"></div>
+      <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
+
+      <p class="hint clean-note" id="cleanNote" aria-live="polite"></p>
+      <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
+    </section>
+
+    <!-- ============ DOCKED ACTION BAR ============ -->
+    <section class="panel dock" aria-label="Transport">
+      <div class="transport">
+        <button class="btn big primary" id="btnStart" type="button">Start</button>
+        <button class="btn big ghost" id="btnReset" type="button">Reset</button>
+        <button class="btn ghost" id="btnMute" type="button" aria-pressed="false">Sound on</button>
+        <button class="btn ghost" id="btnClean" type="button" disabled><span aria-hidden="true">✓ </span><span id="cleanLabel">Clean at —</span></button>
+              <div class="tempo-step" id="tempoStep" role="group" aria-label="Tempo">
+          <button type="button" class="btn ghost" id="bpmDown" aria-label="Slower, 5 BPM">&minus;5</button>
+          <span class="tempo-quick" aria-live="off"><b id="bpmQuick">80</b> <small>BPM</small></span>
+          <button type="button" class="btn ghost" id="bpmUp" aria-label="Faster, 5 BPM">+5</button>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+    <!-- ============ BELOW THE FOLD ============ -->
+  <section class="panel area-about" aria-labelledby="hAbout">
+      <h2 id="hAbout">About this rudiment</h2>
+      <p class="tagline">Choose the rudiment. See the sticking. Build the hands. Control the tempo.</p>
+      <div class="about-grid">
+        <div>
+      <div class="rud-info">
+        <div class="chips" id="rudChips"></div>
+        <p class="teaching" id="teachingNote"></p>
+        <p class="hint" id="tempoHint"></p>
+        <div class="best-row">
+          <p class="hint" id="bestLine"></p>
+          <button class="btn ghost mini" id="btnClearBest" type="button" hidden>Clear</button>
+        </div>
+      </div>
+        </div>
+      <figure class="notation" id="notation">
+        <div class="notation-card" id="notationCard"></div>
+        <figcaption class="notation-cap" id="notationCap"></figcaption>
+      </figure>
+      </div>
+    </section>
 
   <footer class="foot">
     <div>Learn the name. See the sticking. Build the hands.</div>
@@ -757,7 +862,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-03.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-04";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
