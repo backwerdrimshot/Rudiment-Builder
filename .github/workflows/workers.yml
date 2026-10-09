@@ -29,7 +29,15 @@ jobs:
   deploy:
     # A failed or canceled CI run must not publish. A manual dispatch is an
     # explicit human decision and carries no workflow_run to inspect.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # Only deploy commits pushed to main in this repository. A fork pull request
+    # from a branch named `main` also passes the `branches` filter above, and its
+    # successful CI run would otherwise deploy fork code with Cloudflare secrets.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     # A hung deploy otherwise holds the concurrency group and silently blocks
     # every later merge from publishing.
