@@ -27,6 +27,7 @@ function getCases(core) {
       cycleBeats: 1, slotsPerBeat: 4, subdivision: "Sixteenth notes",
       tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 120 },
       leadingHand: "mirror", teachingNote: "Sample note.",
+      breakdown: ["Play the singles slowly.", "Add the double.", "Repeat from the other lead."],
       counting: ["1", "e", "&", "a"],
       strokes: [
         { slot: 0, hand: "R", accent: true },
@@ -123,6 +124,16 @@ function getCases(core) {
     assert.equal(core.RUDIMENTS.length, 40, "ships all 40 PAS International Drum Rudiments");
     ["single-paradiddle", "flam-accent", "five-stroke-roll", "multiple-bounce-roll", "triple-stroke-roll"]
       .forEach(function (id) { assert.ok(MAP[id], id + " present"); });
+  }},
+
+  { name: "breakdown: every rudiment ships 3 to 5 non-empty practice steps", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      const steps = r.breakdown || [];
+      assert.ok(steps.length >= 3 && steps.length <= 5, r.id + " has 3 to 5 steps (has " + steps.length + ")");
+      steps.forEach(function (s, i) {
+        assert.ok(typeof s === "string" && s.trim().length > 0, r.id + " step " + (i + 1) + " is text");
+      });
+    });
   }},
 
   { name: "catalog: PAS numbers cover 1..40 exactly once, every id unique", fn: function (assert) {
@@ -381,6 +392,13 @@ function getCases(core) {
     expectInvalid(assert, function (r) { r.strokes[0].grace = []; }, "1 (flam) or 2 (drag)");
     expectInvalid(assert, function (r) { r.strokes[0].grace = [{ hand: "R" }]; }, "opposite hand");
     expectInvalid(assert, function (r) { r.strokes[0].grace = [{ hand: "Q" }]; }, 'hand must be "R" or "L"');
+  }},
+
+  { name: "invalid breakdown fails clearly", fn: function (assert) {
+    expectInvalid(assert, function (r) { delete r.breakdown; }, "breakdown must be 3 to 5 practice steps");
+    expectInvalid(assert, function (r) { r.breakdown = ["one", "two"]; }, "breakdown must be 3 to 5 practice steps");
+    expectInvalid(assert, function (r) { r.breakdown = ["one", " ", "three"]; }, "breakdown must be 3 to 5 practice steps");
+    expectInvalid(assert, function (r) { r.breakdown = ["1", "2", "3", "4", "5", "6"]; }, "breakdown must be 3 to 5 practice steps");
   }},
 
   { name: "assertValidRegistry throws one error naming every problem", fn: function (assert) {

@@ -84,6 +84,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 90, suggestedLo: 60, suggestedHi: 160 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "The foundation: even, alternating single strokes. Keep both hands matched in height and sound from slow to fast.",
+    breakdown: [
+      "Play R L R L slowly, with both sticks at the same height and volume.",
+      "Raise the tempo in small steps. Stop at the first tempo where the sound stops being even.",
+      "Repeat the exercise starting on the left, so both hands lead equally.",
+      "Keep each stroke relaxed and rebounding as the tempo rises.",
+    ],
     aliases: ["single stroke", "singles"],
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L },
@@ -96,6 +102,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 150 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Four single strokes in the ratamacue's rhythm: three quick strokes into a longer fourth. Keep the first three even and let the fourth land.",
+    breakdown: [
+      "Play R L R evenly across the first half of the beat.",
+      "Let the fourth stroke, L, fill the second half of the beat.",
+      "Repeat with the lead switched, so the held stroke falls on both hands.",
+      "Keep the first three strokes even, then let the fourth sound for its full length.",
+    ],
     aliases: ["single stroke 4"],
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R },
@@ -108,6 +120,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 144 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "A sextuplet of six single strokes arriving on a seventh: the run is even, the arrival rings.",
+    breakdown: [
+      "Play six even singles, R L R L R L, across the first beat.",
+      "Hold the seventh stroke, R, for the whole second beat.",
+      "Check that the six singles are evenly spaced before you add the held stroke.",
+      "Repeat with the lead switched, so the held stroke falls on both hands.",
+    ],
     aliases: ["single stroke 7"],
     strokes: [
       { slot: 0, hand: R }, { slot: 1, hand: L }, { slot: 2, hand: R },
@@ -121,6 +139,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Each stroke is a controlled multiple bounce (a buzz), pressed evenly so the sounds overlap into a smooth roll. Sound, not stroke count, is the goal.",
+    breakdown: [
+      "Press each stroke into a buzz, starting with the right hand, and let each buzz close cleanly.",
+      "Alternate R and L on each eighth note, keeping the buzzes even in length.",
+      "Listen for one sustained sound rather than counting separate bounces.",
+      "At slow tempos, lower the stick height so each buzz stays controlled.",
+    ],
     aliases: ["buzz roll", "closed roll", "concert roll", "orchestral roll"],
     strokes: [
       { slot: 0, hand: R, buzz: true }, { slot: 1, hand: L, buzz: true },
@@ -133,6 +157,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Three even strokes per hand: RRR LLL. Let the second and third strokes rebound naturally without losing evenness.",
+    breakdown: [
+      "Play three even right-hand strokes, R R R, as a triplet.",
+      "Switch to the left for three even strokes, L L L.",
+      "Let each stroke rebound rather than pushing the next one down.",
+      "Repeat at a steady tempo until the triplets match from hand to hand.",
+    ],
     aliases: ["triple stroke", "french roll"],
     strokes: [
       { slot: 0, hand: R, group: 1 }, { slot: 1, hand: R, group: 1 }, { slot: 2, hand: R, group: 1 },
@@ -145,6 +175,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 55, suggestedHi: 150 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "The long roll: clean, even double strokes. Match the two strokes of each hand in height and volume before adding speed.",
+    breakdown: [
+      "Play one double, R R, with the second stroke rebounding from the first.",
+      "Alternate doubles, one per hand: R R L L R R L L.",
+      "Match the two strokes in each double in height and volume.",
+      "Speed up only when each double sounds like the one before it.",
+    ],
     aliases: ["long roll", "open roll", "double stroke roll"],
     strokes: [
       { slot: 0, hand: R, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
@@ -159,6 +195,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 76, suggestedLo: 60, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Two doubles into an accented release: rr–ll–R. Play the doubles open and even at slow tempos and let them close up as speed rises.",
+    breakdown: [
+      "Play two doubles at a steady sixteenth-note pulse: R R, then L L.",
+      "Land the accented R on beat two and let it ring to the end of the beat.",
+      "Play L L and R R on beat three, then finish beat four with an accented L.",
+      "At slow tempos, keep the doubles open and even. Let them close up as the tempo rises.",
+    ],
     aliases: ["5 stroke roll", "five-stroke"],
     strokes: [
       { slot: 0,  hand: R, diddle: 1 }, { slot: 1,  hand: R, diddle: 1 },
@@ -175,6 +217,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Accented singles bracket two inner doubles: R–ll–rr–L. A common groove roll; keep the accents strong and the diddles relaxed.",
+    breakdown: [
+      "Start with an accented R, then play the doubles L L and R R.",
+      "End on an accented L, so the pattern closes on the opposite hand.",
+      "Keep the accents strong and the doubles relaxed and quieter.",
+      "Repeat with the lead switched, so both hands take the accents.",
+    ],
     aliases: ["6 stroke roll"],
     strokes: [
       { slot: 0, hand: R, accent: true },
@@ -189,6 +237,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Three doubles into an accented release. The release lands on the upbeat — count it carefully at slow tempos.",
+    breakdown: [
+      "Play three doubles, one pair at a time: R R, L L, R R.",
+      "Finish with an accented release on the left, falling on the upbeat of beat two.",
+      "Count the pattern aloud at a slow tempo until the release lands where you expect.",
+      "Play the second half from the left lead, letting each release ring to the end of its beat.",
+    ],
     aliases: ["7 stroke roll"],
     strokes: measuredRoll(3) },
 
@@ -198,6 +252,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Four doubles into an accented release on the downbeat. A cornerstone roll — even doubles, clean release.",
+    breakdown: [
+      "Play four doubles, moving between hands after each pair: R R, L L, R R, L L.",
+      "Finish with an accented release on the right, on the downbeat of beat three.",
+      "Keep the doubles even, and let the release ring to the end of its beat.",
+      "Play the second half from the left lead, the same way.",
+    ],
     aliases: ["9 stroke roll"],
     strokes: measuredRoll(4) },
 
@@ -207,6 +267,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Four doubles then two accented single taps (R L). Keep the two closing taps clean and even with the roll.",
+    breakdown: [
+      "Play four doubles: R R L L R R L L, moving between hands after each pair.",
+      "Close with two accented single taps, R then L, on the first two sixteenths of beat three.",
+      "Rest on the last two sixteenths of beat three before the pattern repeats.",
+      "Keep the taps as even as the doubles, so the ending sounds like part of the roll.",
+    ],
     aliases: ["10 stroke roll"],
     strokes: [
       { slot: 0, hand: R, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
@@ -222,6 +288,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Five doubles into an accented release on the upbeat. Count the release placement carefully.",
+    breakdown: [
+      "Play five doubles, one pair at a time: R R, L L, R R, L L, R R.",
+      "Finish with an accented release on the left, falling on the upbeat of beat three.",
+      "Count the release aloud at a slow tempo. It is easy to land it early or late.",
+      "Play the second half from the left lead, with the release on the upbeat again.",
+    ],
     aliases: ["11 stroke roll"],
     strokes: measuredRoll(5) },
 
@@ -231,6 +303,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Six doubles into an accented release on the downbeat. A long roll — hold evenness all the way to the release.",
+    breakdown: [
+      "Play six doubles, one pair at a time, moving between hands after each pair.",
+      "Finish with an accented release on the right, on the downbeat of beat four.",
+      "Keep the doubles even all the way to the release. The last doubles are where the sound usually slips.",
+      "Play the second half from the left lead, with the same shape.",
+    ],
     aliases: ["13 stroke roll"],
     strokes: measuredRoll(6) },
 
@@ -240,6 +318,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 63, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Seven doubles into an accented release on the upbeat. Stamina and evenness are the challenge here.",
+    breakdown: [
+      "Play seven doubles, moving between hands after each pair.",
+      "Finish with an accented release on the left, falling on the upbeat of beat four.",
+      "Build stamina in blocks: practice three doubles, then five, then all seven.",
+      "Play the second half from the left lead, keeping the same evenness to the release.",
+    ],
     aliases: ["15 stroke roll"],
     strokes: measuredRoll(7) },
 
@@ -249,6 +333,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 60, suggestedLo: 48, suggestedHi: 108 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Eight doubles into an accented release on the downbeat. The longest measured roll in the set.",
+    breakdown: [
+      "Play eight doubles, moving between hands after each pair.",
+      "Finish with an accented release on the right, on the downbeat of beat five.",
+      "Practice in blocks of four doubles to build evenness across the whole run.",
+      "Play the second half from the left lead, so both hands carry the release equally.",
+    ],
     aliases: ["17 stroke roll"],
     strokes: measuredRoll(8) },
 
@@ -262,6 +352,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 140 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "One accent, then let the hand relax — the singles and the double should all match in sound. The sticking trades the lead hand every four notes by itself.",
+    breakdown: [
+      "Play R L, then the closing double on the right: R L R R.",
+      "Accent the first stroke. Keep the other singles and the closing double at the same volume as each other.",
+      "Repeat with the lead switched: L R L L.",
+      "Loop the four-note figure and let the lead trade every four notes by itself.",
+    ],
     aliases: ["paradiddle", "RLRR LRLL"],
     strokes: paradiddle(2, 4) },
 
@@ -271,6 +367,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Two pairs of alternating singles before the diddle: RLRLRR. Sits naturally in a triplet or 6/8 feel.",
+    breakdown: [
+      "Play four alternating singles, R L R L, with the first one accented.",
+      "Close with a double on the right: R R.",
+      "Repeat with the lead switched: L R L R L L.",
+      "Keep the singles even into the closing double, and try the figure in triplets for a 6/8 feel.",
+    ],
     aliases: ["double paradiddle", "RLRLRR"],
     strokes: paradiddle(4, 6) },
 
@@ -280,6 +382,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 60, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Three pairs of alternating singles before the diddle: RLRLRLRR. Keep the long run of singles even into the closing double.",
+    breakdown: [
+      "Play six alternating singles, R L R L R L, with the first one accented.",
+      "Close with a double on the right: R R.",
+      "Practice the singles alone until they are even, then add the closing double.",
+      "Repeat with the lead switched: L R L R L R L L.",
+    ],
     aliases: ["triple paradiddle", "RLRLRLRR"],
     strokes: paradiddle(6, 4) },
 
@@ -289,6 +397,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "One single lead into two diddles: R–L–rr–ll. A favorite drum-set sticking; it keeps the same lead hand each time.",
+    breakdown: [
+      "Play R and then L as the first two notes of a sextuplet, with the R accented.",
+      "Follow with two doubles, on the right and then the left: R R L L.",
+      "Keep the doubles relaxed, so the figure feels like one steady groove.",
+      "Practice the left lead as the mirror: L R L L R R.",
+    ],
     aliases: ["paradiddle-diddle", "RLRRLL"],
     strokes: [
       { slot: 0, hand: R, accent: true }, { slot: 1, hand: L },
@@ -306,6 +420,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 80, suggestedLo: 50, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "One soft grace note tucked just ahead of the main stroke, so they sound almost as one thick note. Keep the grace low and the primary full.",
+    breakdown: [
+      "Play a soft left grace note just before the right stroke.",
+      "Keep the grace low and the primary full, so they sound almost as one note.",
+      "Alternate hands on each beat: flam R, then flam L.",
+      "Practice the left lead alone until both flams match.",
+    ],
     aliases: ["flams"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }] },
@@ -318,6 +438,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "One flam starts each triplet. Keep the grace note low and soft, tucked just ahead of the accented primary, and let the two singles after it stay light.",
+    breakdown: [
+      "Play a flam on the right, with the accent on the right: fR> L R.",
+      "Keep the two singles after the flam light, so the flam stays the focus.",
+      "Start the next triplet with a flam on the left: fL> R L.",
+      "Repeat with the lead switched, so the flam falls on both hands.",
+    ],
     aliases: ["flam accent no. 1"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: L }, { slot: 2, hand: R },
@@ -330,6 +456,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 132 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A flam followed by a tap on the same hand: fR–R, fL–L. The tap uses the rebound of the flam's primary stroke.",
+    breakdown: [
+      "Play a flam on the right, then a tap on the same hand: fR R.",
+      "Let the tap use the rebound of the flam's primary stroke, so it stays light.",
+      "Switch to the left: fL L, and repeat on an eighth-note pulse.",
+      "Keep the grace note soft and the accented primary full, and let the tap sit lighter than the primary.",
+    ],
     aliases: ["flam taps"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: R },
@@ -342,6 +474,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A flam, an accent on the second note, then a flam to close: fR L> R L fR. The inner accent is the character of the rudiment; the closing flam is what makes it a cue.",
+    breakdown: [
+      "Play a flam on the right, then an accented left on the second note: fR L> R L.",
+      "On beat two, play one flammed right stroke that fills the whole beat.",
+      "Keep the closing grace note soft, so the held stroke carries the cue.",
+      "Repeat with the lead switched: fL R> L R, then a flammed left held through beat two.",
+    ],
     aliases: ["flam cue"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }] },
@@ -357,6 +495,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 76, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A paradiddle whose accented first note is flammed: fR L R R, fL R L L. Flam the lead, keep the diddle relaxed.",
+    breakdown: [
+      "Start with the flammed accent on the right, then a left and a closing double on the right: fR L R R.",
+      "Keep the grace note soft and the accented primary full, and the diddle relaxed, so the flam does not disturb the sticking.",
+      "Repeat from the left lead: fL R L L.",
+      "Loop the two halves with no gap, so the lead changes each time.",
+    ],
     aliases: ["flam paradiddle", "flamadiddle"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: L },
@@ -371,6 +515,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "A flammed lead into a diddle, then two singles: fR–rr–L–R. Essentially an inverted flam paradiddle with the diddle up front.",
+    breakdown: [
+      "Play a flammed accent on the right, followed by a second right stroke: fR> R.",
+      "Follow with a left and a right: L R.",
+      "Repeat with the left lead, so the flam moves to the other hand: fL> L, then R L.",
+      "Keep the second right stroke relaxed, so the flam and the double sound as one gesture.",
+    ],
     aliases: ["flammed mill"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }], diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
@@ -385,6 +535,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A flammed lead into a paradiddle-diddle: fR L rr ll. Keeps the same lead hand, so it loops as a steady groove.",
+    breakdown: [
+      "Start with the flammed accent on the right, then a left and a double on the right: fR> L R R.",
+      "Add a double on the left: L L.",
+      "Keep the grace notes soft, the accented primaries full, and the diddles relaxed, so the figure feels like one steady groove.",
+      "Repeat from the left lead: fL> R L L, then R R.",
+    ],
     aliases: ["flam paradiddle diddle", "flamadiddle-diddle"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: L },
@@ -401,6 +557,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "Flams on the outer notes bracket two inner taps, with a back-to-back 'fla-fla' at the turn: fR L R fL fR L R fL.",
+    breakdown: [
+      "Play a flammed accent on the right, then a left and a right tap: fR> L R.",
+      "Finish the group with a flammed accent on the left: fL>.",
+      "Let the left flam run straight into the next right flam, the back-to-back fla-fla at the turn.",
+      "Repeat the group, then practice it from the left lead.",
+    ],
     aliases: ["pataflafla"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: L }, { slot: 2, hand: R }, { slot: 3, hand: L, accent: true, grace: [{ hand: R }] },
@@ -413,6 +575,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "A flam, then the flam hand plays again, then the other hand: fR R L, repeating on the same lead. That repeated lead is what separates it from a flam accent — practice the left lead as the mirror.",
+    breakdown: [
+      "Play a flam on the right, then the right again: fR> R.",
+      "Follow with a left to finish the triplet: L.",
+      "Keep the same lead in every triplet, so the flam sets up the whole group.",
+      "Practice the left lead as the mirror: fL> L R.",
+    ],
     aliases: ["swiss triplet", "swiss army"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }], diddle: 1 }, { slot: 1, hand: R, diddle: 1 }, { slot: 2, hand: L },
@@ -424,6 +592,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "A flammed accent, then a tap on the other hand: fR> L fL> R. Each tap turns into the next flam on the same hand — the inverted move a plain flam tap doesn't have.",
+    breakdown: [
+      "Play an accented right flam: a soft left grace note tucked just before the R.",
+      "Tap the left on the second eighth note, and play the next flam on the left right after it.",
+      "Finish the cycle with a right tap, which leads straight into the next right flam.",
+      "Keep the taps soft so the weight stays on the flams.",
+    ],
     aliases: ["inverted flam tap"],
     strokes: [
       { slot: 0, hand: R, accent: true, grace: [{ hand: L }] }, { slot: 1, hand: L },
@@ -436,6 +610,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "A flammed accent, a measured double on the other hand, and a tap back on the lead: fR> L-L R. The middle is a written-out drag — two real sixteenths, not grace notes.",
+    breakdown: [
+      "Play an accented flam on the right, then two measured sixteenths on the left: fR> L L.",
+      "Finish the beat with a right tap that lasts two triplet sixteenths.",
+      "Repeat on the left lead: fL> R R, then a left tap.",
+      "Keep the two sixteenths even so they read as a drag, not as grace notes.",
+    ],
     aliases: ["flam drag"],
     strokes: [
       { slot: 0, duration: 2, hand: R, accent: true, grace: [{ hand: L }] },
@@ -456,6 +636,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 76, suggestedLo: 50, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Two quick grace notes tucked ahead of the main stroke: ll–R, rr–L. Keep the two graces low, even, and close to the primary.",
+    breakdown: [
+      "Play two quick soft grace notes on the left, then the right stroke: ll-R.",
+      "Keep the two graces low, even, and close to the primary.",
+      "Switch hands: rr-L, with the same shape.",
+      "Feel the drag as one figure that lands on the beat, not as separate notes.",
+    ],
     aliases: ["ruff", "half drag", "drag ruff"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] },
@@ -468,6 +654,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A drag into an accented tap on the other hand: drag-R L>, drag-L R>. The graces stay soft; the weight lands on the tap.",
+    breakdown: [
+      "Play a drag on the right: two soft left graces into the R.",
+      "Follow with an accented left tap on the next eighth note.",
+      "Switch hands: a drag on the left, then an accented right tap.",
+      "Keep the graces soft, so the weight lands on the tap.",
+    ],
     aliases: ["single drag"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L, accent: true },
@@ -480,6 +672,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Two drags on the same hand, then an accented tap on the other: drag-R drag-R L>. Keep the two drags even before the accent lands.",
+    breakdown: [
+      "Play a drag on the right, then a second drag on the right: drag-R drag-R.",
+      "Land an accented left tap on the third triplet note.",
+      "Switch hands: drag-L drag-L, then an accented right tap.",
+      "Keep the two drags even before the accent lands.",
+    ],
     aliases: ["double drag"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 2, hand: L, accent: true },
@@ -492,6 +690,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 72, suggestedLo: 50, suggestedHi: 120 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A drag, a tap, then an accented stroke back on the lead: drag-R L R>. The same lead repeats each cycle — practice the left lead as the mirror.",
+    breakdown: [
+      "Play the drag on the right: two soft left graces into the R.",
+      "Follow with a tap on the left.",
+      "Finish with an accented right that fills the second half of the beat.",
+      "Practice the left lead as the mirror, with the same shape.",
+    ],
     aliases: ["lesson twenty-five", "single drag tap no. 2"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L }, { slot: 2, duration: 2, hand: R, accent: true },
@@ -503,6 +707,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 68, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "PAS addition (1984)",
     teachingNote: "A paradiddle where the first stroke is played as a same-hand double: RR> L R R, LL> R L L. The \"drag\" is a measured diddle on the lead, not grace notes.",
+    breakdown: [
+      "Play the first double on the right in thirty-second notes, accenting the first: R> R.",
+      "Continue with a sixteenth left, then two sixteenth rights: L R R.",
+      "Play the second half from the left lead: L> L R L L, with the opening double in thirty-seconds.",
+      "Keep the opening double quick and light, so the figure reads as one drag.",
+    ],
     aliases: ["dragadiddle"],
     strokes: [
       { slot: 0, hand: R, accent: true, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
@@ -519,6 +729,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "An accented single, then a paradiddle whose first note carries the drag: R> drag-R L R R. The accent belongs to the single, not the dragged note.",
+    breakdown: [
+      "Play an accented right that lasts a third of the beat: R>.",
+      "Add a drag on the right, then a left and a right double: drag-R L R R.",
+      "Continue with an accented left, then a drag on the left and a right: L> drag-L R.",
+      "Close with a left double: L L. Repeat with the lead switched, so both hands carry the accents.",
+    ],
     aliases: ["drag paradiddle 1", "drag paradiddle one"],
     strokes: [
       { slot: 0, duration: 2, hand: R, accent: true },
@@ -535,6 +751,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 63, suggestedLo: 46, suggestedHi: 108 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "An accented single, two dragged strokes on the same hand, then the paradiddle finishes: R> drag-R drag-R L R R. Both drags sit on the lead hand.",
+    breakdown: [
+      "Play an accented right, then two dragged strokes on the right: R> drag-R drag-R.",
+      "Follow with a left, then a right double: L RR.",
+      "Play an accented left, then two dragged strokes on the left: L> drag-L drag-L.",
+      "Close with a single right, then a left double: R LL.",
+    ],
     aliases: ["drag paradiddle 2", "drag paradiddle two"],
     strokes: [
       { slot: 0, duration: 2, hand: R, accent: true },
@@ -553,6 +775,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 66, suggestedLo: 48, suggestedHi: 112 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A dragged sixteenth triplet resolving to an accented release on the other hand: drag-R L R L>. Four strokes — the accent is the \"cue\".",
+    breakdown: [
+      "Play a drag on the right, then a left and a right: drag-R L R.",
+      "Finish with an accented left that lasts an eighth note: L>.",
+      "Switch hands: drag-L R L, then an accented right held for an eighth note.",
+      "Keep the drag soft, so the accent carries the figure.",
+    ],
     aliases: ["ratamacue", "single rat"],
     strokes: [
       { slot: 0, hand: R, grace: [{ hand: L }, { hand: L }] }, { slot: 1, hand: L }, { slot: 2, hand: R },
@@ -567,6 +795,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 60, suggestedLo: 46, suggestedHi: 104 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "A dragged eighth, then the ratamacue: drag-R drag-R L R L>. Both drags on the lead hand; the accent still lands on the release.",
+    breakdown: [
+      "Play a dragged right on an eighth note, then a second drag on the right: drag-R drag-R.",
+      "Continue with a left and a right in triplet sixteenths, then an accented left on an eighth note: L R L>.",
+      "Play the second half from the left lead: drag-L drag-L R L R>.",
+      "Keep the drags on each lead hand even before the accent lands.",
+    ],
     aliases: ["double rat"],
     strokes: [
       { slot: 0, duration: 3, hand: R, grace: [{ hand: L }, { hand: L }] },
@@ -583,6 +817,12 @@ var RUDIMENTS = [
     tempo: { defaultBpm: 60, suggestedLo: 46, suggestedHi: 100 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
     teachingNote: "Two dragged eighths, then the ratamacue: drag-R drag-R drag-R L R L>. All three drags on the lead hand, one accent at the very end.",
+    breakdown: [
+      "Play three dragged strokes on the right: two eighth notes, then a triplet sixteenth.",
+      "Continue with a left and a right, then an accented left on an eighth note: L R L>.",
+      "Play the second half from the left lead, with three dragged strokes on the left and an accented right at the end.",
+      "Keep the three drags even before the accent lands, and let the release be the cue.",
+    ],
     aliases: ["triple rat"],
     strokes: [
       { slot: 0, duration: 3, hand: R, grace: [{ hand: L }, { hand: L }] },

@@ -347,6 +347,8 @@
   }
   .chip.family{background:var(--tan)}
   .teaching{font-family:var(--serif);font-size:1rem;line-height:1.5;margin:0;color:var(--ink)}
+  .breakdown{font-family:var(--serif);font-size:1rem;line-height:1.5;margin:10px 0 0;padding-left:1.4em;color:var(--ink)}
+  .breakdown li+li{margin-top:4px}
   .best-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
   .best-row .hint{margin:0;flex:1;min-width:12em;white-space:pre-line}
   .best-row .btn{min-height:44px}
@@ -833,6 +835,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <div class="rud-info">
         <div class="chips" id="rudChips"></div>
         <p class="teaching" id="teachingNote"></p>
+        <ol class="breakdown" id="breakdown" aria-label="Practice steps"></ol>
         <p class="hint" id="tempoHint"></p>
         <div class="best-row">
           <p class="hint" id="bestLine"></p>
@@ -873,7 +876,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-09.1";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-16.3";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
