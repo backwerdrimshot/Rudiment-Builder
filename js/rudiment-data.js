@@ -710,7 +710,7 @@ var RUDIMENTS = [
     breakdown: [
       "Play the first double on the right in thirty-second notes, accenting the first: R> R.",
       "Continue with a sixteenth left, then two sixteenth rights: L R R.",
-      "Play the second half from the left lead: LL> R L L, with the opening double in thirty-seconds.",
+      "Play the second half from the left lead: L> L R L L, with the opening double in thirty-seconds.",
       "Keep the opening double quick and light, so the figure reads as one drag.",
     ],
     aliases: ["dragadiddle"],
