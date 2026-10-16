@@ -421,7 +421,7 @@ var RUDIMENTS = [
     heritage: "NARD Standard 26",
     teachingNote: "One soft grace note tucked just ahead of the main stroke, so they sound almost as one thick note. Keep the grace low and the primary full.",
     breakdown: [
-      "Play a soft left grace note just before an accented right.",
+      "Play a soft left grace note just before the right stroke.",
       "Keep the grace low and the primary full, so they sound almost as one note.",
       "Alternate hands on each beat: flam R, then flam L.",
       "Practice the left lead alone until both flams match.",
