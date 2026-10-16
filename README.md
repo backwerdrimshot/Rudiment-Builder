@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-09.1`
+- **Build:** `2026-10-16`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -280,10 +280,9 @@ that happens, the route is load-bearing: do not remove it.
 
 ## Support and feedback
 
-- **Report a problem** emails `support@backwerdrhythmshop.com`.
-- **Request a feature** emails `feedback@backwerdrhythmshop.com`.
-- Both controls are available in the app footer and prefill the app name, build,
-  page URL, and browser details to make follow-up easier.
+- **Report a problem** opens the shop's problem form in a new tab, with the app name, build, and page address filled in. The page address is the same as a share link: the rudiment and its settings. Saved best tempos stay in the browser and are not sent.
+- **Request a feature** opens the shop's feature form the same way.
+- Both controls are in the app footer. Until a form is set up, they open an email to `support@backwerdrhythmshop.com` or `feedback@backwerdrhythmshop.com`.
 
 ## Sources & educational lineage
 
