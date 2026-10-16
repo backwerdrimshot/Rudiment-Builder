@@ -282,7 +282,8 @@ that happens, the route is load-bearing: do not remove it.
 
 - **Report a problem** opens the shop's problem form in a new tab, with the app name, build, and page address filled in. The page address is the same as a share link: the rudiment and its settings. Saved best tempos stay in the browser and are not sent.
 - **Request a feature** opens the shop's feature form the same way.
-- Both controls are in the app footer. Until a form is set up, they open an email to `support@backwerdrhythmshop.com` or `feedback@backwerdrhythmshop.com`.
+- **Email support** (`support@backwerdrhythmshop.com`) and **Email feedback** (`feedback@backwerdrhythmshop.com`) are plain email links beside the forms in the app footer, always available. They never depend on a form, and no form is required to send a message.
+- If a form is ever unset, its form control falls back to the matching email address.
 
 ## Sources & educational lineage
 

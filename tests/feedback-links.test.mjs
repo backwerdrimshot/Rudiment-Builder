@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
-const { SHOP_FORMS, feedbackBase, feedbackHref, formLink, opensForm } = require("../js/feedback-links.js");
+const { SHOP_FORMS, emailHref, feedbackBase, feedbackHref, formLink, opensForm } = require("../js/feedback-links.js");
 
 const APP = "Rudiment Room";
 const SETUP = "https://rudiment-builder.backwerdrhythmshop.com/#rudiment=paradiddle · build 2026-10-16";
@@ -69,13 +69,29 @@ test("an unset form falls back to the shop's email, with its subject and no body
   const support = new URL(feedbackHref("support", APP, SETUP, UNSET));
   assert.equal(support.protocol, "mailto:");
   assert.equal(support.pathname, "support@backwerdrhythmshop.com");
-  assert.equal(support.searchParams.get("subject"), "Rudiment Room — Support request");
+  assert.equal(support.searchParams.get("subject"), "Rudiment Room — problem report");
   assert.equal(support.searchParams.has("body"), false);
 
   const feedback = new URL(feedbackHref("feedback", APP, SETUP, UNSET));
   assert.equal(feedback.pathname, "feedback@backwerdrhythmshop.com");
-  assert.equal(feedback.searchParams.get("subject"), "Rudiment Room — Feature request");
+  assert.equal(feedback.searchParams.get("subject"), "Rudiment Room — feature request");
   assert.equal(feedback.searchParams.has("body"), false);
+});
+
+test("the email links are the shop's addresses, with a subject naming the app and no body", () => {
+  assert.equal(emailHref("support", APP), "mailto:support@backwerdrhythmshop.com?subject=Rudiment%20Room%20%E2%80%94%20problem%20report");
+  assert.equal(emailHref("feedback", APP), "mailto:feedback@backwerdrhythmshop.com?subject=Rudiment%20Room%20%E2%80%94%20feature%20request");
+  for (const kind of ["support", "feedback"]) {
+    assert.equal(new URL(emailHref(kind, APP)).searchParams.has("body"), false);
+  }
+});
+
+test("the email links do not depend on the forms: they are the same whether the forms are set or unset", () => {
+  assert.ok(!emailHref("support", APP).includes("docs.google.com"));
+  for (const kind of ["support", "feedback"]) {
+    assert.equal(feedbackHref(kind, APP, SETUP, UNSET), emailHref(kind, APP));
+    assert.notEqual(feedbackHref(kind, APP, SETUP), emailHref(kind, APP));
+  }
 });
 
 test("the page's feedback links start at the forms the module names, and the module loads first", async () => {
@@ -86,6 +102,18 @@ test("the page's feedback links start at the forms the module names, and the mod
     assert.ok(tag.includes(`href="${form.url}"`), `the ${kind} link's static href is its form`);
     assert.ok(tag.includes('target="_blank"') && tag.includes('rel="noreferrer"'), `the ${kind} link opens in a new tab`);
   }
+  // The email links sit beside the form links, with plain mailto hrefs and no form binding:
+  // the page's script only rewrites a[data-feedback], so they cannot change a form link.
+  const emails = [
+    ["Email support", emailHref("support", APP)],
+    ["Email feedback", emailHref("feedback", APP)],
+  ];
+  for (const [label, href] of emails) {
+    const tag = html.match(new RegExp(`<a [^>]*href="${href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*>${label}</a>`))?.[0] ?? "";
+    assert.ok(tag, `the footer has the ${label} link at ${href}`);
+    assert.ok(!tag.includes("data-feedback") && !tag.includes("target="), `${label} is a plain link`);
+  }
+  assert.ok(html.indexOf("Email support") > html.indexOf('data-feedback="feedback"'), "the email links follow the form links");
   const moduleAt = html.indexOf('src="js/feedback-links.js"');
   assert.ok(moduleAt > 0, "the page loads js/feedback-links.js");
   assert.ok(moduleAt < html.indexOf("window.FeedbackLinks"), "the module loads before the script that uses it");

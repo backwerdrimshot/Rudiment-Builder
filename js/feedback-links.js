@@ -28,7 +28,7 @@
     feedback: "feedback@backwerdrhythmshop.com"
   };
 
-  var SUBJECT = { support: "Support request", feedback: "Feature request" };
+  var SUBJECT = { support: "problem report", feedback: "feature request" };
 
   var FORM_ADDRESS = /^https:\/\/docs\.google\.com\/forms\//;
   var ENTRY_FIELD = /^entry\.\d+$/;
@@ -59,11 +59,16 @@
     return usable(form) ? form.url : "mailto:" + EMAIL[kind];
   }
 
-  /* Where a feedback link goes once followed: the pre-filled form, or the email with its subject and no body. */
+  /* The email link for a kind of message: the shop's address, with a subject naming the app, and no body.
+     It never depends on a form. */
+  function emailHref(kind, app) {
+    return "mailto:" + EMAIL[kind] + "?subject=" + encodeURIComponent(app + " — " + SUBJECT[kind]);
+  }
+
+  /* Where a feedback link goes once followed: the pre-filled form, or the email link. */
   function feedbackHref(kind, app, setup, forms) {
     var form = (forms || SHOP_FORMS)[kind];
-    return (usable(form) ? formLink(form, app, setup) : null)
-      || "mailto:" + EMAIL[kind] + "?subject=" + encodeURIComponent(app + " — " + SUBJECT[kind]);
+    return (usable(form) ? formLink(form, app, setup) : null) || emailHref(kind, app);
   }
 
   var FeedbackLinks = {
@@ -71,7 +76,8 @@
     formLink: formLink,
     opensForm: opensForm,
     feedbackBase: feedbackBase,
-    feedbackHref: feedbackHref
+    feedbackHref: feedbackHref,
+    emailHref: emailHref
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = FeedbackLinks;
