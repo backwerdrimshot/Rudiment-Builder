@@ -352,4 +352,4 @@ These three links also appear as icon buttons in the app footer.
 
 ## Compact practice workspace
 
-The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions and About contains the app, support, and build information. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.
+The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions, and About contains the app name, its build, More apps, the guide and the copyright. The support links are in the footer and the Feedback dialog. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.
