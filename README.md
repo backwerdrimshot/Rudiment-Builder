@@ -42,7 +42,6 @@ purpose, and are Taylor's to move:
 | The public hostname, DNS record and Workers route | Cloudflare work, and see the route caveat below |
 | The GitHub repository name | A GitHub setting, not a file |
 | `STORE_KEY` in `js/rudiment-app.js` | Renaming it factory-resets every existing user's saved settings |
-| `APP` in the visit counter (`index.html`) | A new key restarts the running total from zero |
 | `assets/notation/` | Vendored; regenerate upstream, do not edit here |
 
 A hostname move is the clean moment to fix the route compromise described under
@@ -324,17 +323,6 @@ Eleven free apps, all listed at
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Count It · Mallet Board · Mallet Map · Scale Trail · Drum Map ·
 **Rudiment Room**
-
-## Visit counter
-
-The footer shows a running visit count next to the build stamp. It comes from our own
-Cloudflare Worker at `counter.backwerdrhythmshop.com`, which stores exactly one thing:
-an integer per app. No IP, no user agent, no cookie, no timestamp — nothing tied to a
-visitor. Counted once per browser session; localhost and file:// only read the number
-so development never inflates it.
-
-It is progressive enhancement. If the endpoint is offline, blocked, or not yet
-deployed, the footer renders exactly as it did before and the app is unaffected.
 
 ## Follow
 

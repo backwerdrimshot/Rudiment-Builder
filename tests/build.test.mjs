@@ -308,7 +308,6 @@ test("offline routing: the page for any drill link, stored files from the cache,
   assert.equal(await request(w, `${o}/capabilities.json`), `network ${o}/capabilities.json`,
     "capabilities.json is fetched fresh");
   assert.equal(await request(w, "https://static.cloudflareinsights.com/beacon.min.js"), "not handled", "other origins pass by");
-  assert.equal(await request(w, "https://counter.backwerdrhythmshop.com/hit?app=rudiment-builder"), "not handled");
   assert.equal(await request(w, `${o}/sw.js`, "no-cors", "POST"), "not handled", "only GETs");
   assert.equal(await request(w, `${o}/robots.txt`, "navigate"), "not handled", "only the page is a navigation it answers");
 

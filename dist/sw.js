@@ -18,7 +18,7 @@
    old worker keeps serving.
 
    Only same-origin GETs for files on the list are answered; everything else —
-   the analytics beacon, the visit counter, capabilities.json — goes to the
+   the analytics beacon, capabilities.json — goes to the
    network untouched. A page load at the root, with or without a share link's
    query string, is answered with the stored page.
 
