@@ -128,6 +128,12 @@ accent 1.0 / normal 0.62 / grace 0.2 (per-stroke `velocity` overrides). Invalid
 data must fail loudly: `assertValidRegistry` throws one error naming every
 problem, and the app disables itself at boot.
 
+Every record carries `breakdown`: 3 to 5 practice steps, each a non-empty string,
+shown as a list under the teaching note. Write them from the record's own
+strokes (slow to fast, one hand at a time, the mirror lead), in original prose.
+They are not copied from the PAS chart, and a missing or malformed list fails
+validation like any other field.
+
 Educational lineage: every record carries `pas` (1–40) and a short `heritage`
 chip — the N.A.R.D. Standard 26 lineage ("NARD Standard 26") or a post-NARD
 marker like "PAS addition (1984)". All 40 are encoded, and the sticking is

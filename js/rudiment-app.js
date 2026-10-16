@@ -838,6 +838,12 @@ function renderRudimentInfo() {
     (r.heritage ? '<span class="chip">' + r.heritage + "</span>" : "") +
     '<span class="chip">' + r.level + "</span>";
   $("teachingNote").textContent = r.teachingNote;
+  $("breakdown").textContent = "";
+  r.breakdown.forEach(function (step) {
+    var item = document.createElement("li");
+    item.textContent = step;
+    $("breakdown").appendChild(item);
+  });
   $("tempoHint").textContent = "Suggested tempo: start near " + r.tempo.suggestedLo +
     "–" + r.tempo.suggestedHi + " BPM.";
   $("suggestedText").textContent = "Suggested " + r.tempo.suggestedLo + "–" + r.tempo.suggestedHi + " BPM";

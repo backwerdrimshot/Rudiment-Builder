@@ -64,6 +64,9 @@ function validateRudiment(r) {
   if (!r.subdivision) errs.push("missing subdivision label");
   if (!LEAD_BEHAVIORS[r.leadingHand]) errs.push('leadingHand must be "mirror" or "fixed"');
   if (!r.teachingNote) errs.push("missing teachingNote");
+  if (!Array.isArray(r.breakdown) || r.breakdown.length < 3 || r.breakdown.length > 5 ||
+      !r.breakdown.every(function (s) { return typeof s === "string" && s.trim(); }))
+    errs.push("breakdown must be 3 to 5 practice steps, each a non-empty string");
 
   const gridOk = Number.isInteger(r.cycleBeats) && r.cycleBeats >= 1 &&
                  Number.isInteger(r.slotsPerBeat) && r.slotsPerBeat >= 1;
