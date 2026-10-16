@@ -354,7 +354,7 @@ var RUDIMENTS = [
     teachingNote: "One accent, then let the hand relax — the singles and the double should all match in sound. The sticking trades the lead hand every four notes by itself.",
     breakdown: [
       "Play R L, then the closing double on the right: R L R R.",
-      "Accent the first stroke, and keep the singles and the double at the same volume.",
+      "Accent the first stroke. Keep the other singles and the closing double at the same volume as each other.",
       "Repeat with the lead switched: L R L L.",
       "Loop the four-note figure and let the lead trade every four notes by itself.",
     ],
@@ -460,7 +460,7 @@ var RUDIMENTS = [
       "Play a flam on the right, then a tap on the same hand: fR R.",
       "Let the tap use the rebound of the flam's primary stroke, so it stays light.",
       "Switch to the left: fL L, and repeat on an eighth-note pulse.",
-      "Keep the flam soft and the tap relaxed, so each pair sounds as one figure.",
+      "Keep the grace note soft and the accented primary full, and let the tap sit lighter than the primary.",
     ],
     aliases: ["flam taps"],
     strokes: [
@@ -477,7 +477,7 @@ var RUDIMENTS = [
     breakdown: [
       "Play a flam on the right, then an accented left on the second note: fR L> R L.",
       "On beat two, play one flammed right stroke that fills the whole beat.",
-      "Keep the closing flam soft, so the held stroke carries the cue.",
+      "Keep the closing grace note soft, so the held stroke carries the cue.",
       "Repeat with the lead switched: fL R> L R, then a flammed left held through beat two.",
     ],
     aliases: ["flam cue"],
@@ -497,7 +497,7 @@ var RUDIMENTS = [
     teachingNote: "A paradiddle whose accented first note is flammed: fR L R R, fL R L L. Flam the lead, keep the diddle relaxed.",
     breakdown: [
       "Start with the flammed accent on the right, then a left and a closing double on the right: fR L R R.",
-      "Keep the flam soft and the diddle relaxed, so the flam does not disturb the sticking.",
+      "Keep the grace note soft and the accented primary full, and the diddle relaxed, so the flam does not disturb the sticking.",
       "Repeat from the left lead: fL R L L.",
       "Loop the two halves with no gap, so the lead changes each time.",
     ],
@@ -538,7 +538,7 @@ var RUDIMENTS = [
     breakdown: [
       "Start with the flammed accent on the right, then a left and a double on the right: fR> L R R.",
       "Add a double on the left: L L.",
-      "Keep the flams soft and the diddles relaxed, so the figure feels like one steady groove.",
+      "Keep the grace notes soft, the accented primaries full, and the diddles relaxed, so the figure feels like one steady groove.",
       "Repeat from the left lead: fL> R L L, then R R.",
     ],
     aliases: ["flam paradiddle diddle", "flamadiddle-diddle"],
