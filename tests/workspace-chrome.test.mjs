@@ -68,12 +68,12 @@ test("no gear appears in any shipped page or script", () => {
   }
 });
 
-test("the footer carries the social icons in order, then the forms, email, Guide and All free apps", () => {
+test("the footer carries the social icons in order, then the two forms, Guide and All free apps", () => {
   const social = between(footer, '<nav class="foot-social"', "</nav>");
   assert.deepEqual([...social.matchAll(/aria-label="Backwerd Rhythm Shop on (\w+)"/g)].map((m) => m[1]), ["Facebook", "Instagram", "YouTube"]);
   assert.ok(footer.indexOf('<nav class="foot-social"') < footer.indexOf('<nav class="foot-links"'), "icons come before the text links");
   const links = [...between(footer, '<nav class="foot-links"', "</nav>").matchAll(/<a\b[^>]*>([^<]*)<\/a>/g)].map((m) => m[1].trim());
-  assert.deepEqual(links, ["Report a problem", "Request a feature", "Email support", "Email feedback", "Guide", "All free apps"]);
+  assert.deepEqual(links, ["Report a problem", "Request a feature", "Guide", "All free apps"]);
 });
 
 test("the social icons are Mallet Board's glyphs, drawn at 16px", () => {
@@ -99,13 +99,14 @@ test("the footer is on the page, not moved into a dialog", () => {
   assert.doesNotMatch(info, /querySelector\(['"]footer|append\(\s*footer|\bfooter\s*\]/, "the workspace script never moves the footer");
 });
 
-test("the forms and the email links are in the footer and in the Feedback dialog, and nowhere in the header", () => {
+test("the forms are in the footer and the Feedback dialog; the email links are in the Feedback dialog only, and nowhere in the header", () => {
   for (const [name, block] of [["footer", footer], ["Feedback dialog", feedbackDialog]]) {
     assert.equal([...block.matchAll(/data-feedback="support"/g)].length, 1, `${name} has the problem form`);
     assert.equal([...block.matchAll(/data-feedback="feedback"/g)].length, 1, `${name} has the feature form`);
-    assert.equal([...block.matchAll(/href="mailto:support@backwerdrhythmshop\.com\?subject=Rudiment%20Room%20%E2%80%94%20problem%20report"/g)].length, 1, `${name} has the support email`);
-    assert.equal([...block.matchAll(/href="mailto:feedback@backwerdrhythmshop\.com\?subject=Rudiment%20Room%20%E2%80%94%20feature%20request"/g)].length, 1, `${name} has the feedback email`);
   }
+  assert.doesNotMatch(footer, /mailto:/, "the footer has no email link");
+  assert.equal([...feedbackDialog.matchAll(/href="mailto:support@backwerdrhythmshop\.com\?subject=Rudiment%20Room%20%E2%80%94%20problem%20report"/g)].length, 1, "the Feedback dialog has the support email");
+  assert.equal([...feedbackDialog.matchAll(/href="mailto:feedback@backwerdrhythmshop\.com\?subject=Rudiment%20Room%20%E2%80%94%20feature%20request"/g)].length, 1, "the Feedback dialog has the feedback email");
   assert.doesNotMatch(header, /data-feedback|mailto:/);
 });
 

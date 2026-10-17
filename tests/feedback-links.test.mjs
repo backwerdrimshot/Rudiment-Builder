@@ -102,18 +102,20 @@ test("the page's feedback links start at the forms the module names, and the mod
     assert.ok(tag.includes(`href="${form.url}"`), `the ${kind} link's static href is its form`);
     assert.ok(tag.includes('target="_blank"') && tag.includes('rel="noreferrer"'), `the ${kind} link opens in a new tab`);
   }
-  // The email links sit beside the form links, with plain mailto hrefs and no form binding:
-  // the page's script only rewrites a[data-feedback], so they cannot change a form link.
+  // The email links are in the Feedback dialog, not the footer: the footer's support links are the two forms.
+  // They are plain mailto hrefs with no form binding: the page's script only rewrites a[data-feedback].
+  const footerBlock = html.slice(html.indexOf('<footer class="foot">'), html.indexOf("</footer>"));
+  const feedbackBlock = html.slice(html.indexOf('<dialog id="workspace-feedback"'), html.indexOf("</dialog>", html.indexOf('<dialog id="workspace-feedback"')));
+  assert.ok(!footerBlock.includes("mailto:"), "the footer has no email link");
   const emails = [
     ["Email support", emailHref("support", APP)],
     ["Email feedback", emailHref("feedback", APP)],
   ];
   for (const [label, href] of emails) {
-    const tag = html.match(new RegExp(`<a [^>]*href="${href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*>${label}</a>`))?.[0] ?? "";
-    assert.ok(tag, `the footer has the ${label} link at ${href}`);
+    const tag = feedbackBlock.match(new RegExp(`<a [^>]*href="${href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*>${label}</a>`))?.[0] ?? "";
+    assert.ok(tag, `the Feedback dialog has the ${label} link at ${href}`);
     assert.ok(!tag.includes("data-feedback") && !tag.includes("target="), `${label} is a plain link`);
   }
-  assert.ok(html.indexOf("Email support") > html.indexOf('data-feedback="feedback"'), "the email links follow the form links");
   const moduleAt = html.indexOf('src="js/feedback-links.js"');
   assert.ok(moduleAt > 0, "the page loads js/feedback-links.js");
   assert.ok(moduleAt < html.indexOf("window.FeedbackLinks"), "the module loads before the script that uses it");
