@@ -489,6 +489,8 @@
   .suggested-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .suggested-row .btn{min-height:44px}
   .btn.mini{padding:8px 14px;font-size:.82rem}
+  .log-row{display:flex;justify-content:center;margin:10px 0 0}
+  .log-row[hidden]{display:none}
   .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
 
   footer.foot{margin-top:26px;text-align:center;color:var(--ink-soft);font-size:.76rem;line-height:1.6}
@@ -802,6 +804,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
       <div class="banner hidden" id="banner" aria-live="assertive"></div>
       <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
+      <div class="log-row" id="logRow" hidden>
+        <button class="btn ghost" id="btnCopyLog" type="button" title="Copy this run as text to paste into your class's assignment">Copy practice log</button>
+      </div>
+      <p class="hint clean-note" id="logStatus" role="status" aria-live="polite"></p>
 
       <p class="hint clean-note" id="cleanNote" aria-live="polite"></p>
       <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
@@ -873,7 +879,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    if this script fails, the plain mailto links still work. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-09.1";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-17";
 
   var footer = document.querySelector("footer");
   if (footer && build && !footer.querySelector(".build-stamp")) {
