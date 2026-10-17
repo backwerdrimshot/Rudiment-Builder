@@ -570,6 +570,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     .brand h1{font-size:.95rem;line-height:1.05}
   }
   @media(max-width:340px){ .brand .logo{width:30px;height:30px} }
+  /* Support links in the footer are plain text, as on Mallet Board: no border or background, the footer's own
+     colour and size, underlined on hover and focus, and a 44px tap area. */
+  footer.foot a.foot-text{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;color:inherit;font-weight:700;text-decoration:none;text-underline-offset:3px}
+  footer.foot a.foot-text:hover,footer.foot a.foot-text:focus-visible{text-decoration:underline}
 </style>
 <link rel="stylesheet" href="./workspace-layout.css">
 </head>
@@ -879,8 +883,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <a href="https://www.youtube.com/@backwerdrhythmshop" target="_blank" rel="noopener noreferrer" aria-label="Backwerd Rhythm Shop on YouTube" title="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21.6 7.2a2.5 2.5 0 0 0-1.75-1.77C18.3 5 12 5 12 5s-6.3 0-7.85.43A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.75 1.77C5.7 19 12 19 12 19s6.3 0 7.85-.43a2.5 2.5 0 0 0 1.75-1.77A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8Z" /><path class="play" d="M10.25 15.02 15.5 12l-5.25-3.02Z" /></svg></a>
     </nav>
     <nav class="foot-links" aria-label="Support, guide and more apps">
-      <a class="foot-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSeZeT_J2QIag3TsO-NxrCNPxVBxSIz_mHzKgZWuZQ-i_UmcCg/viewform" target="_blank" rel="noreferrer" data-feedback="support">Report a problem</a>
-      <a class="foot-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfP29vqlwt3UX1rbguiLEsR7t5ONZbEpuWoix0_7aDF2eMXDg/viewform" target="_blank" rel="noreferrer" data-feedback="feedback">Request a feature</a>
+      <a class="foot-text" href="https://docs.google.com/forms/d/e/1FAIpQLSeZeT_J2QIag3TsO-NxrCNPxVBxSIz_mHzKgZWuZQ-i_UmcCg/viewform" target="_blank" rel="noreferrer" data-feedback="support">Report a problem</a>
+      <a class="foot-text" href="https://docs.google.com/forms/d/e/1FAIpQLSfP29vqlwt3UX1rbguiLEsR7t5ONZbEpuWoix0_7aDF2eMXDg/viewform" target="_blank" rel="noreferrer" data-feedback="feedback">Request a feature</a>
       <a class="foot-email" href="mailto:support@backwerdrhythmshop.com?subject=Rudiment%20Room%20%E2%80%94%20problem%20report">Email support</a>
       <a class="foot-email" href="mailto:feedback@backwerdrhythmshop.com?subject=Rudiment%20Room%20%E2%80%94%20feature%20request">Email feedback</a>
       <a class="foot-btn" href="https://guides.backwerdrhythmshop.com/rudiment-builder/">Guide</a>
