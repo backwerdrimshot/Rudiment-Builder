@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-17`
+- **Build:** `2026-10-18.2`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -42,7 +42,6 @@ purpose, and are Taylor's to move:
 | The public hostname, DNS record and Workers route | Cloudflare work, and see the route caveat below |
 | The GitHub repository name | A GitHub setting, not a file |
 | `STORE_KEY` in `js/rudiment-app.js` | Renaming it factory-resets every existing user's saved settings |
-| `APP` in the visit counter (`index.html`) | A new key restarts the running total from zero |
 | `assets/notation/` | Vendored; regenerate upstream, do not edit here |
 
 A hostname move is the clean moment to fix the route compromise described under
@@ -284,10 +283,10 @@ that happens, the route is load-bearing: do not remove it.
 
 ## Support and feedback
 
-- **Report a problem** emails `support@backwerdrhythmshop.com`.
-- **Request a feature** emails `feedback@backwerdrhythmshop.com`.
-- Both controls are available in the app footer and prefill the app name, build,
-  page URL, and browser details to make follow-up easier.
+- **Report a problem** opens the shop's problem form in a new tab, with the app name, build, and page address filled in. The page address is the same as a share link: the rudiment and its settings. Saved best tempos stay in the browser and are not sent.
+- **Request a feature** opens the shop's feature form the same way.
+- **Email support** (`support@backwerdrhythmshop.com`) and **Email feedback** (`feedback@backwerdrhythmshop.com`) are plain email links in the Feedback dialog, always available. They never depend on a form, and no form is required to send a message.
+- If a form is ever unset, its form control falls back to the matching email address.
 
 ## Sources & educational lineage
 
@@ -329,17 +328,6 @@ Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Count It · Mallet Board · Mallet Map · Scale Trail · Drum Map ·
 **Rudiment Room**
 
-## Visit counter
-
-The footer shows a running visit count next to the build stamp. It comes from our own
-Cloudflare Worker at `counter.backwerdrhythmshop.com`, which stores exactly one thing:
-an integer per app. No IP, no user agent, no cookie, no timestamp — nothing tied to a
-visitor. Counted once per browser session; localhost and file:// only read the number
-so development never inflates it.
-
-It is progressive enhancement. If the endpoint is offline, blocked, or not yet
-deployed, the footer renders exactly as it did before and the app is unaffected.
-
 ## Follow
 
 Backwerd Rhythm Shop posts practice ideas, new app releases, and classroom tips:
@@ -356,4 +344,4 @@ These three links also appear as icon buttons in the app footer.
 
 ## Compact practice workspace
 
-The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions and About contains the app, support, and build information. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.
+The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions, and About contains the app name, its build, More apps, the guide and the copyright. The support links are in the footer and the Feedback dialog. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.

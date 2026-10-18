@@ -1509,30 +1509,35 @@ function hydrateControls() {
   $("modeHint").textContent = MODE_HINT[settings.mode];
 }
 
-/* The rudiment list and the settings float over the page, so the panel closes the way
-   a popover does: Escape (focus returns to the toggle), a tap outside, or full screen. */
+/* The rudiment list and the settings each float over the page from their own bar, so each panel
+   closes the way a popover does: Escape (focus returns to its bar), a tap outside, or full screen.
+   From 1700px the settings are a column beside the practice; the CSS shows it and hides its bar. */
 function wireSetupPanel() {
-  var toggle = $("setupToggle"), panel = $("setupPanel"), chev = $("setupChevron");
+  var toggle = $("setupToggle"), panel = $("setupPanel");
+  var sToggle = $("settingsToggle"), sBody = $("settingsBody");
+  function isOpen(el) { return el.getAttribute("data-open") === "true"; }
   function setOpen(open) {
     panel.setAttribute("data-open", open ? "true" : "false");
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    chev.textContent = open ? "Close" : "Rudiments & settings";
   }
-  toggle.addEventListener("click", function () {
-    setOpen(panel.getAttribute("data-open") !== "true");
-  });
+  function setSettingsOpen(open) {
+    sBody.setAttribute("data-open", open ? "true" : "false");
+    sToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  toggle.addEventListener("click", function () { setOpen(!isOpen(panel)); });
+  sToggle.addEventListener("click", function () { setSettingsOpen(!isOpen(sBody)); });
   document.addEventListener("click", function (e) {
-    if (panel.getAttribute("data-open") !== "true") return;
-    if (panel.contains(e.target) || toggle.contains(e.target)) return;
-    setOpen(false);
+    if (isOpen(panel) && !(panel.contains(e.target) || toggle.contains(e.target))) setOpen(false);
+    // A control in the settings can redraw itself; a detached target is not a tap outside.
+    if (isOpen(sBody) && e.target.isConnected && !(sBody.contains(e.target) || sToggle.contains(e.target))) setSettingsOpen(false);
   });
   document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape" || panel.getAttribute("data-open") !== "true") return;
-    setOpen(false);
-    toggle.focus();
+    if (e.key !== "Escape") return;
+    if (isOpen(panel)) { setOpen(false); toggle.focus(); }
+    else if (isOpen(sBody)) { setSettingsOpen(false); sToggle.focus(); }
   });
   document.addEventListener("fullscreenchange", function () {
-    if (document.fullscreenElement) setOpen(false);
+    if (document.fullscreenElement) { setOpen(false); setSettingsOpen(false); }
   });
 }
 
