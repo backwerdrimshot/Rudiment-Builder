@@ -43,6 +43,7 @@ export const SITE_ASSETS = [
   "js/rudiment-core.js",
   "js/rudiment-data.js",
   "favicon.svg",
+  "favicon.ico",
   "brs-monogram.svg",
   "apple-touch-icon.png",
   "icon-192.png",
