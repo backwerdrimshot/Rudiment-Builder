@@ -1115,6 +1115,33 @@ function getCases(core) {
     }), { "flam-tap": { R: { bpm: 104, date: "2026-09-23" } } }, "only well-formed marks on real rudiments survive");
   }},
 
+  { name: "practice log: reports the finished run and marks the best as the student's own", fn: function (assert) {
+    const text = core.practiceLog({ date: "2026-10-17", rudimentId: "single-paradiddle", lead: "L",
+      mode: "ladder", rungs: [80, 90, 100], reps: 4, best: { bpm: 96, date: "2026-10-15" },
+      link: "https://rudiment-builder.backwerdrhythmshop.com/?r=single-paradiddle&mode=steps" });
+    const lines = text.split("\n");
+    assert.equal(lines[0], "Rudiment Room practice log");
+    assert.equal(lines[1], "Date: 2026-10-17");
+    assert.ok(/^Rudiment: Single Paradiddle \(PAS #\d+\)$/.test(lines[2]), lines[2]);
+    assert.ok(lines.includes("Leading hand: Left"), "hand");
+    assert.ok(lines.includes("Practice: Tempo steps, 4 reps at each tempo"), "mode");
+    assert.ok(lines.includes("Tempo steps completed: 3 (80, 90, 100 BPM)"), "steps");
+    assert.ok(lines.includes("Best clean tempo: 96 BPM (marked 2026-10-15)"), "best");
+    assert.ok(lines.includes("Drill link: https://rudiment-builder.backwerdrhythmshop.com/?r=single-paradiddle&mode=steps"), "link");
+    assert.ok(/does not listen or grade/.test(text), "says it does not grade");
+    assert.ok(!/name:|student id/i.test(text), "no identity field");
+  }},
+
+  { name: "practice log: open-close-open, and a best that was never marked", fn: function (assert) {
+    const text = core.practiceLog({ date: "2026-10-17", rudimentId: "flam-tap", lead: "R",
+      mode: "oco", rungs: [60, 70, 60], reps: 1, best: null, link: "" });
+    assert.ok(text.includes("Practice: Open\u2013close\u2013open, 1 rep at each tempo"));
+    assert.ok(text.includes("Tempo steps completed: 3 (60, 70, 60 BPM)"));
+    assert.ok(text.includes("Best clean tempo: not marked yet"));
+    assert.ok(!/Drill link/.test(text), "no link line without a link");
+    assert.throws(function () { core.practiceLog({ rudimentId: "nope", rungs: [] }); });
+  }},
+
   ];
 }
 

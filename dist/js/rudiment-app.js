@@ -370,6 +370,8 @@ var live = {
   visualQ: [],
   doneQueued: false,
   heard: null,      // { bpm, peak } of this run — see noteHeard()
+  runPlan: null,    // the plan the current run was started from
+  lastRun: null,    // the finished run "Copy practice log" reports — see finishSession()
 };
 
 /* One block's schedule. Listen blocks (count-in / transition) walk quarter
@@ -895,6 +897,8 @@ function startPlayback() {
   killPending();
 
   live.playback = Core.createPracticePlayback(plan);
+  live.runPlan = plan;
+  forgetRun();
   live.visualQ = [];
   live.doneQueued = false;
   live.heard = null;
@@ -957,6 +961,7 @@ function stopIfActive() {
 
 function resetPractice() {
   stopPlayback();
+  forgetRun();
   live.status = "idle";
   primeDisplay();
   updateStartBtn();
@@ -979,6 +984,41 @@ function finishSession() {
     ? "Open–close–open complete ✓"
     : "Tempo steps complete ✓");
   setStatus("Nice work. Start again, or change the settings.");
+  // Taken now, so a settings change after the run cannot rewrite what was
+  // played. The best clean tempo is read when copying: the student may press
+  // "Clean at" after the run ends.
+  var plan = live.runPlan;
+  live.lastRun = plan ? { rudimentId: settings.rudimentId, lead: effectiveLead(), mode: plan.mode,
+    rungs: plan.rungs.slice(), reps: plan.mode === "oco" ? settings.oco.repsPerStep : settings.ladder.repsPerStep,
+    link: shareUrl() } : null;
+  renderLogRow();
+}
+
+/* ---------------- practice log ----------------
+   After a finished Steps or Open-close-open run, "Copy practice log" copies
+   Core.practiceLog as text for a class assignment. No name, nothing sent. */
+function renderLogRow() {
+  $("logRow").hidden = !live.lastRun;
+  $("logStatus").textContent = "";
+}
+function forgetRun() {
+  if (!live.lastRun) return;
+  live.lastRun = null;
+  renderLogRow();
+}
+function copyPracticeLog() {
+  var run = live.lastRun;
+  if (!run) return;
+  var best = bestLog[run.rudimentId] && bestLog[run.rudimentId][run.lead];
+  var text = Core.practiceLog(Object.assign({ date: today(), best: best || null }, run));
+  var status = $("logStatus");
+  var ok = function () { status.textContent = "Copied. Paste it into your class's assignment."; };
+  var fail = function () {
+    if (fallbackCopy(text)) ok();
+    else status.textContent = "This browser would not copy it. Try again, or take a screenshot of this page.";
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok).catch(fail);
+  else fail();
 }
 
 function updateStartBtn() {
@@ -1030,6 +1070,7 @@ function noteHeard(bpm) {
 // status stays "complete" but the display has gone back to Ready.
 function forgetHeard() {
   live.heard = null;
+  forgetRun();
   $("cleanNote").textContent = "";
   updateCleanBtn();
 }
@@ -1556,6 +1597,7 @@ function wireEvents() {
   });
   $("btnMute").addEventListener("click", toggleMute);
   $("btnClean").addEventListener("click", onClean);
+  $("btnCopyLog").addEventListener("click", copyPracticeLog);
   $("btnClearBest").addEventListener("click", onClearBest);
   $("btnBest").addEventListener("click", onBestStart);
   $("btnSuggested").addEventListener("click", function () {

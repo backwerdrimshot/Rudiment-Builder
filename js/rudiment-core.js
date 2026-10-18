@@ -632,6 +632,35 @@ function clearBest(log, rudimentId) {
   return next;
 }
 
+/* ---------------- practice log ----------------
+   Plain text a student pastes into a class assignment after a finished run.
+   It carries what the app knows (rudiment, hand, the tempo steps it played,
+   the drill link) and the best clean tempo the student marked, labelled as
+   theirs. No name, and nothing is sent.
+     run: { date, rudimentId, lead, mode ("ladder"|"oco"), rungs, reps, best, link }
+   `best` is { bpm, date } from the best log, or null. */
+const LOG_MODE = { ladder: "Tempo steps", oco: "Open\u2013close\u2013open" };
+function practiceLog(run) {
+  const r = Data.RUDIMENT_MAP[run.rudimentId];
+  if (!r) throw new Error("unknown rudiment " + run.rudimentId);
+  const rungs = run.rungs || [];
+  const lines = [
+    "Rudiment Room practice log",
+    "Date: " + run.date,
+    "Rudiment: " + r.name + " (PAS #" + r.pas + ")",
+    "Leading hand: " + (run.lead === "L" ? "Left" : "Right"),
+    "Practice: " + (LOG_MODE[run.mode] || "Tempo steps") + ", " + run.reps +
+      (run.reps === 1 ? " rep" : " reps") + " at each tempo",
+    "Tempo steps completed: " + rungs.length + " (" + rungs.join(", ") + " BPM)",
+    "Best clean tempo: " + (run.best
+      ? run.best.bpm + " BPM (marked " + run.best.date + ")"
+      : "not marked yet"),
+  ];
+  if (run.link) lines.push("Drill link: " + run.link);
+  lines.push("", "Rudiment Room does not listen or grade. The best clean tempo is the student's own mark.");
+  return lines.join("\n");
+}
+
 /* ---------------- export ---------------- */
 const RudimentCore = {
   RUDIMENTS: Data.RUDIMENTS,
@@ -664,6 +693,7 @@ const RudimentCore = {
   markClean: markClean,
   bestTempo: bestTempo,
   clearBest: clearBest,
+  practiceLog: practiceLog,
 };
 
 if (typeof module !== "undefined" && module.exports) module.exports = RudimentCore;

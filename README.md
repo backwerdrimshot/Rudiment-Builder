@@ -21,7 +21,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-16`
+- **Build:** `2026-10-17.2`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -127,6 +127,10 @@ the app (see *Sources & educational lineage* below).
   in the rudiment panel and on its card in the chooser. The app never listens —
   "clean" is the student's call — and the log stays on the device. In Fixed
   mode, **Start at your best** sets the tempo to that best for the current hand
+- **Copy practice log** appears when a Steps or Open–close–open run finishes:
+  plain text for a class assignment with the date, rudiment, leading hand, the
+  tempo steps completed, the best clean tempo the student marked, and the drill
+  link. It names no one, sends nothing, and says the app does not grade
 - **Works offline** after one visit: a service worker (`sw.js`) stores the
   whole build — page, scripts, fonts, all 40 notation cards and the marching
   snare, about 1.3 MB — and answers from it with no connection, share links
