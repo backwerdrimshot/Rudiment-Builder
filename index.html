@@ -121,7 +121,13 @@
   .brand > div{min-width:0}
   /* Help, Feedback and About in the app's furniture: 2px Ink, hard offset shadow, Forest focus.
      The shared workspace stylesheet sets layout and the 600px label rule; these outrank its borders. */
-  body .workspace-actions button,body .workspace-dialog-heading button{border:2px solid var(--ink);border-radius:var(--radius);background:var(--white);color:var(--ink);box-shadow:var(--shadow-cell)}
+  body .workspace-dialog-heading button{border:2px solid var(--ink);border-radius:var(--radius);background:var(--white);color:var(--ink);box-shadow:var(--shadow-cell)}
+  /* Help, Feedback and About: Mallet Board's values (44px tall, 8px 14px, 8px radius, 600 1rem, an 18px icon
+     with a 6px gap, an 8px nav gap), in this app's furniture: 2px Ink border, hard offset shadow, Forest focus. */
+  body .workspace-actions{gap:8px}
+  body .workspace-actions button{min-height:44px;padding:8px 14px;border:2px solid var(--ink);border-radius:8px;background:var(--white);color:var(--ink);font:600 1rem var(--body);box-shadow:var(--shadow-cell);display:inline-flex;align-items:center;gap:6px}
+  body .workspace-actions svg{width:18px;height:18px;flex:none}
+  @media(max-width:599px){body .workspace-actions button{position:relative;min-width:44px;justify-content:center;padding:8px}}
   body .workspace-actions button:focus-visible,body .workspace-dialog-heading button:focus-visible,body .workspace-dialog :focus-visible,body .dialog-links a:focus-visible,body .foot a:focus-visible,body .brand h1 a:focus-visible,body .settings-toggle:focus-visible,body .setup-toggle:focus-visible{outline:3px solid var(--forest);outline-offset:3px}
   body .workspace-dialog{border:2px solid var(--ink);border-radius:var(--radius);background:var(--white);color:var(--ink);box-shadow:var(--shadow)}
   .brand h1 a{color:inherit;text-decoration:none;border-radius:6px}
