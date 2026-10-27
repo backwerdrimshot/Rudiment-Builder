@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-27.6`
+- **Build:** `2026-10-27.7`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -250,6 +250,7 @@ js/rudiment-core.js   validation · withLead (leading hand) · expandPattern ·
 js/rudiment-app.js    Web Audio look-ahead scheduler · voices · visual queue ·
                       transport · settings persistence + share links
 tests/                cases.js (shared) · test.html (browser) · core.test.cjs (Node)
+tools/                pack-marching-snare.py · publish.mjs (check and publish without Actions)
 sw.js                 offline service worker; build.mjs writes dist/sw.js with
                       the build number and the files to store
 serve.ps1             tiny PowerShell dev server
@@ -286,6 +287,20 @@ fix.
 a successful **README standard** run against `main`, re-runs both test suites,
 rebuilds `dist/` and proves the committed copy matches what `build.mjs` produces
 from that commit, then deploys the exact commit CI validated.
+
+**Publishing when Actions cannot run.** The workflow depends on GitHub's hosted
+runners, and a hold on the account (a failed payment, or an Actions spending
+limit) stops them before any step starts: the run fails in a second or two with
+0 billable milliseconds and an empty log, which is how it looked on 2026-10-27.
+`node tools/publish.mjs` does the workflow's checks on your own machine: a clean
+checkout of exactly `origin/main`, both test suites, the README standard script
+(read out of `readme-standard.yml` and run as written, so the two cannot
+drift), and a fresh build that must match the committed `dist/`. It publishes
+nothing on its own. `node tools/publish.mjs --deploy` then runs
+`wrangler deploy` with the exact version `workers.yml` pins (it needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`)
+and confirms the live site's `capabilities.json` reports the new build. It
+touches no domain, DNS or route. When Actions works again, the workflow is the
+normal path and this is the fallback.
 
 This section previously read *"There is no deploy workflow, and none is
 wanted."* That was a deliberate choice and it had a cost nobody could see from
