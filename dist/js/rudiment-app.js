@@ -374,6 +374,7 @@ var live = {
   heard: null,      // { bpm, peak } of this run — see noteHeard()
   layerEventsCache: {}, // build-up layer -> events, cleared whenever the pattern is redrawn
   runPlan: null,    // the plan the current run was started from
+  lastRoutine: null, // a finished routine: { total, runs } — "Copy practice log" reports it instead
   lastRun: null,    // the finished run "Copy practice log" reports — see finishSession()
 };
 
@@ -527,6 +528,7 @@ var PHASE_LABEL = {
 
 var lastStatusHTML = "", lastBannerKey = "";
 function setStatus(html) {
+  if (routineRun) html = "<strong>Drill " + (routineRun.index + 1) + " of " + routineRun.items.length + "</strong> \u00b7 " + html;
   if (html === lastStatusHTML) return;
   lastStatusHTML = html;
   $("statusLine").innerHTML = html;
@@ -907,7 +909,12 @@ function buildPlanFromSettings() {
   if (settings.mode === "oco" && settings.oco.peakBpm <= settings.oco.startBpm)
     throw new Error("Peak BPM must be higher than the starting BPM.");
   var turn = { turn: settings.turn };
-  if (settings.mode === "fixed") return Core.buildPlan("fixed", { bpm: settings.bpm, turn: settings.turn }, live.pattern);
+  if (settings.mode === "fixed") {
+    var fixed = { bpm: settings.bpm, turn: settings.turn };
+    // A routine gives a Fixed drill a length; on its own, Fixed loops until stopped.
+    if (routineRun) fixed.reps = routineRun.items[routineRun.index].p.reps;
+    return Core.buildPlan("fixed", fixed, live.pattern);
+  }
   if (settings.mode === "ladder") return Core.buildPlan("ladder", Object.assign({}, settings.ladder, turn), live.pattern);
   if (settings.mode === "build") return Core.buildPlan("build", Object.assign({}, settings.build, turn), live.pattern);
   return Core.buildPlan("oco", Object.assign({}, settings.oco, turn), live.pattern);
@@ -988,6 +995,7 @@ function stopPlayback() {
 function stopIfActive() {
   if (live.status === "playing" || live.status === "paused") {
     stopPlayback();
+    endRoutine();
     primeDisplay();
     updateStartBtn();
   }
@@ -995,6 +1003,7 @@ function stopIfActive() {
 
 function resetPractice() {
   stopPlayback();
+  endRoutine();
   forgetRun();
   live.status = "idle";
   primeDisplay();
@@ -1024,8 +1033,10 @@ function finishSession() {
   var plan = live.runPlan;
   live.lastRun = plan ? { rudimentId: settings.rudimentId, lead: effectiveLead(), mode: plan.mode,
     rungs: plan.rungs.slice(), layers: plan.mode === "build" ? plan.stages.filter(function (s) { return s.kind === "play"; }).map(function (s) { return s.layerLabel; }) : undefined,
-    reps: plan.mode === "oco" ? settings.oco.repsPerStep : plan.mode === "build" ? settings.build.repsPerStep : settings.ladder.repsPerStep,
+    reps: plan.mode === "oco" ? settings.oco.repsPerStep : plan.mode === "build" ? settings.build.repsPerStep
+      : plan.mode === "fixed" ? plan.stages[1].blocks / (1 + plan.turn) : settings.ladder.repsPerStep,
     link: shareUrl(), goal: assignedGoal === null ? undefined : assignedGoal } : null;
+  if (routineRun) { advanceRoutine(); return; }
   renderLogRow();
 }
 
@@ -1033,19 +1044,24 @@ function finishSession() {
    After a finished Steps or Open-close-open run, "Copy practice log" copies
    Core.practiceLog as text for a class assignment. No name, nothing sent. */
 function renderLogRow() {
-  $("logRow").hidden = !live.lastRun;
+  $("logRow").hidden = !live.lastRun && !live.lastRoutine;
   $("logStatus").textContent = "";
 }
 function forgetRun() {
-  if (!live.lastRun) return;
+  if (!live.lastRun && !live.lastRoutine) return;
   live.lastRun = null;
+  live.lastRoutine = null;
   renderLogRow();
 }
+function bestFor(run) { return (bestLog[run.rudimentId] && bestLog[run.rudimentId][run.lead]) || null; }
 function copyPracticeLog() {
-  var run = live.lastRun;
-  if (!run) return;
-  var best = bestLog[run.rudimentId] && bestLog[run.rudimentId][run.lead];
-  var text = Core.practiceLog(Object.assign({ date: today(), best: best || null }, run));
+  var run = live.lastRun, text;
+  if (live.lastRoutine) {
+    text = Core.routineLog({ date: today(), total: live.lastRoutine.total,
+      runs: live.lastRoutine.runs.map(function (r) { return Object.assign({ best: bestFor(r) }, r); }) });
+  } else if (run) {
+    text = Core.practiceLog(Object.assign({ date: today(), best: bestFor(run) }, run));
+  } else return;
   var status = $("logStatus");
   var ok = function () { status.textContent = "Copied. Paste it into your class's assignment."; };
   var fail = function () {
@@ -1401,6 +1417,7 @@ function renderSummary() {
     (settings.turn ? " \u00b7 Your turn x" + settings.turn : "") +
     (settings.dynamics !== "full" ? " \u00b7 " + DYNAMICS_NAME[settings.dynamics] : "");
   $("bpmQuick").textContent = settings.bpm;
+  $("rtRepsWrap").hidden = settings.mode !== "fixed";
   $("tempoStep").hidden = settings.mode !== "fixed";
 }
 
@@ -1461,6 +1478,7 @@ function syncPlanPreview() {
 // it would silently hand every existing user a factory reset.
 var STORE_KEY = "rudimentbuilder-settings";
 function persistSettings() {
+  if (routineRun) return; // a routine borrows the settings; the student's own are restored when it ends
   try { localStorage.setItem(STORE_KEY, JSON.stringify(settings)); } catch (e) { /* private mode */ }
 }
 function loadSaved() {
@@ -1563,8 +1581,10 @@ function parseGoal(v) {
 function assignmentQuery(goal) {
   var p = shareParams();
   if (goal !== null) p.set("goal", goal);
+  if (routineIncluded()) p.set("routine", Core.encodeRoutine(routine));
   return p.toString();
 }
+function routineIncluded() { return routine.length > 0 && $("assignRoutine").checked; }
 function assignmentLink(goal) { return location.origin + location.pathname + "?" + assignmentQuery(goal); }
 function printLink(goal) { return PRINT_LINK + "?" + assignmentQuery(goal); }
 
@@ -1610,6 +1630,8 @@ function describeDrill() {
 }
 function currentGoalInput() { return parseGoal($("goalInput").value); }
 function renderAssignment() {
+  $("assignRoutineRow").hidden = routine.length === 0;
+  $("assignRoutineLbl").textContent = "Include my routine (" + routine.length + (routine.length === 1 ? " drill" : " drills") + ")";
   var goal = currentGoalInput();
   var raw = $("goalInput").value.trim();
   $("goalNote").textContent = raw && goal === null
@@ -1646,6 +1668,10 @@ function printAssignment() {
   add("p", "ps-rud", d.title);
   d.lines.forEach(function (t) { add("p", "ps-line", t); });
   if (goal !== null) add("p", "ps-goal", "Goal tempo: " + goal + " BPM");
+  if (routineIncluded()) {
+    add("p", "ps-line", "Routine, in order:");
+    routine.forEach(function (it, i) { add("p", "ps-line", (i + 1) + ". " + Core.describeRoutineItem(it)); });
+  }
   var qr = el("div", "ps-qr");
   qr.appendChild(qrSvg(printLink(goal), "QR code that opens this drill in Rudiment Room"));
   sheet.appendChild(qr);
@@ -1669,6 +1695,141 @@ function renderGoal() {
     (mine ? (mine.bpm >= assignedGoal ? " \u2014 you have marked " + mine.bpm + " BPM clean for this hand."
                                         : " \u2014 your best clean mark is " + mine.bpm + " BPM.")
           : ". Mark a tempo clean when you play it cleanly.");
+}
+
+/* ---------------- routines ----------------
+   A routine is up to Core.ROUTINE_MAX saved drills played in order. Each item
+   is run through the same path as a hand-started drill: its settings are
+   borrowed (nothing is saved while it runs), the app starts it with its own
+   count-in, and when it finishes the next one starts. When the routine ends,
+   or the student touches anything structural, the student's own settings come
+   back. The routine itself lives in its own key, and a link's ?routine= is
+   used for the session without overwriting the saved one until it is edited. */
+var ROUTINE_KEY = "rudimentroom-routine";
+var routine = [];
+var routineRun = null; // { items, index, snapshot, runs } while a routine is playing
+function loadRoutine() {
+  try { routine = Core.sanitizeRoutine(JSON.parse(localStorage.getItem(ROUTINE_KEY))); }
+  catch (e) { routine = []; }
+  var link = Core.decodeRoutine(new URLSearchParams(location.search).get("routine"));
+  if (link.length) routine = link;
+}
+function saveRoutine() {
+  try { localStorage.setItem(ROUTINE_KEY, JSON.stringify(routine)); } catch (e) { /* private mode */ }
+}
+function routineMsg(text) { $("rtMeta").textContent = text; }
+function renderRoutine() {
+  var host = $("rtList");
+  host.textContent = "";
+  routine.forEach(function (it, i) {
+    var li = el("li");
+    if (routineRun && routineRun.index === i) li.setAttribute("aria-current", "true");
+    var text = el("span", "rt-text");
+    text.textContent = (i + 1) + ". " + Core.describeRoutineItem(it);
+    li.appendChild(text);
+    [["up", "\u2191", "Move up", i === 0], ["down", "\u2193", "Move down", i === routine.length - 1],
+     ["remove", "\u2715", "Remove", false]].forEach(function (b) {
+      var btn = el("button", "rt-btn");
+      btn.type = "button"; btn.textContent = b[1]; btn.dataset.act = b[0]; btn.dataset.i = i;
+      btn.setAttribute("aria-label", b[2] + ": drill " + (i + 1));
+      btn.disabled = b[3] || !!routineRun;
+      li.appendChild(btn);
+    });
+    host.appendChild(li);
+  });
+  $("rtEmpty").hidden = routine.length > 0;
+  $("rtStart").disabled = routine.length === 0 || !!routineRun;
+  $("rtClear").disabled = routine.length === 0 || !!routineRun;
+  $("rtAdd").disabled = !!routineRun || routine.length >= Core.ROUTINE_MAX;
+  $("rtRepsWrap").hidden = settings.mode !== "fixed";
+  if (!routineRun) routineMsg(routine.length
+    ? routine.length + (routine.length === 1 ? " drill" : " drills") + " \u00b7 about " + fmtDuration(Core.routineSeconds(routine)) + " total" +
+      (routine.length >= Core.ROUTINE_MAX ? " \u00b7 full" : "")
+    : "");
+}
+function addRoutineDrill() {
+  if (routineRun) return;
+  if (routine.length >= Core.ROUTINE_MAX) { routineMsg("A routine holds up to " + Core.ROUTINE_MAX + " drills."); return; }
+  readAllFields();
+  var reps = settings.mode === "fixed" ? clampField("rtReps") : undefined;
+  var item;
+  try { item = Core.routineItem(Object.assign({}, settings, { lead: effectiveLead() }), reps); }
+  catch (e) { routineMsg("This drill cannot be added: " + (e.message || "check its settings") + "."); return; }
+  routine.push(item);
+  saveRoutine();
+  renderRoutine();
+}
+function onRoutineListClick(e) {
+  var btn = e.target.closest("button");
+  if (!btn || btn.disabled || routineRun) return;
+  var i = +btn.dataset.i, act = btn.dataset.act;
+  if (act === "remove") routine.splice(i, 1);
+  else if (act === "up" && i > 0) routine.splice(i - 1, 0, routine.splice(i, 1)[0]);
+  else if (act === "down" && i < routine.length - 1) routine.splice(i + 1, 0, routine.splice(i, 1)[0]);
+  saveRoutine();
+  renderRoutine();
+  // The list rebuilds, so put focus on the same control or the nearest one.
+  var again = $("rtList").querySelector('button[data-act="' + act + '"][data-i="' + (act === "up" ? i - 1 : act === "down" ? i + 1 : Math.min(i, routine.length - 1)) + '"]:not(:disabled)')
+           || $("rtList").querySelector("button:not(:disabled)") || $("rtAdd");
+  if (again) again.focus();
+}
+function clearRoutine() {
+  if (routineRun || !routine.length) return;
+  routine = [];
+  saveRoutine();
+  renderRoutine();
+}
+function applyRoutineItem(it) {
+  settings.rudimentId = it.rudimentId;
+  settings.lead = it.lead;
+  settings.mode = it.mode;
+  settings.turn = it.turn;
+  settings.dynamics = it.dynamics;
+  if (it.mode === "fixed") settings.bpm = it.p.bpm;
+  else if (it.mode === "ladder") Object.assign(settings.ladder, it.p);
+  else if (it.mode === "oco") Object.assign(settings.oco, it.p);
+  else Object.assign(settings.build, it.p);
+}
+function showSettingsEverywhere() {
+  hydrateControls();
+  renderRudimentInfo();
+  renderSticking();
+  syncPlanPreview();
+}
+function startRoutine() {
+  if (!routine.length || routineRun) return;
+  resetPractice();
+  routineRun = { items: routine.slice(), index: 0, snapshot: JSON.parse(JSON.stringify(settings)), runs: [] };
+  runRoutineItem();
+}
+function runRoutineItem() {
+  applyRoutineItem(routineRun.items[routineRun.index]);
+  showSettingsEverywhere();
+  primeDisplay();
+  renderRoutine();
+  startPlayback();
+  if (live.status !== "playing") { endRoutine(); primeDisplay(); updateStartBtn(); }
+}
+// Put the student's own settings back. Safe to call when no routine is running.
+function endRoutine() {
+  if (!routineRun) return;
+  var snap = routineRun.snapshot;
+  routineRun = null;
+  Object.keys(snap).forEach(function (k) { settings[k] = snap[k]; });
+  showSettingsEverywhere();
+  renderRoutine();
+}
+function advanceRoutine() {
+  if (live.lastRun) routineRun.runs.push(live.lastRun);
+  routineRun.index++;
+  if (routineRun.index < routineRun.items.length) { runRoutineItem(); return; }
+  var total = routineRun.items.length, runs = routineRun.runs.slice();
+  endRoutine();
+  live.lastRun = null;
+  live.lastRoutine = { total: total, runs: runs };
+  setBanner("complete", "Routine complete \u2713");
+  setStatus("Nice work. " + total + (total === 1 ? " drill" : " drills") + " done. Copy the log, or start again.");
+  renderLogRow();
 }
 
 /* Class view: the sticking and tempo large for a projector or a shared screen,
@@ -1775,6 +1936,11 @@ function wireEvents() {
   $("btnStart").addEventListener("click", onStartButton);
   $("btnReset").addEventListener("click", resetPractice);
   $("btnShare").addEventListener("click", copyShareLink);
+  $("rtAdd").addEventListener("click", addRoutineDrill);
+  $("rtStart").addEventListener("click", startRoutine);
+  $("rtClear").addEventListener("click", clearRoutine);
+  $("rtList").addEventListener("click", onRoutineListClick);
+  $("assignRoutine").addEventListener("change", renderAssignment);
   $("btnAssign").addEventListener("click", function () {
     $("goalInput").value = assignedGoal === null ? "" : assignedGoal;
     renderAssignment();
@@ -1909,6 +2075,7 @@ function initOffline() {
   coerceSettings(queryToRaw());
   assignedGoal = parseGoal(new URLSearchParams(location.search).get("goal"));
   loadBest();
+  loadRoutine();
   buildCards();
   applyFilters();
   hydrateControls();
@@ -1919,5 +2086,6 @@ function initOffline() {
   syncPlanPreview();
   primeDisplay();
   updateStartBtn();
+  renderRoutine();
   initOffline();
 })();

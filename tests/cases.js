@@ -1297,6 +1297,94 @@ function getCases(core) {
     assert.ok(text.includes("Layers completed: 3 (Hands only, Add the accents, Add the flams) at 70 BPM"));
   }},
 
+  { name: "routine: an item keeps only its own mode's numbers, and fixed gets a length", fn: function (assert) {
+    const base = { rudimentId: "flam-tap", lead: "L", turn: 1, dynamics: "soft", bpm: 90,
+      ladder: { startBpm: 60, endBpm: 100, stepBpm: 10, repsPerStep: 3 },
+      oco: { startBpm: 60, peakBpm: 100, stepBpm: 10, repsPerStep: 2 }, build: { bpm: 70, repsPerStep: 4 } };
+    const fixed = core.routineItem(Object.assign({ mode: "fixed" }, base));
+    assert.deepEqual(fixed.p, { bpm: 90, reps: core.ROUTINE_FIXED_REPS });
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "fixed" }, base), 3).p, { bpm: 90, reps: 3 });
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "ladder" }, base)).p, base.ladder);
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "oco" }, base)).p, base.oco);
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "build" }, base)).p, base.build);
+    assert.equal(fixed.lead, "L"); assert.equal(fixed.turn, 1); assert.equal(fixed.dynamics, "soft");
+    assert.throws(function () { core.routineItem(Object.assign({ mode: "oco" }, base, { oco: { startBpm: 100, peakBpm: 90, stepBpm: 5, repsPerStep: 2 } })); });
+    assert.throws(function () { core.routineItem(Object.assign({ mode: "fixed" }, base, { bpm: 5 })); });
+    assert.throws(function () { core.routineItem(Object.assign({ mode: "fixed" }, base, { dynamics: "toString" })); });
+  }},
+
+  { name: "routine: every item plays as a finite plan, and a routine is at most 8 long", fn: function (assert) {
+    const mk = function (mode, id) { return core.routineItem({ rudimentId: id || "single-paradiddle", lead: "R", mode: mode, turn: 0, dynamics: "full", bpm: 100,
+      ladder: { startBpm: 80, endBpm: 100, stepBpm: 10, repsPerStep: 2 }, oco: { startBpm: 80, peakBpm: 100, stepBpm: 10, repsPerStep: 2 },
+      build: { bpm: 90, repsPerStep: 2 } }, 4); };
+    ["fixed", "ladder", "oco", "build"].forEach(function (m) {
+      const plan = core.planForItem(mk(m));
+      assert.equal(plan.mode, m);
+      assert.ok(core.totalSeconds(plan) > 0 && isFinite(core.totalSeconds(plan)), m + " is finite");
+    });
+    assert.equal(core.planForItem(mk("fixed")).stages[1].blocks, 4);
+    assert.ok(core.routineSeconds([mk("fixed"), mk("build", "flam-tap")]) > 0);
+    const many = []; for (let i = 0; i < 12; i++) many.push(mk("fixed"));
+    assert.equal(core.sanitizeRoutine(many).length, core.ROUTINE_MAX);
+  }},
+
+  { name: "routine: sanitize drops what it cannot trust and never mutates its input", fn: function (assert) {
+    const good = { rudimentId: "flam-tap", lead: "R", mode: "fixed", turn: 0, dynamics: "full", p: { bpm: 80, reps: 4 } };
+    const input = [good, null, 7, "x", { rudimentId: "nope", lead: "R", mode: "fixed", turn: 0, dynamics: "full", p: { bpm: 80, reps: 4 } },
+      Object.assign({}, good, { lead: "X" }), Object.assign({}, good, { mode: "polka" }),
+      Object.assign({}, good, { p: { bpm: 80 } }), Object.assign({}, good, { p: { bpm: 9999, reps: 4 } }),
+      Object.assign({}, good, { turn: 9 }), Object.assign({}, good, { dynamics: "loud" }),
+      Object.assign({}, good, { mode: "oco", p: { startBpm: 90, peakBpm: 80, stepBpm: 5, repsPerStep: 2 } }), good];
+    const before = JSON.stringify(input);
+    const out = core.sanitizeRoutine(input);
+    assert.equal(out.length, 2);
+    assert.deepEqual(out[0], good);
+    assert.equal(JSON.stringify(input), before);
+    assert.deepEqual(core.sanitizeRoutine(undefined), []);
+    assert.deepEqual(core.sanitizeRoutine({ length: 3 }), []);
+    const extra = core.sanitizeRoutine([Object.assign({}, good, { evil: "<img onerror=x>", p: { bpm: 80, reps: 4, junk: 1 } })]);
+    assert.deepEqual(extra[0], good, "unknown fields are not carried");
+  }},
+
+  { name: "routine: link encoding round-trips, and a hostile link decodes to nothing harmful", fn: function (assert) {
+    const items = [
+      { rudimentId: "single-paradiddle", lead: "R", mode: "fixed", turn: 0, dynamics: "full", p: { bpm: 80, reps: 8 } },
+      { rudimentId: "flam-tap", lead: "L", mode: "ladder", turn: 2, dynamics: "swell", p: { startBpm: 60, endBpm: 100, stepBpm: 10, repsPerStep: 3 } },
+      { rudimentId: "double-stroke-open-roll", lead: "R", mode: "oco", turn: 1, dynamics: "soft", p: { startBpm: 60, peakBpm: 120, stepBpm: 10, repsPerStep: 2 } },
+      { rudimentId: "flam-accent", lead: "R", mode: "build", turn: 0, dynamics: "medium", p: { bpm: 70, repsPerStep: 4 } },
+    ];
+    const text = core.encodeRoutine(items);
+    assert.ok(/^[a-z0-9.~-]+$/i.test(text), "only characters that need no escaping in a URL: " + text);
+    assert.deepEqual(core.decodeRoutine(text), items);
+    assert.deepEqual(core.decodeRoutine(core.encodeRoutine([])), []);
+    ["", "x", "~~~", "a.b.c", "single-paradiddle.R.f.0.full.80", "single-paradiddle.R.f.0.full.80.8.9",
+     "single-paradiddle.R.z.0.full.80.8", "single-paradiddle.R.f.0.full..8", "single-paradiddle.R.f.0.full.abc.8",
+     "<script>.R.f.0.full.80.8", null, undefined, 42].forEach(function (bad) {
+      assert.deepEqual(core.decodeRoutine(bad), [], String(bad));
+    });
+    const mixed = core.decodeRoutine("junk~" + text.split("~")[0]);
+    assert.equal(mixed.length, 1, "a bad item is dropped, a good one kept");
+    const long = new Array(20).fill(text.split("~")[0]).join("~");
+    assert.equal(core.decodeRoutine(long).length, core.ROUTINE_MAX);
+  }},
+
+  { name: "routine: describes an item, and the routine log lists each drill", fn: function (assert) {
+    const it = { rudimentId: "flam-tap", lead: "L", mode: "ladder", turn: 1, dynamics: "soft", p: { startBpm: 60, endBpm: 100, stepBpm: 10, repsPerStep: 3 } };
+    const d = core.describeRoutineItem(it);
+    assert.ok(d.includes("Flam Tap") && d.includes("left lead") && d.includes("Steps 60\u2192100 BPM \u00d7 3") &&
+      d.includes("Your turn \u00d71") && d.includes("soft"), d);
+    const run = function (id, mode, extra) { return Object.assign({ rudimentId: id, lead: "R", mode: mode, rungs: [80], reps: 4, best: null, link: "" }, extra); };
+    const text = core.routineLog({ date: "2026-10-27", total: 3, runs: [run("flam-tap", "fixed"), run("single-paradiddle", "build", { layers: ["Hands only", "Add the accents"] })] });
+    const lines = text.split("\n");
+    assert.equal(lines[0], "Rudiment Room routine log");
+    assert.ok(lines.includes("Drills completed: 2 of 3"));
+    assert.ok(lines.includes("Drill 1") && lines.includes("Drill 2") && !lines.includes("Drill 3"));
+    assert.ok(text.includes("Rudiment: Flam Tap") && text.includes("Practice: Fixed tempo, 4 reps at each tempo"));
+    assert.ok(text.includes("Layers completed: 2 (Hands only, Add the accents) at 80 BPM"));
+    assert.equal((text.match(/does not listen or grade/g) || []).length, 1, "one trailer for the whole log");
+    assert.ok(core.practiceLog(run("flam-tap", "ladder", { date: "2026-10-27" })).startsWith("Rudiment Room practice log"), "single log unchanged");
+  }},
+
   { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
     const pb = core.createPracticePlayback(core.buildPlan("ladder",
       { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));

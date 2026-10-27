@@ -482,9 +482,11 @@ function buildPlan(mode, settings, pattern) {
 
   if (mode === "fixed") {
     const bpm = intIn(settings.bpm, BPM_MIN, BPM_MAX, "bpm");
+    // Fixed mode loops until stopped, unless a routine gives it a length.
+    const fixedReps = settings.reps === undefined ? null : intIn(settings.reps, REPS_MIN, REPS_MAX, "reps");
     return { mode: mode, turn: turn, rungs: [bpm], stages: [
       listen("count-in", bpm, 0, 1, "steady"),
-      play(bpm, null, 0, 1, "steady"),
+      play(bpm, fixedReps, 0, 1, "steady"),
     ]};
   }
 
@@ -752,14 +754,12 @@ function clearBest(log, rudimentId) {
    theirs. No name, and nothing is sent.
      run: { date, rudimentId, lead, mode ("ladder"|"oco"), rungs, reps, best, link }
    `best` is { bpm, date } from the best log, or null. */
-const LOG_MODE = { ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" };
-function practiceLog(run) {
+const LOG_MODE = { fixed: "Fixed tempo", ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" };
+function logLines(run) {
   const r = Data.RUDIMENT_MAP[run.rudimentId];
   if (!r) throw new Error("unknown rudiment " + run.rudimentId);
   const rungs = run.rungs || [];
   const lines = [
-    "Rudiment Room practice log",
-    "Date: " + run.date,
     "Rudiment: " + r.name + " (PAS #" + r.pas + ")",
     "Leading hand: " + (run.lead === "L" ? "Left" : "Right"),
     "Practice: " + (LOG_MODE[run.mode] || "Tempo steps") + ", " + run.reps +
@@ -774,7 +774,117 @@ function practiceLog(run) {
   if (Number.isInteger(run.goal) && run.goal >= BPM_MIN && run.goal <= BPM_MAX)
     lines.push("Assigned goal tempo: " + run.goal + " BPM");
   if (run.link) lines.push("Drill link: " + run.link);
-  lines.push("", "Rudiment Room does not listen or grade. The best clean tempo is the student's own mark.");
+  return lines;
+}
+const LOG_TRAILER = "Rudiment Room does not listen or grade. The best clean tempo is the student's own mark.";
+function practiceLog(run) {
+  const lines = ["Rudiment Room practice log", "Date: " + run.date].concat(logLines(run));
+  lines.push("", LOG_TRAILER);
+  return lines.join("\n");
+}
+
+/* ---------------- routines ----------------
+   A routine is up to ROUTINE_MAX saved drills played in order, each with its
+   own count-in. An item is the settings of one drill, and only the numbers its
+   own mode uses:
+     { rudimentId, lead, mode, turn, dynamics, p }
+   where p is { bpm, reps } for fixed, { startBpm, endBpm, stepBpm, repsPerStep }
+   for steps, { startBpm, peakBpm, stepBpm, repsPerStep } for open-close-open
+   and { bpm, repsPerStep } for build-up. Fixed mode loops forever, so a routine
+   item gives it a length in reps. Everything that comes back from storage or a
+   link goes through sanitizeRoutine, which drops an item rather than guess. */
+const ROUTINE_MAX = 8;
+const ROUTINE_FIXED_REPS = 8;
+const ROUTINE_FIELDS = {
+  fixed: [["bpm", BPM_MIN, BPM_MAX], ["reps", REPS_MIN, REPS_MAX]],
+  ladder: [["startBpm", BPM_MIN, BPM_MAX], ["endBpm", BPM_MIN, BPM_MAX], ["stepBpm", STEP_MIN, STEP_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
+  oco: [["startBpm", BPM_MIN, BPM_MAX], ["peakBpm", BPM_MIN, BPM_MAX], ["stepBpm", STEP_MIN, STEP_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
+  build: [["bpm", BPM_MIN, BPM_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
+};
+function cleanRoutineItem(raw) {
+  if (!raw || typeof raw !== "object") throw new Error("item is not an object");
+  if (!Data.RUDIMENT_MAP[raw.rudimentId]) throw new Error("unknown rudiment");
+  if (raw.lead !== "R" && raw.lead !== "L") throw new Error("bad lead");
+  if (!ROUTINE_FIELDS[raw.mode]) throw new Error("bad mode");
+  if (!Object.prototype.hasOwnProperty.call(DYNAMICS, raw.dynamics)) throw new Error("bad dynamics");
+  const turn = intIn(raw.turn, 0, TURN_MAX, "turn");
+  const src = raw.p || {}, p = {};
+  ROUTINE_FIELDS[raw.mode].forEach(function (f) { p[f[0]] = intIn(src[f[0]], f[1], f[2], f[0]); });
+  if (raw.mode === "oco" && p.peakBpm <= p.startBpm) throw new Error("peak must be above the start");
+  return { rudimentId: raw.rudimentId, lead: raw.lead, mode: raw.mode, turn: turn, dynamics: raw.dynamics, p: p };
+}
+// Build an item from the app's settings. Throws on anything invalid.
+function routineItem(settings, fixedReps) {
+  const mode = settings.mode;
+  const src = mode === "fixed" ? { bpm: settings.bpm, reps: fixedReps === undefined ? ROUTINE_FIXED_REPS : fixedReps }
+    : mode === "ladder" ? settings.ladder : mode === "oco" ? settings.oco : mode === "build" ? settings.build : null;
+  return cleanRoutineItem({ rudimentId: settings.rudimentId, lead: settings.lead, mode: mode,
+    turn: settings.turn === undefined ? 0 : settings.turn, dynamics: settings.dynamics || "full", p: src });
+}
+function sanitizeRoutine(raw) {
+  const out = [];
+  if (!Array.isArray(raw)) return out;
+  for (let i = 0; i < raw.length && out.length < ROUTINE_MAX; i++) {
+    try { out.push(cleanRoutineItem(raw[i])); } catch (e) { /* drop it */ }
+  }
+  return out;
+}
+// The plan one item plays.
+function planForItem(item) {
+  const r = Data.RUDIMENT_MAP[item.rudimentId];
+  const pattern = withLead(r, item.lead);
+  const settings = Object.assign({}, item.p, { turn: item.turn });
+  return buildPlan(item.mode, settings, pattern);
+}
+function routineSeconds(items) {
+  return items.reduce(function (sum, it) { return sum + totalSeconds(planForItem(it)); }, 0);
+}
+const ROUTINE_MODE_WORD = { fixed: "Fixed", ladder: "Steps", oco: "Open\u2013close\u2013open", build: "Build up" };
+const DYNAMICS_WORD = { medium: "medium", soft: "soft", swell: "swell" };
+function describeRoutineItem(item) {
+  const r = Data.RUDIMENT_MAP[item.rudimentId], p = item.p;
+  const lead = r.leadingHand === "mirror" ? (item.lead === "L" ? ", left lead" : ", right lead") : "";
+  const how = item.mode === "fixed" ? "Fixed " + p.bpm + " BPM \u00d7 " + p.reps
+    : item.mode === "ladder" ? "Steps " + p.startBpm + "\u2192" + p.endBpm + " BPM \u00d7 " + p.repsPerStep
+    : item.mode === "oco" ? "Open\u2013close\u2013open " + p.startBpm + "\u2192" + p.peakBpm + " BPM \u00d7 " + p.repsPerStep
+    : "Build up " + p.bpm + " BPM \u00d7 " + p.repsPerStep;
+  return r.name + lead + " \u00b7 " + how +
+    (item.turn ? " \u00b7 Your turn \u00d7" + item.turn : "") +
+    (DYNAMICS_WORD[item.dynamics] ? " \u00b7 " + DYNAMICS_WORD[item.dynamics] : "");
+}
+/* A routine in a link: items joined by "~", fields by ".", e.g.
+   single-paradiddle.R.f.0.full.80.8 — rudiment, lead, mode, turn, dynamics,
+   then the mode's numbers in ROUTINE_FIELDS order. decodeRoutine trusts nothing. */
+const MODE_CODE = { fixed: "f", ladder: "s", oco: "o", build: "b" };
+function encodeRoutine(items) {
+  return items.map(function (it) {
+    return [it.rudimentId, it.lead, MODE_CODE[it.mode], it.turn, it.dynamics]
+      .concat(ROUTINE_FIELDS[it.mode].map(function (f) { return it.p[f[0]]; })).join(".");
+  }).join("~");
+}
+function decodeRoutine(text) {
+  if (typeof text !== "string" || !text) return [];
+  const byCode = {};
+  Object.keys(MODE_CODE).forEach(function (m) { byCode[MODE_CODE[m]] = m; });
+  const raw = text.split("~").slice(0, ROUTINE_MAX).map(function (chunk) {
+    const f = chunk.split("."), mode = byCode[f[2]];
+    if (!mode || f.length !== 5 + ROUTINE_FIELDS[mode].length) return null;
+    const p = {};
+    ROUTINE_FIELDS[mode].forEach(function (fld, i) { p[fld[0]] = f[5 + i] === "" ? NaN : Number(f[5 + i]); });
+    return { rudimentId: f[0], lead: f[1], mode: mode, turn: Number(f[3]), dynamics: f[4], p: p };
+  });
+  return sanitizeRoutine(raw);
+}
+// The log for a finished routine: each item's run in order.
+function routineLog(info) {
+  const runs = info.runs || [];
+  const lines = ["Rudiment Room routine log", "Date: " + info.date,
+    "Drills completed: " + runs.length + " of " + info.total];
+  runs.forEach(function (run, i) {
+    lines.push("", "Drill " + (i + 1));
+    Array.prototype.push.apply(lines, logLines(run));
+  });
+  lines.push("", LOG_TRAILER);
   return lines.join("\n");
 }
 
@@ -794,6 +904,10 @@ const RudimentCore = {
   dynamicScale: dynamicScale,
   scaleVelocity: scaleVelocity,
   praxisSkillId: praxisSkillId,
+  ROUTINE_MAX: ROUTINE_MAX, ROUTINE_FIXED_REPS: ROUTINE_FIXED_REPS,
+  routineItem: routineItem, sanitizeRoutine: sanitizeRoutine, planForItem: planForItem,
+  routineSeconds: routineSeconds, describeRoutineItem: describeRoutineItem,
+  encodeRoutine: encodeRoutine, decodeRoutine: decodeRoutine, routineLog: routineLog,
   buildLayers: buildLayers,
   withLayer: withLayer,
   validateRudiment: validateRudiment,

@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-27.2`
+- **Build:** `2026-10-27.3`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -120,6 +120,17 @@ the app (see *Sources & educational lineage* below).
   which rises from soft to full and back across each tempo's reps (two reps
   play soft, then full). The core decides the level from the playback position;
   a change lands on the next stroke without stopping, and a share link carries it
+- **Routine** (in Settings) — save up to 8 drills and play them in order, each
+  with its own count-in: "Add this drill" saves the drill as it is set up
+  (rudiment, hand, mode and numbers, Your turn, dynamics), and a Fixed drill is
+  given a length in reps because it would otherwise loop forever. A routine
+  borrows the settings while it runs and puts the student's own back when it
+  ends or when anything structural is touched, and nothing it plays is saved as
+  the student's settings. It finishes with one **Copy practice log** covering
+  every drill. The saved routine has its own storage key; the Assignment dialog
+  can carry it in the link and QR code (`routine=`, a compact form the app
+  re-validates on the way in), and a routine opened from a link is used for that
+  visit without overwriting the saved one
 - **Assignment** (in Settings, beside Copy link) — a teacher sets a drill and an
   optional **goal tempo** and gets a link, a **QR code** and a **printable
   sheet**. The code encodes the shop's short link
@@ -227,8 +238,9 @@ timestamped visual queue drives the display at hear-time.
 
 ## Privacy and accessibility
 
-Rudiment Room requires no account or backend. Settings and the best-clean-tempo log stay
-in the browser's local storage, and neither travels in a share link. For offline use the
+Rudiment Room requires no account or backend. Settings, the saved routine and the best-clean-tempo log stay
+in the browser's local storage. The best-tempo log never travels in a link; a routine
+travels only when the teacher chooses to include it in an assignment link. For offline use the
 browser also keeps a copy of the app's own files (Cache Storage, via `sw.js`); it holds
 nothing about the student and sends nothing anywhere. One script does load: a Cloudflare Web Analytics beacon that counts page views
 and nothing else — no cookies, no fingerprinting, no following anyone to another site.

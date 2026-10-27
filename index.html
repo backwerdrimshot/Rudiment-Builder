@@ -541,6 +541,21 @@
     #printSheet .ps-note{font-size:.85rem;margin-top:24px}
   }
 
+  /* Routine */
+  .rt-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .rt-list:empty{display:none}
+  .rt-list li{display:flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:10px;padding:6px 8px 6px 12px;background:var(--warm-white)}
+  .rt-list li[aria-current="true"]{background:var(--ink);color:var(--warm-white)}
+  .rt-list .rt-text{flex:1;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}
+  .rt-list .rt-btn{min-width:44px;min-height:44px;border:2px solid var(--ink);border-radius:8px;background:var(--warm-white);color:var(--ink);font:inherit;font-weight:800;cursor:pointer}
+  .rt-list .rt-btn:disabled{opacity:.35;cursor:default}
+  .rt-add{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  .rt-add .btn{min-height:44px}
+  .rt-reps{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700}
+  .rt-reps[hidden]{display:none}
+  .rt-reps input{width:4.5em;font:inherit;color:var(--ink);background:var(--warm-white);border:2px solid var(--ink);border-radius:8px;padding:6px 8px;min-height:44px;box-sizing:border-box}
+  #rtEmpty[hidden]{display:none}
+
   /* Class view: big sticking and tempo, panels out of the way. Layout only. */
   body.class-view .setup-row,body.class-view .settings-card,body.class-view .area-about,body.class-view footer.foot{display:none}
   body.class-view .wrap{max-width:none}
@@ -872,6 +887,23 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <span class="hint">Share one exact drill with a student.</span>
       </div>
     </section>
+
+    <!-- ============ ROUTINE ============ -->
+    <section class="panel area-routine" aria-labelledby="hRoutine">
+      <h2 id="hRoutine">Routine</h2>
+      <p class="hint">Save drills and play them one after another, each with its own count-in. Set up a drill above, then add it.</p>
+      <ol class="rt-list" id="rtList" aria-label="Drills in the routine"></ol>
+      <p class="hint" id="rtEmpty">No drills yet.</p>
+      <div class="rt-add">
+        <button class="btn ghost" id="rtAdd" type="button">Add this drill</button>
+        <span class="rt-reps" id="rtRepsWrap"><label for="rtReps">Reps for a Fixed drill</label><input id="rtReps" type="number" min="1" max="64" step="1" value="8" inputmode="numeric" /></span>
+      </div>
+      <p class="plan-meta" id="rtMeta" role="status" aria-live="polite"></p>
+      <div class="share-row">
+        <button class="btn primary" id="rtStart" type="button">Start routine</button>
+        <button class="btn ghost" id="rtClear" type="button">Clear routine</button>
+      </div>
+    </section>
       </div>
     </section>
     </div>
@@ -1012,6 +1044,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <input id="goalInput" type="number" min="30" max="300" step="1" inputmode="numeric" placeholder="BPM" />
   </div>
   <p class="hint" id="goalNote" role="status"></p>
+  <div class="cue-row" id="assignRoutineRow" hidden>
+    <input type="checkbox" id="assignRoutine" />
+    <label for="assignRoutine" id="assignRoutineLbl">Include my routine</label>
+  </div>
   <div class="assign-qr" id="assignQr"></div>
   <p class="hint">Students scan the code or open the link and land on this drill, set up and ready. The goal is your target; the app does not listen, so students mark their own clean tempo.</p>
   <label class="assign-link-lbl" for="assignLink">Link</label>
@@ -1046,7 +1082,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.2";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.3";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 
