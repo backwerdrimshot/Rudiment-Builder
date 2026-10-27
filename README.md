@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-27.3`
+- **Build:** `2026-10-27.4`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -120,6 +120,21 @@ the app (see *Sources & educational lineage* below).
   which rises from soft to full and back across each tempo's reps (two reps
   play soft, then full). The core decides the level from the playback position;
   a change lands on the next stroke without stopping, and a share link carries it
+- **My progress** (in Settings) — the student's own record for the chosen
+  rudiment and hand, on the device only. Each **Clean at** mark is also kept as
+  a dated entry (the day's best, newest 90 kept) and drawn as a small line chart
+  with the goal as a dashed line; the student can set a **goal tempo** per hand
+  and see how near their best clean mark is; and can mark a rudiment **"I can
+  play this"**. Every one of these is the student's claim: the app never
+  listens. **Copy my progress** copies a plain-text summary that names no one.
+  Clearing a rudiment's best also clears its history; the goal and the learned
+  mark stay.
+- **Learning path** (in the rudiment chooser) — "N of 40 learned" with a
+  **Next up** pointer and a **Go to next** button, ✓ Learned and Next up badges on
+  the cards, and an All / To learn / Learned filter. The order is derived from
+  the data alone (level, then PAS number), so it invents no teaching sequence;
+  a curated order would replace one function (`Core.learningPath`). When a goal
+  is set, the chooser also names the rudiment and hand closest to it.
 - **Routine** (in Settings) — save up to 8 drills and play them in order, each
   with its own count-in: "Add this drill" saves the drill as it is set up
   (rudiment, hand, mode and numbers, Your turn, dynamics), and a Fixed drill is
@@ -238,8 +253,9 @@ timestamped visual queue drives the display at hear-time.
 
 ## Privacy and accessibility
 
-Rudiment Room requires no account or backend. Settings, the saved routine and the best-clean-tempo log stay
-in the browser's local storage. The best-tempo log never travels in a link; a routine
+Rudiment Room requires no account or backend. Settings, the saved routine, the progress record (history, goals, learned marks) and the
+best-clean-tempo log stay in the browser's local storage. The best-tempo log and the
+progress record never travel in a link; a routine
 travels only when the teacher chooses to include it in an assignment link. For offline use the
 browser also keeps a copy of the app's own files (Cache Storage, via `sw.js`); it holds
 nothing about the student and sends nothing anywhere. One script does load: a Cloudflare Web Analytics beacon that counts page views

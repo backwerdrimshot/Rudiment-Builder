@@ -1385,6 +1385,118 @@ function getCases(core) {
     assert.ok(core.practiceLog(run("flam-tap", "ladder", { date: "2026-10-27" })).startsWith("Rudiment Room practice log"), "single log unchanged");
   }},
 
+  { name: "progress: history keeps the day's best, sorted, capped, and never mutates", fn: function (assert) {
+    let p = core.emptyProgress();
+    const frozen = JSON.stringify(p);
+    p = core.recordClean(p, "flam-tap", "R", 80, "2026-10-20");
+    p = core.recordClean(p, "flam-tap", "R", 92, "2026-10-22");
+    p = core.recordClean(p, "flam-tap", "R", 88, "2026-10-22");
+    p = core.recordClean(p, "flam-tap", "R", 70, "2026-10-21");
+    p = core.recordClean(p, "flam-tap", "L", 60, "2026-10-21");
+    assert.equal(JSON.stringify(core.emptyProgress()), frozen);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "R"),
+      [{ date: "2026-10-20", bpm: 80 }, { date: "2026-10-21", bpm: 70 }, { date: "2026-10-22", bpm: 92 }]);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "L"), [{ date: "2026-10-21", bpm: 60 }]);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "X"), []);
+    assert.deepEqual(core.historySeries(p, "nope", "R"), []);
+    const before = JSON.stringify(p);
+    core.recordClean(p, "flam-tap", "R", 99, "2026-10-23");
+    assert.equal(JSON.stringify(p), before, "input unchanged");
+    let big = core.emptyProgress();
+    for (let i = 0; i < core.HISTORY_KEEP + 25; i++) {
+      const d = new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10);
+      big = core.recordClean(big, "flam-tap", "R", 60 + (i % 30), d);
+    }
+    const series = core.historySeries(big, "flam-tap", "R");
+    assert.equal(series.length, core.HISTORY_KEEP);
+    assert.equal(series[series.length - 1].date, new Date(Date.UTC(2026, 0, 1 + core.HISTORY_KEEP + 24)).toISOString().slice(0, 10), "newest kept");
+    assert.throws(function () { core.recordClean(p, "nope", "R", 80, "2026-10-20"); });
+    assert.throws(function () { core.recordClean(p, "flam-tap", "X", 80, "2026-10-20"); });
+    assert.throws(function () { core.recordClean(p, "flam-tap", "R", 5, "2026-10-20"); });
+    assert.throws(function () { core.recordClean(p, "flam-tap", "R", 80, "Oct 20"); });
+  }},
+
+  { name: "progress: goals and learned marks set, clear, and clear history leaves them", fn: function (assert) {
+    let p = core.recordClean(core.emptyProgress(), "flam-tap", "R", 80, "2026-10-20");
+    p = core.setGoal(p, "flam-tap", "R", 120);
+    p = core.setGoal(p, "flam-tap", "L", 100);
+    p = core.setLearned(p, "flam-tap", "2026-10-21");
+    assert.deepEqual(p.goals["flam-tap"], { R: 120, L: 100 });
+    assert.equal(p.learned["flam-tap"], "2026-10-21");
+    const cleared = core.clearHistory(p, "flam-tap");
+    assert.deepEqual(core.historySeries(cleared, "flam-tap", "R"), []);
+    assert.deepEqual(cleared.goals["flam-tap"], { R: 120, L: 100 }, "goal stays");
+    assert.equal(cleared.learned["flam-tap"], "2026-10-21", "learned stays");
+    assert.equal(core.historySeries(p, "flam-tap", "R").length, 1, "original untouched");
+    p = core.setGoal(p, "flam-tap", "R", null); p = core.setGoal(p, "flam-tap", "L", null);
+    assert.ok(!p.goals["flam-tap"], "empty goal record is removed");
+    p = core.setLearned(p, "flam-tap", null);
+    assert.ok(!p.learned["flam-tap"]);
+    assert.throws(function () { core.setGoal(p, "flam-tap", "R", 9999); });
+    assert.throws(function () { core.setLearned(p, "flam-tap", "yesterday"); });
+  }},
+
+  { name: "progress: sanitize drops everything it cannot trust, including prototype keys", fn: function (assert) {
+    const bad = { history: { "flam-tap": { R: [{ date: "2026-10-20", bpm: 80 }, { date: "bad", bpm: 80 }, { date: "2026-10-21", bpm: 9999 }, null, 7,
+        { date: "2026-10-20", bpm: 95 }], L: "nope", X: [{ date: "2026-10-20", bpm: 80 }] },
+        nope: { R: [{ date: "2026-10-20", bpm: 80 }] }, __proto__: { R: [] }, constructor: { R: [] }, toString: 5 },
+      goals: { "flam-tap": { R: 120, L: 12.5, X: 100 }, nope: { R: 100 }, "single-paradiddle": "x" },
+      learned: { "flam-tap": "2026-10-20", "single-paradiddle": "soon", nope: "2026-10-20", constructor: "2026-10-20" } };
+    const p = core.sanitizeProgress(bad);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "R"), [{ date: "2026-10-20", bpm: 95 }]);
+    assert.deepEqual(Object.keys(p.history), ["flam-tap"], "only known rudiments, as own keys");
+    assert.deepEqual(Object.keys(p.learned), ["flam-tap"]);
+    assert.deepEqual(p.goals, { "flam-tap": { R: 120 } });
+    assert.deepEqual(p.learned, { "flam-tap": "2026-10-20" });
+    ["x", 5, null, undefined, [], true].forEach(function (junk) { assert.deepEqual(core.sanitizeProgress(junk), core.emptyProgress(), String(junk)); });
+    assert.deepEqual(core.sanitizeProgress(p), p, "idempotent");
+  }},
+
+  { name: "progress: goal status, closest to goal, and the learning path", fn: function (assert) {
+    const log = { "flam-tap": { R: { bpm: 90, date: "2026-10-20" }, L: { bpm: 130, date: "2026-10-20" } }, "single-paradiddle": { R: { bpm: 60, date: "2026-10-20" } } };
+    let p = core.setGoal(core.emptyProgress(), "flam-tap", "R", 120);
+    p = core.setGoal(p, "flam-tap", "L", 120);
+    p = core.setGoal(p, "single-paradiddle", "R", 200);
+    p = core.setGoal(p, "flam-accent", "R", 100);
+    assert.deepEqual(core.goalStatus(p, log, "flam-tap", "R"), { goal: 120, best: 90, pct: 75, reached: false });
+    assert.equal(core.goalStatus(p, log, "flam-tap", "L").reached, true);
+    assert.equal(core.goalStatus(p, log, "flam-tap", "L").pct, 100);
+    assert.deepEqual(core.goalStatus(p, log, "flam-accent", "R"), { goal: 100, best: null, pct: 0, reached: false });
+    assert.equal(core.goalStatus(p, log, "single-stroke-roll", "R"), null);
+    const near = core.closestToGoal(p, log);
+    assert.deepEqual(near, { id: "flam-tap", lead: "R", goal: 120, best: 90, pct: 75 }, "reached and no-best goals are not the nudge");
+    assert.equal(core.closestToGoal(core.emptyProgress(), log), null);
+    const path = core.learningPath();
+    assert.equal(path.length, 40); assert.equal(new Set(path).size, 40);
+    const rank = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+    for (let i = 1; i < path.length; i++) {
+      const a = core.RUDIMENT_MAP[path[i - 1]], b = core.RUDIMENT_MAP[path[i]];
+      assert.ok(rank[a.level] < rank[b.level] || (rank[a.level] === rank[b.level] && a.pas < b.pas), a.id + " before " + b.id);
+    }
+    assert.deepEqual(core.pathStatus(core.emptyProgress()), { total: 40, learned: 0, next: path[0] });
+    let q = core.setLearned(core.emptyProgress(), path[0], "2026-10-20");
+    q = core.setLearned(q, path[2], "2026-10-20");
+    assert.deepEqual(core.pathStatus(q), { total: 40, learned: 2, next: path[1] }, "next is the first not learned");
+    path.forEach(function (id) { q = core.setLearned(q, id, "2026-10-20"); });
+    assert.deepEqual(core.pathStatus(q), { total: 40, learned: 40, next: null });
+  }},
+
+  { name: "progress: the summary names no one and lists learned, next, bests and goals", fn: function (assert) {
+    const log = { "flam-tap": { R: { bpm: 90, date: "2026-10-20" } } };
+    let p = core.setLearned(core.emptyProgress(), "single-stroke-roll", "2026-10-20");
+    p = core.setGoal(p, "flam-tap", "R", 120);
+    const text = core.progressSummary({ date: "2026-10-27", progress: p, bestLog: log });
+    const lines = text.split("\n");
+    assert.equal(lines[0], "Rudiment Room progress");
+    assert.ok(lines.includes("Learned: 1 of 40 (the student's own mark)"));
+    assert.ok(lines.includes("Learned: Single Stroke Roll"));
+    assert.ok(lines.includes("Next on the path: " + core.RUDIMENT_MAP[core.learningPath()[1]].name));
+    assert.ok(lines.includes("Flam Tap (PAS #22): right best 90 BPM, goal 120 BPM"), text);
+    assert.ok(/does not listen or grade/.test(text));
+    assert.ok(!/name:|student id/i.test(text));
+    assert.ok(core.progressSummary({ date: "2026-10-27", progress: core.emptyProgress() }).includes("Next on the path: " + core.RUDIMENT_MAP[core.learningPath()[0]].name));
+  }},
+
   { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
     const pb = core.createPracticePlayback(core.buildPlan("ladder",
       { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));

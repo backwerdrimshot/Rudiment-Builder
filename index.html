@@ -541,6 +541,23 @@
     #printSheet .ps-note{font-size:.85rem;margin-top:24px}
   }
 
+  /* Progress: path line, goals, history */
+  .path-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .path-line[hidden],.path-line .btn[hidden]{display:none}
+  .path-line .hint{margin:0;flex:1;min-width:12em}
+  .path-line .btn{min-height:44px}
+  .rud-card .rlearn{display:block;color:var(--accent-ink);font-size:.78rem;margin-top:3px;font-weight:800}
+  .rud-card .rlearn[hidden]{display:none}
+  .area-progress .cue-row{margin-top:12px}
+  .area-progress .cue-row label{display:inline-flex;align-items:center;gap:6px;min-height:44px;cursor:pointer}
+  .goal-set{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .goal-set label{font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;min-height:44px}
+  .goal-set input{width:6em;font:inherit;color:var(--ink);background:var(--warm-white);border:2px solid var(--ink);border-radius:8px;padding:6px 8px;min-height:44px;box-sizing:border-box}
+  .goal-set .btn{min-height:44px}
+  .hist{margin-top:10px}
+  .hist svg{display:block;width:100%;max-width:420px;height:auto;color:var(--ink)}
+  .hist .hist-cap{margin:4px 0 0;color:var(--ink-soft);font-size:.78rem;font-weight:700}
+
   /* Routine */
   .rt-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
   .rt-list:empty{display:none}
@@ -688,6 +705,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
           <button type="button" data-lvl="Beginner">Beginner</button>
           <button type="button" data-lvl="Intermediate">Intermediate</button>
           <button type="button" data-lvl="Advanced">Advanced</button>
+        </div>
+        <div class="filter-chips" id="pathFilter" role="group" aria-label="Filter by your learning path">
+          <button type="button" data-path="all" aria-pressed="true">All</button>
+          <button type="button" data-path="todo" aria-pressed="false">To learn</button>
+          <button type="button" data-path="done" aria-pressed="false">Learned</button>
+        </div>
+        <div class="path-line">
+          <p class="hint" id="pathLine"></p>
+          <button class="btn ghost mini" id="btnNext" type="button" hidden>Go to next</button>
+        </div>
+        <div class="path-line" id="nudgeRow" hidden>
+          <p class="hint" id="nudgeLine"></p>
+          <button class="btn ghost mini" id="btnNudge" type="button">Practice it</button>
         </div>
         <p class="filter-count" id="filterCount" aria-live="polite"></p>
       </div>
@@ -904,6 +934,28 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <button class="btn ghost" id="rtClear" type="button">Clear routine</button>
       </div>
     </section>
+
+    <!-- ============ MY PROGRESS ============ -->
+    <section class="panel area-progress" aria-labelledby="hProgress">
+      <h2 id="hProgress">My progress</h2>
+      <p class="hint">Your own record for the chosen rudiment, kept on this device. Nothing here is graded or sent anywhere.</p>
+      <div class="cue-row">
+        <input type="checkbox" id="learnedToggle" />
+        <label for="learnedToggle">I can play this rudiment <span class="hint">(your own mark)</span></label>
+      </div>
+      <div class="goal-set">
+        <label for="myGoal" id="myGoalLbl">My goal, right hand (BPM)</label>
+        <input id="myGoal" type="number" min="30" max="300" step="1" inputmode="numeric" placeholder="BPM" />
+        <button class="btn ghost mini" id="btnSetGoal" type="button">Set</button>
+        <button class="btn ghost mini" id="btnClearGoal" type="button" hidden>Remove goal</button>
+      </div>
+      <p class="hint" id="goalProgress"></p>
+      <div class="hist" id="histChart"></div>
+      <div class="best-row">
+        <button class="btn ghost mini" id="btnCopyProgress" type="button">Copy my progress</button>
+        <p class="hint" id="progressStatus" role="status" aria-live="polite"></p>
+      </div>
+    </section>
       </div>
     </section>
     </div>
@@ -951,6 +1003,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <p class="hint clean-note" id="logStatus" role="status" aria-live="polite"></p>
 
       <p class="hint clean-note" id="cleanNote" aria-live="polite"></p>
+      <p class="hint goal-line" id="goalLine" aria-live="polite" hidden></p>
       <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
     </section>
 
@@ -983,7 +1036,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <div class="chips" id="rudChips"></div>
         <p class="teaching" id="teachingNote"></p>
         <p class="hint" id="tempoHint"></p>
-        <p class="hint goal-line" id="goalLine" hidden></p>
+
         <div class="best-row">
           <p class="hint" id="bestLine"></p>
           <button class="btn ghost mini" id="btnClearBest" type="button" hidden>Clear</button>
@@ -1082,7 +1135,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.4";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 

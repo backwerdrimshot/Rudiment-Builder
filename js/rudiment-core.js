@@ -755,6 +755,165 @@ function clearBest(log, rudimentId) {
      run: { date, rudimentId, lead, mode ("ladder"|"oco"), rungs, reps, best, link }
    `best` is { bpm, date } from the best log, or null. */
 const LOG_MODE = { fixed: "Fixed tempo", ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" };
+/* ---------------- progress ----------------
+   Everything a student keeps about their own practice, on the device only:
+     history  dated "clean at" marks, one per day per rudiment per hand (the
+              day's best), newest HISTORY_KEEP kept
+     goals    the student's own goal tempo per rudiment per hand
+     learned  rudiments the student says they can play, with the day marked
+   The app never listens, so each of these is a claim, exactly like the best
+   clean tempo. It sits beside that log rather than replacing it, which keeps
+   the all-time best even after old history is trimmed. Every function returns a
+   new object and none mutates its input; sanitizeProgress is what stands
+   between the page and whatever storage hands back. */
+const HISTORY_KEEP = 90;
+function emptyProgress() { return { history: {}, goals: {}, learned: {} }; }
+function validDay(d) { return typeof d === "string" && ISO_DAY.test(d); }
+function validBpm(n) { return Number.isInteger(n) && n >= BPM_MIN && n <= BPM_MAX; }
+function tidyHistory(list) {
+  const byDay = {};
+  list.forEach(function (e) {
+    if (e && validDay(e.date) && validBpm(e.bpm) && (!byDay[e.date] || e.bpm > byDay[e.date])) byDay[e.date] = e.bpm;
+  });
+  return Object.keys(byDay).sort().slice(-HISTORY_KEEP).map(function (d) { return { date: d, bpm: byDay[d] }; });
+}
+function sanitizeProgress(raw) {
+  const out = emptyProgress();
+  if (!raw || typeof raw !== "object") return out;
+  const known = function (id) { return Object.prototype.hasOwnProperty.call(Data.RUDIMENT_MAP, id); };
+  if (raw.history && typeof raw.history === "object") Object.keys(raw.history).forEach(function (id) {
+    if (!known(id) || !raw.history[id] || typeof raw.history[id] !== "object") return;
+    ["R", "L"].forEach(function (lead) {
+      const list = Array.isArray(raw.history[id][lead]) ? tidyHistory(raw.history[id][lead]) : [];
+      if (list.length) (out.history[id] = out.history[id] || {})[lead] = list;
+    });
+  });
+  if (raw.goals && typeof raw.goals === "object") Object.keys(raw.goals).forEach(function (id) {
+    if (!known(id) || !raw.goals[id] || typeof raw.goals[id] !== "object") return;
+    ["R", "L"].forEach(function (lead) {
+      if (validBpm(raw.goals[id][lead])) (out.goals[id] = out.goals[id] || {})[lead] = raw.goals[id][lead];
+    });
+  });
+  if (raw.learned && typeof raw.learned === "object") Object.keys(raw.learned).forEach(function (id) {
+    if (known(id) && validDay(raw.learned[id])) out.learned[id] = raw.learned[id];
+  });
+  return out;
+}
+function checkProgressArgs(id, lead) {
+  if (!Data.RUDIMENT_MAP[id]) throw new Error("unknown rudiment " + id);
+  if (lead !== undefined && lead !== "R" && lead !== "L") throw new Error('lead must be "R" or "L"');
+}
+function recordClean(progress, id, lead, bpm, date) {
+  checkProgressArgs(id, lead);
+  intIn(bpm, BPM_MIN, BPM_MAX, "bpm");
+  if (!validDay(date)) throw new Error("date must be YYYY-MM-DD");
+  const next = sanitizeProgress(progress);
+  const list = ((next.history[id] || {})[lead] || []).concat([{ date: date, bpm: bpm }]);
+  next.history[id] = Object.assign({}, next.history[id]);
+  next.history[id][lead] = tidyHistory(list);
+  return next;
+}
+function setGoal(progress, id, lead, bpm) {
+  checkProgressArgs(id, lead);
+  const next = sanitizeProgress(progress);
+  if (bpm === null) {
+    if (next.goals[id]) {
+      delete next.goals[id][lead];
+      if (!Object.keys(next.goals[id]).length) delete next.goals[id];
+    }
+    return next;
+  }
+  intIn(bpm, BPM_MIN, BPM_MAX, "goal");
+  next.goals[id] = Object.assign({}, next.goals[id]);
+  next.goals[id][lead] = bpm;
+  return next;
+}
+function setLearned(progress, id, date) {
+  checkProgressArgs(id);
+  const next = sanitizeProgress(progress);
+  if (date === null) delete next.learned[id];
+  else {
+    if (!validDay(date)) throw new Error("date must be YYYY-MM-DD");
+    next.learned[id] = date;
+  }
+  return next;
+}
+// Forget one rudiment's dated marks. Goals and the learned mark are the
+// student's own statements and stay.
+function clearHistory(progress, id) {
+  checkProgressArgs(id);
+  const next = sanitizeProgress(progress);
+  delete next.history[id];
+  return next;
+}
+function historySeries(progress, id, lead) {
+  const h = progress && progress.history && progress.history[id] && progress.history[id][lead];
+  return Array.isArray(h) ? h.slice() : [];
+}
+// How near a hand is to its goal: { goal, best, pct, reached }, or null with no goal.
+function goalStatus(progress, bestLogIn, id, lead) {
+  const goal = progress && progress.goals && progress.goals[id] && progress.goals[id][lead];
+  if (!validBpm(goal)) return null;
+  const b = bestLogIn && bestLogIn[id] && bestLogIn[id][lead];
+  const best = b && validBpm(b.bpm) ? b.bpm : null;
+  return { goal: goal, best: best, pct: best === null ? 0 : Math.min(100, Math.floor(best * 100 / goal)),
+           reached: best !== null && best >= goal };
+}
+
+/* The learning path. Order comes from the data alone — level, then PAS number
+   — so it invents no pedagogy: a curated order is the owner's call, and would
+   replace this one function. */
+const LEVEL_RANK = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+function learningPath() {
+  return Data.RUDIMENTS.slice().sort(function (a, b) {
+    const ra = LEVEL_RANK[a.level] === undefined ? 9 : LEVEL_RANK[a.level];
+    const rb = LEVEL_RANK[b.level] === undefined ? 9 : LEVEL_RANK[b.level];
+    return ra - rb || a.pas - b.pas;
+  }).map(function (r) { return r.id; });
+}
+function pathStatus(progress) {
+  const path = learningPath();
+  const learned = path.filter(function (id) { return progress && progress.learned && progress.learned[id]; });
+  const next = path.find(function (id) { return !(progress && progress.learned && progress.learned[id]); });
+  return { total: path.length, learned: learned.length, next: next || null };
+}
+// The rudiment and hand with a goal set that is nearest, without reaching it.
+function closestToGoal(progress, bestLogIn) {
+  let pick = null;
+  learningPath().forEach(function (id) {
+    ["R", "L"].forEach(function (lead) {
+      const g = goalStatus(progress, bestLogIn, id, lead);
+      if (g && !g.reached && g.best !== null && (!pick || g.pct > pick.pct))
+        pick = { id: id, lead: lead, goal: g.goal, best: g.best, pct: g.pct };
+    });
+  });
+  return pick;
+}
+// A plain-text summary a student can paste to a teacher. Names no one.
+function progressSummary(info) {
+  const progress = info.progress, log = info.bestLog || {};
+  const path = learningPath(), st = pathStatus(progress);
+  const name = function (id) { return Data.RUDIMENT_MAP[id].name; };
+  const lines = ["Rudiment Room progress", "Date: " + info.date,
+    "Learned: " + st.learned + " of " + st.total + " (the student's own mark)"];
+  const learned = path.filter(function (id) { return progress.learned[id]; });
+  if (learned.length) lines.push("Learned: " + learned.map(name).join(", "));
+  lines.push("Next on the path: " + (st.next ? name(st.next) : "all learned"));
+  const rows = [];
+  path.forEach(function (id) {
+    const parts = [];
+    ["R", "L"].forEach(function (lead) {
+      const b = log[id] && log[id][lead], g = progress.goals[id] && progress.goals[id][lead];
+      if (b || g) parts.push((lead === "R" ? "right" : "left") + " " + (b ? "best " + b.bpm + " BPM" : "no best yet") +
+        (g ? ", goal " + g + " BPM" : ""));
+    });
+    if (parts.length) rows.push(name(id) + " (PAS #" + Data.RUDIMENT_MAP[id].pas + "): " + parts.join("; "));
+  });
+  if (rows.length) { lines.push("", "Best clean tempos and goals:"); Array.prototype.push.apply(lines, rows); }
+  lines.push("", "Rudiment Room does not listen or grade. Every mark here is the student's own.");
+  return lines.join("\n");
+}
+
 function logLines(run) {
   const r = Data.RUDIMENT_MAP[run.rudimentId];
   if (!r) throw new Error("unknown rudiment " + run.rudimentId);
@@ -908,6 +1067,11 @@ const RudimentCore = {
   routineItem: routineItem, sanitizeRoutine: sanitizeRoutine, planForItem: planForItem,
   routineSeconds: routineSeconds, describeRoutineItem: describeRoutineItem,
   encodeRoutine: encodeRoutine, decodeRoutine: decodeRoutine, routineLog: routineLog,
+  HISTORY_KEEP: HISTORY_KEEP,
+  emptyProgress: emptyProgress, sanitizeProgress: sanitizeProgress, recordClean: recordClean,
+  setGoal: setGoal, setLearned: setLearned, clearHistory: clearHistory, historySeries: historySeries,
+  goalStatus: goalStatus, learningPath: learningPath, pathStatus: pathStatus,
+  closestToGoal: closestToGoal, progressSummary: progressSummary,
   buildLayers: buildLayers,
   withLayer: withLayer,
   validateRudiment: validateRudiment,

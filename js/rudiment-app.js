@@ -780,7 +780,7 @@ var FAMILY_ORDER = ["Roll", "Diddle", "Flam", "Drag"];
 var FAMILY_LABEL = { Roll: "Rolls", Diddle: "Diddles", Flam: "Flams", Drag: "Drags" };
 var cardIndex = [];   // [{ el, fam, level, hay }] — one per rudiment card
 var groupEls = {};    // family -> { wrap, cards, count }
-var filters = { q: "", family: "all", level: "all" };
+var filters = { q: "", family: "all", level: "all", path: "all" };
 
 function buildCards() {
   var host = $("rudCards");
@@ -806,12 +806,12 @@ function buildCards() {
     b.innerHTML = '<span class="rname">' + r.name + '</span>' +
       '<span class="rmeta">' + r.family + '<span class="dot">·</span>PAS #' + r.pas +
       '<span class="dot">·</span>' + r.level + "</span>" +
-      '<span class="rbest" hidden></span>';
+      '<span class="rbest" hidden></span><span class="rlearn" hidden></span>';
     b.addEventListener("click", function () { selectRudiment(r.id); });
     g.cards.appendChild(b);
     var hay = (r.name + " " + r.family + " " + r.level + " pas " + r.pas + " #" + r.pas +
       " " + (r.aliases ? r.aliases.join(" ") : "")).toLowerCase();
-    cardIndex.push({ el: b, id: r.id, best: b.querySelector(".rbest"), fam: r.family, level: r.level, hay: hay });
+    cardIndex.push({ el: b, id: r.id, best: b.querySelector(".rbest"), learn: b.querySelector(".rlearn"), fam: r.family, level: r.level, hay: hay });
   });
 }
 
@@ -824,6 +824,7 @@ function applyFilters() {
   cardIndex.forEach(function (c) {
     var ok = (filters.family === "all" || c.fam === filters.family) &&
              (filters.level === "all" || c.level === filters.level) &&
+             (filters.path === "all" || (filters.path === "done") === !!progress.learned[c.id]) &&
              (q === "" || c.hay.indexOf(q) !== -1);
     c.el.hidden = !ok;
     if (ok) { shown++; perFam[c.fam]++; }
@@ -838,6 +839,7 @@ function applyFilters() {
   var scope = [];
   if (filters.family !== "all") scope.push(FAMILY_LABEL[filters.family]);
   if (filters.level !== "all") scope.push(filters.level);
+  if (filters.path !== "all") scope.push(filters.path === "done" ? "Learned" : "To learn");
   $("filterCount").textContent = "Showing " + shown + " of " + total +
     (scope.length ? " · " + scope.join(" · ") : "");
 }
@@ -848,6 +850,7 @@ function wireFilters() {
   });
   wireChipGroup("familyFilter", "fam", function (v) { filters.family = v; });
   wireChipGroup("levelFilter", "lvl", function (v) { filters.level = v; });
+  wireChipGroup("pathFilter", "path", function (v) { filters.path = v; });
 }
 function wireChipGroup(id, key, apply) {
   $(id).addEventListener("click", function (e) {
@@ -1147,6 +1150,8 @@ function onClean() {
   var r = Core.markClean(bestLog, settings.rudimentId, lead, bpm, today());
   bestLog = r.log;
   saveBest();
+  progress = Core.recordClean(progress, settings.rudimentId, lead, bpm, today());
+  saveProgress();
   renderBest();
   $("cleanNote").textContent = r.improved
     ? "New best: " + bpm + " BPM clean, " + (lead === "R" ? "right" : "left") + " lead."
@@ -1169,8 +1174,9 @@ function renderBest() {
   $("bestLine").textContent = rec
     ? "Right lead: " + one(rec.R) + "\nLeft lead: " + one(rec.L)
     : "Best clean: not logged yet. While you are playing it cleanly, press \u201cClean at\u201d.";
-  $("btnClearBest").hidden = !rec;
+  $("btnClearBest").hidden = !rec && !hasHistory(settings.rudimentId);
   renderGoal();
+  renderProgress();
   disarmClear();
   renderBestStart();
   cardIndex.forEach(function (c) {
@@ -1207,9 +1213,11 @@ function onClearBest() {
   }
   bestLog = Core.clearBest(bestLog, settings.rudimentId);
   saveBest();
+  progress = Core.clearHistory(progress, settings.rudimentId);
+  saveProgress();
   renderBest();
-  $("cleanNote").textContent = "Cleared the best clean tempos for " +
-    Core.RUDIMENT_MAP[settings.rudimentId].name + ".";
+  $("cleanNote").textContent = "Cleared the best clean tempos and the history for " +
+    Core.RUDIMENT_MAP[settings.rudimentId].name + ". Your goal and learned mark stay.";
 }
 function disarmClear() {
   if (clearArmed) clearTimeout(clearArmed);
@@ -1391,6 +1399,7 @@ function applyLead(lead) {
   forgetHeard();
   renderBestStart();
   renderGoal();
+  renderProgress();
 }
 
 function fmtDuration(secs) {
@@ -1697,6 +1706,136 @@ function renderGoal() {
           : ". Mark a tempo clean when you play it cleanly.");
 }
 
+/* ---------------- progress ----------------
+   The student's own record, on this device only (Core's progress model): dated
+   clean marks, a goal tempo per hand, "I can play this" marks, and a learning
+   path derived from the data. All of it is a claim; the app never listens. It
+   never travels in a link. The copy button produces a plain-text summary. */
+var PROGRESS_KEY = "rudimentroom-progress";
+var progress = Core.emptyProgress();
+function loadProgress() {
+  try { progress = Core.sanitizeProgress(JSON.parse(localStorage.getItem(PROGRESS_KEY))); }
+  catch (e) { progress = Core.emptyProgress(); }
+}
+function saveProgress() {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* private mode */ }
+}
+function hasHistory(id) { return !!progress.history[id]; }
+function handWord(lead) { return lead === "R" ? "right" : "left"; }
+function nameOf(id) { return Core.RUDIMENT_MAP[id].name; }
+// Choose a rudiment, and a hand where the rudiment has one to choose.
+function chooseDrill(id, lead) {
+  selectRudiment(id);
+  if (lead && Core.RUDIMENT_MAP[id].leadingHand === "mirror" && settings.lead !== lead) {
+    setSeg("segLead", lead);
+    applyLead(lead);
+  }
+  $("setupToggle").scrollIntoView && $("setupToggle").scrollIntoView({ block: "nearest" });
+}
+function onLearnedToggle(e) {
+  progress = Core.setLearned(progress, settings.rudimentId, e.target.checked ? today() : null);
+  saveProgress();
+  renderProgress();
+  if (filters.path !== "all") applyFilters();
+}
+function setMyGoal(bpm) {
+  var lead = effectiveLead();
+  progress = Core.setGoal(progress, settings.rudimentId, lead, bpm);
+  saveProgress();
+  renderProgress();
+}
+function onSetGoal() {
+  var raw = $("myGoal").value.trim();
+  if (raw === "") { setMyGoal(null); return; }
+  var n = Math.round(+raw);
+  if (!isFinite(n) || n < Core.BPM_MIN || n > Core.BPM_MAX) {
+    $("goalProgress").textContent = "A goal tempo is a whole number from " + Core.BPM_MIN + " to " + Core.BPM_MAX + ".";
+    return;
+  }
+  setMyGoal(n);
+}
+// A small line chart of the day's best clean mark over time, with the goal as a
+// dashed line. Spaced by mark, not by calendar, so a gap between sessions does
+// not flatten the trend. The same facts are in the label for screen readers.
+function histChart(series, goal, lead) {
+  var host = $("histChart");
+  host.textContent = "";
+  if (!series.length) return;
+  var shown = series.slice(-30);
+  var recent = shown.slice(-6).map(function (e) { return fmtDay(e.date) + " " + e.bpm; }).join(", ");
+  var label = "Clean tempo marks, " + handWord(lead) + " hand, " + shown.length + (shown.length === 1 ? " day" : " days") +
+    ". Latest: " + recent + (goal ? ". Goal " + goal + " BPM." : ".");
+  if (shown.length < 2) {
+    var one = el("p", "hist-cap"); one.textContent = "One mark so far: " + recent + " BPM (" + handWord(lead) + " hand)."; host.appendChild(one); return;
+  }
+  var W = 300, H = 84, padX = 10, padY = 12;
+  var vals = shown.map(function (e) { return e.bpm; }).concat(goal ? [goal] : []);
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if (hi === lo) { hi += 5; lo -= 5; }
+  var X = function (i) { return padX + (W - 2 * padX) * i / (shown.length - 1); };
+  var Y = function (v) { return H - padY - (H - 2 * padY) * (v - lo) / (hi - lo); };
+  var svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", label);
+  var mk = function (tag, attrs) {
+    var n = document.createElementNS(SVG_NS, tag);
+    Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    svg.appendChild(n); return n;
+  };
+  if (goal) mk("line", { x1: padX, x2: W - padX, y1: Y(goal), y2: Y(goal), stroke: "currentColor", "stroke-width": 1.5, "stroke-dasharray": "4 4", opacity: 0.6 });
+  mk("polyline", { points: shown.map(function (e, i) { return X(i).toFixed(1) + "," + Y(e.bpm).toFixed(1); }).join(" "),
+    fill: "none", stroke: "currentColor", "stroke-width": 2.5, "stroke-linejoin": "round" });
+  shown.forEach(function (e, i) { mk("circle", { cx: X(i).toFixed(1), cy: Y(e.bpm).toFixed(1), r: 3.5, fill: "currentColor" }); });
+  host.appendChild(svg);
+  var cap = el("p", "hist-cap");
+  cap.textContent = fmtDay(shown[0].date) + " " + shown[0].bpm + " \u2192 " + fmtDay(shown[shown.length - 1].date) + " " +
+    shown[shown.length - 1].bpm + " BPM" + (goal ? " \u00b7 dashed line is your goal, " + goal : "");
+  host.appendChild(cap);
+}
+function renderProgress() {
+  var id = settings.rudimentId, lead = effectiveLead();
+  var r = Core.RUDIMENT_MAP[id];
+  $("learnedToggle").checked = !!progress.learned[id];
+  var hand = r.leadingHand === "mirror" ? handWord(lead) + " hand" : "";
+  $("myGoalLbl").textContent = "My goal" + (hand ? ", " + hand : "") + " (BPM)";
+  var g = Core.goalStatus(progress, bestLog, id, lead);
+  var mine = progress.goals[id] && progress.goals[id][lead];
+  if (document.activeElement !== $("myGoal")) $("myGoal").value = mine || "";
+  $("btnClearGoal").hidden = !mine;
+  $("goalProgress").textContent = !g ? "Set a goal tempo to see how near you are."
+    : g.best === null ? "Goal " + g.goal + " BPM. Mark a tempo clean while you play to start measuring."
+    : g.reached ? "Goal " + g.goal + " BPM reached \u2014 your best clean mark is " + g.best + " BPM. (Your own mark.)"
+    : "Goal " + g.goal + " BPM \u2014 your best clean mark is " + g.best + " BPM, " + g.pct + "% of the way.";
+  histChart(Core.historySeries(progress, id, lead), mine || null, lead);
+
+  var st = Core.pathStatus(progress);
+  $("pathLine").textContent = "Your path: " + st.learned + " of " + st.total + " learned" +
+    (st.next ? " \u00b7 next up: " + nameOf(st.next) : " \u00b7 every rudiment marked learned");
+  $("btnNext").hidden = !st.next;
+  var near = Core.closestToGoal(progress, bestLog);
+  $("nudgeRow").hidden = !near;
+  if (near) $("nudgeLine").textContent = "Closest to your goal: " + nameOf(near.id) +
+    (Core.RUDIMENT_MAP[near.id].leadingHand === "mirror" ? ", " + handWord(near.lead) + " hand" : "") +
+    " \u2014 " + near.best + " of " + near.goal + " BPM (" + near.pct + "%).";
+  cardIndex.forEach(function (c) {
+    var done = !!progress.learned[c.id], isNext = c.id === st.next;
+    c.learn.hidden = !done && !isNext;
+    c.learn.textContent = done ? "\u2713 Learned" : "Next up";
+  });
+}
+function copyProgress() {
+  var text = Core.progressSummary({ date: today(), progress: progress, bestLog: bestLog });
+  var status = $("progressStatus");
+  var ok = function () { status.textContent = "Copied. It names no one; paste it where your teacher asked."; };
+  var fail = function () {
+    if (fallbackCopy(text)) ok();
+    else status.textContent = "This browser would not copy it. Try again.";
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok).catch(fail);
+  else fail();
+}
+
 /* ---------------- routines ----------------
    A routine is up to Core.ROUTINE_MAX saved drills played in order. Each item
    is run through the same path as a hand-started drill: its settings are
@@ -1936,6 +2075,13 @@ function wireEvents() {
   $("btnStart").addEventListener("click", onStartButton);
   $("btnReset").addEventListener("click", resetPractice);
   $("btnShare").addEventListener("click", copyShareLink);
+  $("learnedToggle").addEventListener("change", onLearnedToggle);
+  $("btnSetGoal").addEventListener("click", onSetGoal);
+  $("myGoal").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); onSetGoal(); } });
+  $("btnClearGoal").addEventListener("click", function () { setMyGoal(null); });
+  $("btnCopyProgress").addEventListener("click", copyProgress);
+  $("btnNext").addEventListener("click", function () { var n = Core.pathStatus(progress).next; if (n) chooseDrill(n, null); });
+  $("btnNudge").addEventListener("click", function () { var c = Core.closestToGoal(progress, bestLog); if (c) chooseDrill(c.id, c.lead); });
   $("rtAdd").addEventListener("click", addRoutineDrill);
   $("rtStart").addEventListener("click", startRoutine);
   $("rtClear").addEventListener("click", clearRoutine);
@@ -2075,6 +2221,7 @@ function initOffline() {
   coerceSettings(queryToRaw());
   assignedGoal = parseGoal(new URLSearchParams(location.search).get("goal"));
   loadBest();
+  loadProgress();
   loadRoutine();
   buildCards();
   applyFilters();
