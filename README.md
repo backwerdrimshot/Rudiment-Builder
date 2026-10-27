@@ -16,12 +16,17 @@ hears and watches the stroke sequence, and practices it three ways:
 - **Open–close–open** — slow → peak → slow as a predictable state sequence
   (closing / peak / opening back up), with seamless tempo changes at cycle
   boundaries and an on-screen warning before each change.
+- **Build up** — learn a rudiment in layers at one tempo: the hands alone, then
+  the accents, then the flams, drags or buzz. Layers come from the rudiment's own
+  data (each only removes what is written, and the last is the rudiment as
+  written), change at a cycle boundary with a warning, and a rudiment with
+  nothing to add says so.
 
 No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-27`
+- **Build:** `2026-10-27.2`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>

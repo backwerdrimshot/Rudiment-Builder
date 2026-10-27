@@ -26,7 +26,7 @@ if (!Data) throw new Error("rudiment-core.js needs rudiment-data.js loaded first
 const HANDS = { R: true, L: true };
 const FAMILIES = { Roll: true, Diddle: true, Flam: true, Drag: true };
 const LEAD_BEHAVIORS = { mirror: true, fixed: true };
-const MODES = { fixed: true, ladder: true, oco: true };
+const MODES = { fixed: true, ladder: true, oco: true, build: true };
 
 // Playback loudness tiers; a stroke's optional `velocity` field overrides.
 const VELOCITY = { accent: 1.0, normal: 0.62, grace: 0.2 };
@@ -240,6 +240,56 @@ function notationCard(rudiment) {
   return "assets/notation/rudiments/rudiment-" + n + "-" + rudiment.id + ".svg";
 }
 
+/* ---------------- build-up layers ----------------
+   "Build it up" teaches a rudiment in layers, each one the written rudiment
+   with less of it switched on: the hands alone (every stroke the same), then
+   the accents, then the ornaments (flams, drags, buzz) — which is the rudiment
+   as written. A layer exists only if the rudiment has something to add, and the
+   last layer is always the rudiment exactly as written. Layers are derived from
+   the record; nothing is stored per rudiment, and nothing is invented: a layer
+   only ever removes what the data already says. */
+const LAYER_IDS = { sticking: true, accents: true, ornaments: true };
+function hasAccent(r) { return r.strokes.some(function (s) { return !!s.accent; }); }
+function ornamentWord(r) {
+  let flam = false, drag = false, buzz = false;
+  r.strokes.forEach(function (s) {
+    const g = (s.grace || []).length;
+    if (g === 1) flam = true;
+    if (g >= 2) drag = true;
+    if (s.buzz) buzz = true;
+  });
+  const kinds = (flam ? 1 : 0) + (drag ? 1 : 0) + (buzz ? 1 : 0);
+  if (kinds === 0) return null;
+  if (kinds > 1) return "ornaments";
+  return flam ? "flams" : drag ? "drags" : "buzz strokes";
+}
+function buildLayers(rudiment) {
+  const layers = [{ id: "sticking", label: "Hands only",
+    hint: "Just the sticking, every stroke the same." }];
+  if (hasAccent(rudiment))
+    layers.push({ id: "accents", label: "Add the accents",
+      hint: "The same sticking, now with the accents." });
+  const word = ornamentWord(rudiment);
+  if (word)
+    layers.push({ id: "ornaments", label: "Add the " + word,
+      hint: "The full rudiment, " + word + " included." });
+  return layers;
+}
+// A copy of a playable pattern with the layer applied. "ornaments" is the
+// pattern as written. Never mutates the pattern it is given.
+function withLayer(pattern, layer) {
+  if (!LAYER_IDS[layer]) throw new Error('unknown layer "' + layer + '"');
+  const keepAccents = layer !== "sticking";
+  const keepOrnaments = layer === "ornaments";
+  const out = Object.assign({}, pattern, { strokes: pattern.strokes.map(function (s) {
+    const c = Object.assign({}, s, { grace: s.grace.map(function (g) { return { hand: g.hand }; }) });
+    if (!keepAccents) { c.accent = false; c.velocity = undefined; }
+    if (!keepOrnaments) { c.grace = []; c.buzz = false; }
+    return c;
+  }) });
+  return out;
+}
+
 /* ---------------- expansion ----------------
    Pattern -> ordered playable events, positioned in BEATS from the cycle
    start (tempo-free: changing BPM rescales seconds, never this list).
@@ -440,6 +490,23 @@ function buildPlan(mode, settings, pattern) {
 
   const reps = intIn(settings.repsPerStep, REPS_MIN, REPS_MAX, "repsPerStep");
 
+  if (mode === "build") {
+    // One tempo, one stage per layer, each the same number of reps. Layers
+    // change seamlessly at a cycle boundary, so there are no transition
+    // blocks; the count-in opens on the first layer.
+    const bpm = intIn(settings.bpm, BPM_MIN, BPM_MAX, "bpm");
+    const layers = buildLayers(Data.RUDIMENT_MAP[pattern.rudimentId]);
+    const named = function (stage, layer) {
+      stage.layer = layer.id; stage.layerLabel = layer.label; return stage;
+    };
+    const stages = [named(listen("count-in", bpm, 0, layers.length, "building"), layers[0])];
+    layers.forEach(function (layer, i) {
+      stages.push(named(play(bpm, reps, i, layers.length, "building"), layer));
+    });
+    return { mode: mode, turn: turn, rungs: [bpm], layers: layers.map(function (l) { return l.id; }),
+             stages: stages };
+  }
+
   if (mode === "ladder") {
     const rungs = buildLadderRungs(settings);
     const phase = rungs.length === 1 ? "steady"
@@ -523,6 +590,11 @@ function createPracticePlayback(plan) {
     },
 
     // BPM of the next stage the student PLAYS (skips click-only stages).
+    // Build-up: the layer being played, and the layer the next stage plays.
+    // null outside build-up mode.
+    currentLayer() { return pb.currentStage().layer || null; },
+    nextLayer() { const n = pb.nextStage(); return n && n.layer ? n.layer : null; },
+
     nextPlayedBpm() {
       for (let i = pb.stageIndex + 1; i < stages.length; i++)
         if (stages[i].kind === "play") return stages[i].bpm;
@@ -680,7 +752,7 @@ function clearBest(log, rudimentId) {
    theirs. No name, and nothing is sent.
      run: { date, rudimentId, lead, mode ("ladder"|"oco"), rungs, reps, best, link }
    `best` is { bpm, date } from the best log, or null. */
-const LOG_MODE = { ladder: "Tempo steps", oco: "Open\u2013close\u2013open" };
+const LOG_MODE = { ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" };
 function practiceLog(run) {
   const r = Data.RUDIMENT_MAP[run.rudimentId];
   if (!r) throw new Error("unknown rudiment " + run.rudimentId);
@@ -691,8 +763,10 @@ function practiceLog(run) {
     "Rudiment: " + r.name + " (PAS #" + r.pas + ")",
     "Leading hand: " + (run.lead === "L" ? "Left" : "Right"),
     "Practice: " + (LOG_MODE[run.mode] || "Tempo steps") + ", " + run.reps +
-      (run.reps === 1 ? " rep" : " reps") + " at each tempo",
-    "Tempo steps completed: " + rungs.length + " (" + rungs.join(", ") + " BPM)",
+      (run.reps === 1 ? " rep" : " reps") + (run.mode === "build" ? " at each layer" : " at each tempo"),
+    run.mode === "build" && Array.isArray(run.layers)
+      ? "Layers completed: " + run.layers.length + " (" + run.layers.join(", ") + ") at " + rungs[0] + " BPM"
+      : "Tempo steps completed: " + rungs.length + " (" + rungs.join(", ") + " BPM)",
     "Best clean tempo: " + (run.best
       ? run.best.bpm + " BPM (marked " + run.best.date + ")"
       : "not marked yet"),
@@ -720,6 +794,8 @@ const RudimentCore = {
   dynamicScale: dynamicScale,
   scaleVelocity: scaleVelocity,
   praxisSkillId: praxisSkillId,
+  buildLayers: buildLayers,
+  withLayer: withLayer,
   validateRudiment: validateRudiment,
   assertValidRegistry: assertValidRegistry,
   withLead: withLead,

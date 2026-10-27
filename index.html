@@ -704,6 +704,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <button type="button" data-val="fixed" aria-pressed="true">Fixed</button>
         <button type="button" data-val="ladder" aria-pressed="false">Steps</button>
         <button type="button" data-val="oco" aria-pressed="false">Open‑Close‑Open</button>
+        <button type="button" data-val="build" aria-pressed="false">Build up</button>
       </div>
       <p class="hint mode-hint" id="modeHint"></p>
 
@@ -759,6 +760,27 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               <button class="step" type="button" data-target="ladReps" data-d="-1" aria-label="Fewer reps per tempo">−</button>
               <input id="ladReps" type="number" min="1" max="64" step="1" value="4" inputmode="numeric" />
               <button class="step" type="button" data-target="ladReps" data-d="1" aria-label="More reps per tempo">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsBuild" hidden>
+        <div class="settings-grid">
+          <div class="field">
+            <label for="buBpm">Tempo (BPM)</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="buBpm" data-d="-5" aria-label="Lower tempo by 5">−5</button>
+              <input id="buBpm" type="number" min="30" max="300" step="1" value="70" inputmode="numeric" />
+              <button class="step" type="button" data-target="buBpm" data-d="5" aria-label="Raise tempo by 5">+5</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="buReps">Reps per layer</label>
+            <div class="num-row">
+              <button class="step" type="button" data-target="buReps" data-d="-1" aria-label="Fewer reps per layer">−</button>
+              <input id="buReps" type="number" min="1" max="64" step="1" value="4" inputmode="numeric" />
+              <button class="step" type="button" data-target="buReps" data-d="1" aria-label="More reps per layer">+</button>
             </div>
           </div>
         </div>
@@ -1024,7 +1046,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.2";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 

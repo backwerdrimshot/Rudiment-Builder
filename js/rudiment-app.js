@@ -25,6 +25,7 @@ var DEFAULTS = {
   bpm: 80,
   ladder: { startBpm: 60, endBpm: 100, stepBpm: 5, repsPerStep: 4 },
   oco: { startBpm: 60, peakBpm: 100, stepBpm: 5, repsPerStep: 2 },
+  build: { bpm: 70, repsPerStep: 4 },
 };
 var settings = JSON.parse(JSON.stringify(DEFAULTS));
 
@@ -371,6 +372,7 @@ var live = {
   visualQ: [],
   doneQueued: false,
   heard: null,      // { bpm, peak } of this run — see noteHeard()
+  layerEventsCache: {}, // build-up layer -> events, cleared whenever the pattern is redrawn
   runPlan: null,    // the plan the current run was started from
   lastRun: null,    // the finished run "Copy practice log" reports — see finishSession()
 };
@@ -384,6 +386,12 @@ var live = {
    — they carry the highlight so the student can check themselves — and the
    pulse clicks every beat whatever its toggle says, because nothing else is
    holding the time. */
+// The events one stage plays: the written rudiment, or a build-up layer of it.
+function layerEvents(layer) {
+  if (!layer) return live.events;
+  if (!live.layerEventsCache[layer]) live.layerEventsCache[layer] = Core.expandPattern(Core.withLayer(live.pattern, layer));
+  return live.layerEventsCache[layer];
+}
 function buildEntries() {
   var pb = live.playback, st = pb.currentStage();
   var list = [];
@@ -398,7 +406,7 @@ function buildEntries() {
     } else if (settings.cue) {
       list.push({ tBeats: 0, type: "cue" });
     }
-    live.events.forEach(function (e) { list.push({ tBeats: e.beatPos, type: "stroke", ev: e, silent: response }); });
+    layerEvents(st.layer).forEach(function (e) { list.push({ tBeats: e.beatPos, type: "stroke", ev: e, silent: response }); });
     list.sort(function (a, b) { return a.tBeats - b.tBeats || (a.type !== "stroke" ? -1 : 1); });
   }
   live.entries = list;
@@ -451,6 +459,8 @@ function snapshotState(pb, st) {
     nextPlayed: pb.nextPlayedBpm(),
     pendingBpm: pb.pendingBpm,
     beatsInBlock: st.beatsPerBlock,
+    layer: st.layer || null, layerLabel: st.layerLabel || null,
+    nextLayer: pb.nextLayer(), nextLayerLabel: next && next.layerLabel ? next.layerLabel : null,
   };
 }
 
@@ -512,6 +522,7 @@ var PHASE_LABEL = {
   closing: "Closing — building speed",
   peak: "Peak",
   opening: "Opening back up",
+  building: "Building it up",
 };
 
 var lastStatusHTML = "", lastBannerKey = "";
@@ -558,7 +569,8 @@ function lightPip(beat) {
 function renderNow(ev) {
   $("curBpm").innerHTML = ev.bpm + "<small>BPM</small>";
   var pw = $("phaseWord");
-  pw.textContent = PHASE_LABEL[ev.phase] || "";
+  pw.textContent = ev.layerLabel || PHASE_LABEL[ev.phase] || "";
+  if ((ev.layer || null) !== shownLayer) showLayer(ev.layer || null);
   pw.className = "phase-word" + (ev.phase === "peak" ? " peak" : "");
 
   var nb = ev.pendingBpm != null ? ev.pendingBpm : ev.nextPlayed;
@@ -585,6 +597,8 @@ function renderNow(ev) {
     if (ev.pendingBpm != null) {
       setBanner("warn", (ev.turn ? "Tempo change when the app next plays → "
                                  : "Tempo change at the next cycle → ") + ev.pendingBpm + " BPM");
+    } else if (ev.finalBlock && ev.nextLayer && ev.nextLayer !== ev.layer) {
+      setBanner("warn", (ev.turn ? "Next time the app plays → " : "Next cycle → ") + ev.nextLayerLabel);
     } else if (ev.finalBlock && ev.nextStageKind === "play" &&
                ev.nextStageBpm != null && ev.nextStageBpm !== ev.bpm) {
       // Open-close-open changes seamlessly — warn on the final cycle.
@@ -596,7 +610,7 @@ function renderNow(ev) {
       setBanner("", "");
     }
     setStatus("Rep <strong>" + ev.rep + "</strong>" + (ev.reps ? " of " + ev.reps : "") +
-      (ev.stepCount > 1 ? " · Step <strong>" + ev.step + "</strong> of " + ev.stepCount : "") +
+      (ev.stepCount > 1 ? (ev.layer ? " · Layer <strong>" : " · Step <strong>") + ev.step + "</strong> of " + ev.stepCount : "") +
       (turnWord ? " · " + turnWord : ""));
   }
 }
@@ -606,8 +620,27 @@ var WIDE_STAGE = window.matchMedia("(min-width: 1180px)");
 function renderSticking() {
   live.pattern = Core.withLead(Core.RUDIMENT_MAP[settings.rudimentId], settings.lead);
   live.events = Core.expandPattern(live.pattern);
-  var p = live.pattern;
+  live.layerEventsCache = {};
+  shownLayer = null;
+  drawCells(live.pattern);
+  $("sticking").classList.remove("listening");
+  var p = live.pattern, r = Core.RUDIMENT_MAP[p.rudimentId];
+  $("stickName").textContent = p.name;
+  $("stickSub").textContent = (p.lead === "R" ? "Right" : "Left") + "-hand lead · " + r.subdivision +
+    " · " + p.cycleBeats + "-beat cycle";
+  renderNotation(r, p.mirrored);
+}
+// Draw one build-up layer (or the written rudiment, for null). The strokes are
+// the same strokes in the same cells, so the highlight indices still line up.
+var shownLayer = null;
+function showLayer(layer) {
+  if (layer === shownLayer) return;
+  shownLayer = layer;
+  drawCells(layer ? Core.withLayer(live.pattern, layer) : live.pattern);
+}
+function drawCells(p) {
   var host = $("sticking");
+  var wasListening = host.classList.contains("listening"), wasTurn = host.classList.contains("your-turn");
   host.innerHTML = "";
   host.classList.remove("listening");
   cellRefs = [];
@@ -674,12 +707,10 @@ function renderSticking() {
   }
 
   var r = Core.RUDIMENT_MAP[p.rudimentId];
-  $("stickName").textContent = p.name;
-  $("stickSub").textContent = (p.lead === "R" ? "Right" : "Left") + "-hand lead · " + r.subdivision +
-    " · " + p.cycleBeats + "-beat cycle";
   $("stickingDesc").textContent = p.name + ", " + (p.lead === "R" ? "right" : "left") +
     "-hand lead, " + r.subdivision.toLowerCase() + ". " + Core.describePattern(p);
-  renderNotation(r, p.mirrored);
+  host.classList.toggle("listening", wasListening);
+  host.classList.toggle("your-turn", wasTurn);
 }
 
 /* ---------------- notation card ----------------
@@ -878,6 +909,7 @@ function buildPlanFromSettings() {
   var turn = { turn: settings.turn };
   if (settings.mode === "fixed") return Core.buildPlan("fixed", { bpm: settings.bpm, turn: settings.turn }, live.pattern);
   if (settings.mode === "ladder") return Core.buildPlan("ladder", Object.assign({}, settings.ladder, turn), live.pattern);
+  if (settings.mode === "build") return Core.buildPlan("build", Object.assign({}, settings.build, turn), live.pattern);
   return Core.buildPlan("oco", Object.assign({}, settings.oco, turn), live.pattern);
 }
 
@@ -982,8 +1014,8 @@ function finishSession() {
   $("phaseWord").textContent = "Complete";
   $("phaseWord").className = "phase-word peak";
   $("nextBpm").innerHTML = "—";
-  setBanner("complete", settings.mode === "oco"
-    ? "Open–close–open complete ✓"
+  setBanner("complete", settings.mode === "oco" ? "Open–close–open complete ✓"
+    : settings.mode === "build" ? "Build-up complete ✓"
     : "Tempo steps complete ✓");
   setStatus("Nice work. Start again, or change the settings.");
   // Taken now, so a settings change after the run cannot rewrite what was
@@ -991,7 +1023,8 @@ function finishSession() {
   // "Clean at" after the run ends.
   var plan = live.runPlan;
   live.lastRun = plan ? { rudimentId: settings.rudimentId, lead: effectiveLead(), mode: plan.mode,
-    rungs: plan.rungs.slice(), reps: plan.mode === "oco" ? settings.oco.repsPerStep : settings.ladder.repsPerStep,
+    rungs: plan.rungs.slice(), layers: plan.mode === "build" ? plan.stages.filter(function (s) { return s.kind === "play"; }).map(function (s) { return s.layerLabel; }) : undefined,
+    reps: plan.mode === "oco" ? settings.oco.repsPerStep : plan.mode === "build" ? settings.build.repsPerStep : settings.ladder.repsPerStep,
     link: shareUrl(), goal: assignedGoal === null ? undefined : assignedGoal } : null;
   renderLogRow();
 }
@@ -1178,6 +1211,7 @@ function onStartButton() {
 function startBpmForMode() {
   if (settings.mode === "fixed") return settings.bpm;
   if (settings.mode === "ladder") return settings.ladder.startBpm;
+  if (settings.mode === "build") return settings.build.bpm;
   return settings.oco.startBpm;
 }
 function primeDisplay() {
@@ -1190,6 +1224,7 @@ function primeDisplay() {
   renderPips(0);
   setBanner("", "");
   setStatus("Press Start — a four-beat count-in leads you in.");
+  showLayer(null); // an idle display shows the written rudiment, never a layer left over from a run
   clearCellHighlight();
   $("sticking").classList.remove("listening");
 }
@@ -1214,6 +1249,8 @@ function readAllFields() {
   settings.oco.peakBpm = clampField("ocoPeak");
   settings.oco.stepBpm = clampField("ocoStep");
   settings.oco.repsPerStep = clampField("ocoReps");
+  settings.build.bpm = clampField("buBpm");
+  settings.build.repsPerStep = clampField("buReps");
   persistSettings();
 }
 function setErr(m) { $("err").textContent = m; }
@@ -1260,6 +1297,7 @@ var MODE_HINT = {
   fixed: "Loop the rudiment at one tempo. Nudge the tempo while playing — the change lands at the next cycle.",
   ladder: "Step from start to end, up or down. Between tempos: four listen-only clicks at the NEW tempo.",
   oco: "Slow to the peak and back down, in steps. Tempo changes are seamless at a cycle boundary — watch for the warning.",
+  build: "Learn it in layers at one tempo: the hands alone, then the accents, then the flams, drags or buzz. Each layer changes at a cycle boundary — watch for the warning.",
 };
 function applyMode(mode) {
   stopIfActive();
@@ -1267,6 +1305,7 @@ function applyMode(mode) {
   $("settingsFixed").hidden = mode !== "fixed";
   $("settingsLadder").hidden = mode !== "ladder";
   $("settingsOco").hidden = mode !== "oco";
+  $("settingsBuild").hidden = mode !== "build";
   $("modeHint").textContent = MODE_HINT[mode];
   persistSettings();
   syncPlanPreview();
@@ -1355,6 +1394,7 @@ function renderSummary() {
   if (settings.mode === "fixed") mode = "Fixed " + settings.bpm + " BPM";
   else if (settings.mode === "ladder")
     mode = "Steps " + settings.ladder.startBpm + "\u2192" + settings.ladder.endBpm + " BPM";
+  else if (settings.mode === "build") mode = "Build up " + settings.build.bpm + " BPM";
   else mode = "Open\u2011Close\u2011Open " + settings.oco.startBpm + "\u2192" + settings.oco.peakBpm + " BPM";
   $("summaryTop").textContent = (r ? r.name : "Rudiment") + " \u00b7 " + (settings.lead === "L" ? "Left" : "Right") + " lead";
   $("summarySub").textContent = mode + " \u00b7 " + (SOUND_NAME[settings.sound] || "") +
@@ -1382,6 +1422,19 @@ function syncPlanPreview() {
   if (settings.mode === "fixed") {
     wrap.innerHTML = '<span class="rung">' + settings.bpm + ' BPM</span> <span class="hint">— loops until you stop it</span>';
     meta.textContent = "One cycle = " + live.pattern.cycleBeats + " beats · count-in first" + trade;
+    return;
+  }
+  if (settings.mode === "build") {
+    var labels = plan.stages.filter(function (st) { return st.kind === "play"; }).map(function (st) { return st.layerLabel; });
+    wrap.innerHTML = labels.map(function (l, i) {
+      return (i ? ' <span class="arrow">\u2192</span> ' : "") + '<span class="rung' + (i === labels.length - 1 ? " peak" : "") + '">' + l + "</span>";
+    }).join("") + ' <span class="hint">at ' + settings.build.bpm + " BPM</span>";
+    var bc = plan.stages.reduce(function (a, st) { return a + (st.kind === "play" ? st.blocks : 0); }, 0);
+    var byours = settings.turn ? bc * settings.turn / (1 + settings.turn) : 0;
+    meta.textContent = labels.length === 1
+      ? "Nothing to build up \u2014 this rudiment is already just the hands. " + bc + " cycles \u00b7 about " + fmtDuration(Core.totalSeconds(plan)) + " total"
+      : labels.length + " layers \u00b7 " + bc + " cycles" + (byours ? " (" + byours + " of them yours)" : "") +
+        " \u00b7 about " + fmtDuration(Core.totalSeconds(plan)) + " total" + trade;
     return;
   }
   var peak = Math.max.apply(null, plan.rungs);
@@ -1423,7 +1476,7 @@ function coerceSettings(raw) {
   if (!raw || typeof raw !== "object") return;
   if (Core.RUDIMENT_MAP[raw.rudimentId]) settings.rudimentId = raw.rudimentId;
   if (raw.lead === "R" || raw.lead === "L") settings.lead = raw.lead;
-  if (raw.mode === "fixed" || raw.mode === "ladder" || raw.mode === "oco") settings.mode = raw.mode;
+  if (raw.mode === "fixed" || raw.mode === "ladder" || raw.mode === "oco" || raw.mode === "build") settings.mode = raw.mode;
   if (typeof raw.cue === "boolean") settings.cue = raw.cue;
   if (typeof raw.pulse === "boolean") settings.pulse = raw.pulse;
   if (typeof raw.muted === "boolean") settings.muted = raw.muted;
@@ -1441,6 +1494,9 @@ function coerceSettings(raw) {
   if ((n = toInt(oco.peakBpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.oco.peakBpm = n;
   if ((n = toInt(oco.stepBpm, Core.STEP_MIN, Core.STEP_MAX)) !== null) settings.oco.stepBpm = n;
   if ((n = toInt(oco.repsPerStep, Core.REPS_MIN, Core.REPS_MAX)) !== null) settings.oco.repsPerStep = n;
+  var bu = raw.build || {};
+  if ((n = toInt(bu.bpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.build.bpm = n;
+  if ((n = toInt(bu.repsPerStep, Core.REPS_MIN, Core.REPS_MAX)) !== null) settings.build.repsPerStep = n;
 }
 function queryToRaw() {
   var q = new URLSearchParams(location.search);
@@ -1458,6 +1514,7 @@ function queryToRaw() {
     bpm: q.get("bpm"),
     ladder: { startBpm: q.get("ls"), endBpm: q.get("le"), stepBpm: q.get("lst"), repsPerStep: q.get("lr") },
     oco: { startBpm: q.get("os"), peakBpm: q.get("op"), stepBpm: q.get("ost"), repsPerStep: q.get("or") },
+    build: { bpm: q.get("bb"), repsPerStep: q.get("br") },
   };
 }
 function shareParams() {
@@ -1474,6 +1531,7 @@ function shareParams() {
     p.set("ls", settings.ladder.startBpm); p.set("le", settings.ladder.endBpm);
     p.set("lst", settings.ladder.stepBpm); p.set("lr", settings.ladder.repsPerStep);
   }
+  if (settings.mode === "build") { p.set("bb", settings.build.bpm); p.set("br", settings.build.repsPerStep); }
   if (settings.mode === "oco") {
     p.set("os", settings.oco.startBpm); p.set("op", settings.oco.peakBpm);
     p.set("ost", settings.oco.stepBpm); p.set("or", settings.oco.repsPerStep);
@@ -1539,6 +1597,7 @@ function describeDrill() {
   var mode = settings.mode === "fixed" ? "Fixed tempo, " + settings.bpm + " BPM"
     : settings.mode === "ladder" ? "Steps, " + settings.ladder.startBpm + " to " + settings.ladder.endBpm +
         " BPM by " + settings.ladder.stepBpm + ", " + reps(settings.ladder.repsPerStep)
+    : settings.mode === "build" ? "Build-up in layers, " + settings.build.bpm + " BPM, " + reps(settings.build.repsPerStep).replace("tempo", "layer")
     : "Open\u2013close\u2013open, " + settings.oco.startBpm + " up to " + settings.oco.peakBpm +
         " BPM by " + settings.oco.stepBpm + ", " + reps(settings.oco.repsPerStep);
   var extra = [];
@@ -1657,6 +1716,8 @@ function hydrateControls() {
   $("ocoPeak").value = settings.oco.peakBpm;
   $("ocoStep").value = settings.oco.stepBpm;
   $("ocoReps").value = settings.oco.repsPerStep;
+  $("buBpm").value = settings.build.bpm;
+  $("buReps").value = settings.build.repsPerStep;
   $("cueToggle").checked = settings.cue;
   $("pulseToggle").checked = settings.pulse;
   updateCueEnabled();
@@ -1673,6 +1734,7 @@ function hydrateControls() {
   $("settingsFixed").hidden = settings.mode !== "fixed";
   $("settingsLadder").hidden = settings.mode !== "ladder";
   $("settingsOco").hidden = settings.mode !== "oco";
+  $("settingsBuild").hidden = settings.mode !== "build";
   $("modeHint").textContent = MODE_HINT[settings.mode];
 }
 
@@ -1757,7 +1819,7 @@ function wireEvents() {
   };
   if (WIDE_STAGE.addEventListener) WIDE_STAGE.addEventListener("change", onStageWidth);
   else if (WIDE_STAGE.addListener) WIDE_STAGE.addListener(onStageWidth);
-  ["ladStart", "ladEnd", "ladStep", "ladReps", "ocoStart", "ocoPeak", "ocoStep", "ocoReps"]
+  ["ladStart", "ladEnd", "ladStep", "ladReps", "ocoStart", "ocoPeak", "ocoStep", "ocoReps", "buBpm", "buReps"]
     .forEach(function (id) { $(id).addEventListener("change", onModeFieldChanged); });
 
   // The pulse and downbeat cue are not structural: toggling them applies from

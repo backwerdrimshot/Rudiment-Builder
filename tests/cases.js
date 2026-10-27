@@ -1204,6 +1204,99 @@ function getCases(core) {
     assert.equal(core.dynamicScale("swell", pb), 1);
   }},
 
+  { name: "build-up layers: the last layer is the rudiment as written, for all 40", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      const layers = core.buildLayers(r);
+      assert.ok(layers.length >= 1 && layers.length <= 3, r.id + " layer count");
+      assert.equal(layers[0].id, "sticking", r.id + " opens on the hands");
+      const written = core.withLead(r, "R");
+      const last = core.withLayer(written, layers[layers.length - 1].id);
+      // A rudiment with nothing to add is its own hands-only layer; otherwise the last layer IS the written one.
+      assert.deepEqual(last.strokes.map(function (s) { return [s.slot, s.hand, !!s.accent, s.grace.length, !!s.buzz]; }),
+        written.strokes.map(function (s) { return [s.slot, s.hand, !!s.accent, s.grace.length, !!s.buzz]; }), r.id + " last layer");
+      layers.forEach(function (l) { assert.ok(l.label && l.hint, r.id + " " + l.id + " has words"); });
+    });
+  }},
+
+  { name: "build-up layers: each layer only removes, never changes hands or timing", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      ["R", "L"].forEach(function (lead) {
+        const full = core.withLead(r, lead);
+        ["sticking", "accents", "ornaments"].forEach(function (id) {
+          const l = core.withLayer(full, id);
+          assert.equal(l.strokes.length, full.strokes.length);
+          l.strokes.forEach(function (s, i) {
+            const f = full.strokes[i];
+            assert.equal(s.slot, f.slot); assert.equal(s.hand, f.hand);
+            assert.equal(s.diddle, f.diddle); assert.equal(s.duration, f.duration);
+            assert.ok(!s.accent || f.accent, "no invented accent");
+            assert.ok(s.grace.length <= f.grace.length, "no invented grace");
+            assert.ok(!s.buzz || f.buzz, "no invented buzz");
+          });
+        });
+      });
+    });
+    assert.throws(function () { core.withLayer(core.withLead(MAP["flam-tap"], "R"), "nonsense"); });
+  }},
+
+  { name: "build-up layers: hands only is flat, accents keep accents, ornaments keep flams; source untouched", fn: function (assert) {
+    const r = MAP["flam-tap"], full = core.withLead(r, "R");
+    assert.deepEqual(core.buildLayers(r).map(function (l) { return l.id; }), ["sticking", "accents", "ornaments"]);
+    assert.equal(core.buildLayers(r)[2].label, "Add the flams");
+    const h = core.withLayer(full, "sticking"), a = core.withLayer(full, "accents"), o = core.withLayer(full, "ornaments");
+    assert.ok(h.strokes.every(function (s) { return !s.accent && s.grace.length === 0 && !s.buzz; }));
+    assert.ok(a.strokes.some(function (s) { return s.accent; }) && a.strokes.every(function (s) { return s.grace.length === 0; }));
+    assert.ok(o.strokes.some(function (s) { return s.grace.length === 1; }));
+    assert.ok(full.strokes.some(function (s) { return s.accent; }) && full.strokes.some(function (s) { return s.grace.length === 1; }), "input unchanged");
+    const ev = core.expandPattern(h);
+    assert.ok(ev.every(function (e) { return e.velocity === core.VELOCITY.normal && e.graces.length === 0; }), "plays flat");
+    assert.equal(core.buildLayers(MAP["single-stroke-roll"]).length, 1, "nothing to add");
+    assert.deepEqual(core.buildLayers(MAP["multiple-bounce-roll"]).map(function (l) { return l.label; }), ["Hands only", "Add the buzz strokes"]);
+  }},
+
+  { name: "build plan: one stage per layer at one tempo, count-in opens on the first layer", fn: function (assert) {
+    const pat = core.withLead(MAP["flam-tap"], "R");
+    const plan = core.buildPlan("build", { bpm: 70, repsPerStep: 3, turn: 0 }, pat);
+    assert.equal(plan.mode, "build");
+    assert.deepEqual(plan.rungs, [70]);
+    assert.deepEqual(plan.layers, ["sticking", "accents", "ornaments"]);
+    assert.deepEqual(plan.stages.map(function (s) { return s.kind; }), ["count-in", "play", "play", "play"]);
+    assert.deepEqual(plan.stages.map(function (s) { return s.layer; }), ["sticking", "sticking", "accents", "ornaments"]);
+    plan.stages.filter(function (s) { return s.kind === "play"; }).forEach(function (s, i) {
+      assert.equal(s.bpm, 70); assert.equal(s.blocks, 3); assert.equal(s.stepIndex, i); assert.equal(s.stepCount, 3);
+      assert.ok(s.layerLabel);
+    });
+    assert.ok(core.totalSeconds(plan) > 0);
+    assert.throws(function () { core.buildPlan("build", { bpm: 10, repsPerStep: 3 }, pat); });
+    assert.throws(function () { core.buildPlan("build", { bpm: 70, repsPerStep: 0 }, pat); });
+  }},
+
+  { name: "build plan: Your turn trades per layer, and the machine walks layers in order", fn: function (assert) {
+    const pat = core.withLead(MAP["single-paradiddle"], "R");
+    const plan = core.buildPlan("build", { bpm: 80, repsPerStep: 2, turn: 1 }, pat);
+    assert.equal(plan.stages[1].blocks, 4, "2 reps x (1 + turn 1)");
+    const pb = core.createPracticePlayback(plan);
+    assert.equal(pb.currentLayer(), "sticking", "count-in carries the first layer");
+    pb.advanceBlock();
+    const seen = [];
+    for (let i = 0; i < 8; i++) { seen.push(pb.currentLayer()); if (pb.advanceBlock() === "done") break; }
+    assert.deepEqual(seen, ["sticking", "sticking", "sticking", "sticking", "accents", "accents", "accents", "accents"]);
+    assert.ok(pb.done);
+    pb.reset(); pb.advanceBlock(); for (let i = 0; i < 3; i++) pb.advanceBlock();
+    assert.ok(pb.isFinalBlockOfStage(), "fourth block of the hands-only stage is its last");
+    assert.equal(pb.currentLayer(), "sticking");
+    assert.equal(pb.nextLayer(), "accents", "so the app can warn about the layer change");
+  }},
+
+  { name: "build plan: a rudiment with nothing to add is one stage, and the log says layers", fn: function (assert) {
+    const plan = core.buildPlan("build", { bpm: 90, repsPerStep: 4 }, core.withLead(MAP["single-stroke-roll"], "R"));
+    assert.equal(plan.stages.length, 2);
+    const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "build",
+      rungs: [70], reps: 3, layers: ["Hands only", "Add the accents", "Add the flams"], best: null, link: "" });
+    assert.ok(text.includes("Practice: Build-up, 3 reps at each layer"));
+    assert.ok(text.includes("Layers completed: 3 (Hands only, Add the accents, Add the flams) at 70 BPM"));
+  }},
+
   { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
     const pb = core.createPracticePlayback(core.buildPlan("ladder",
       { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));
