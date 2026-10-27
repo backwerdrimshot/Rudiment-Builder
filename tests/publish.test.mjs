@@ -9,10 +9,11 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import http from "node:http";
-import { extractReadmeCheck, liveVersion, verifyLive } from "../tools/publish.mjs";
+import { extractReadmeCheck, extractWranglerPin, liveVersion, verifyLive } from "../tools/publish.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WORKFLOW = fs.readFileSync(path.join(ROOT, ".github/workflows/readme-standard.yml"), "utf8");
+const DEPLOY = fs.readFileSync(path.join(ROOT, ".github/workflows/workers.yml"), "utf8");
 
 test("the README standard script is read out of the workflow, expressions filled in", () => {
   const script = extractReadmeCheck(WORKFLOW);
@@ -94,4 +95,16 @@ test("verifying the live site refuses an old build, a broken answer and an unrea
     await assert.rejects(verifyLive("2026-10-27.6", broken.url, { tries: 2, delayMs: 5 }), /\(unreadable\)/);
   } finally { await old.close(); await broken.close(); }
   await assert.rejects(verifyLive("2026-10-27.6", "http://127.0.0.1:9/", { tries: 2, delayMs: 5 }), /\(unreadable\)/);
+});
+
+test("the fallback deploys with the exact wrangler version the deploy workflow pins", () => {
+  const pin = extractWranglerPin(DEPLOY);
+  assert.match(pin, /^\d+\.\d+\.\d+$/);
+  assert.ok(DEPLOY.includes(`wrangler@${pin} deploy`), "it is the version actually in workers.yml");
+  assert.equal(extractWranglerPin("run: npx --yes wrangler@4.131.0 deploy"), "4.131.0");
+  assert.equal(extractWranglerPin("run: npx wrangler@5.0.2 deploy --dry-run"), "5.0.2");
+  assert.throws(() => extractWranglerPin("run: npx --yes wrangler@latest deploy"), /no pinned/);
+  assert.throws(() => extractWranglerPin("run: npx wrangler deploy"), /no pinned/);
+  const source = fs.readFileSync(path.join(ROOT, "tools/publish.mjs"), "utf8");
+  assert.ok(!/wrangler@latest/.test(source.replace(/`wrangler@latest`/g, "")), "publish.mjs never asks for wrangler@latest");
 });

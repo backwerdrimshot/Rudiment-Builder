@@ -57,6 +57,17 @@ export function extractReadmeCheck(workflowText) {
   return script;
 }
 
+/* The wrangler version the deploy workflow pins. This repository has no
+   lockfile, so an unpinned `wrangler@latest` would change the deploy tool, even
+   across a major version, with no change to the repository. The fallback uses
+   the same pin as workers.yml, read from it rather than copied. */
+export const DEPLOY_WORKFLOW = ".github/workflows/workers.yml";
+export function extractWranglerPin(workflowText) {
+  const m = /npx\s+(?:--yes\s+)?wrangler@(\d+\.\d+\.\d+)\s+deploy\b/.exec(workflowText);
+  if (!m) throw new Error(`no pinned "wrangler@x.y.z deploy" command in ${DEPLOY_WORKFLOW}`);
+  return m[1];
+}
+
 function run(cmd, args, opts = {}) {
   return spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", ...opts });
 }
@@ -142,8 +153,9 @@ async function main() {
   }
 
   if (!process.env.CLOUDFLARE_API_TOKEN) throw new Error("CLOUDFLARE_API_TOKEN is not set; cannot deploy.");
-  step(`wrangler deploy (build ${caps.version})`, () => {
-    const r = run("npx", ["--yes", "wrangler@latest", "deploy"], { stdio: "inherit", env: { ...process.env, CI: "1" } });
+  const pin = extractWranglerPin(fs.readFileSync(path.join(ROOT, DEPLOY_WORKFLOW), "utf8"));
+  step(`wrangler@${pin} deploy (build ${caps.version})`, () => {
+    const r = run("npx", ["--yes", `wrangler@${pin}`, "deploy"], { stdio: "inherit", env: { ...process.env, CI: "1" } });
     if (r.status !== 0) throw new Error(`wrangler deploy failed (exit ${r.status}).`);
   });
   process.stdout.write("\n== live site reports the new build\n");

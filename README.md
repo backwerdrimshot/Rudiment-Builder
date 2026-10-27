@@ -297,7 +297,7 @@ checkout of exactly `origin/main`, both test suites, the README standard script
 (read out of `readme-standard.yml` and run as written, so the two cannot
 drift), and a fresh build that must match the committed `dist/`. It publishes
 nothing on its own. `node tools/publish.mjs --deploy` then runs
-`wrangler deploy` (it needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`)
+`wrangler deploy` with the exact version `workers.yml` pins (it needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`)
 and confirms the live site's `capabilities.json` reports the new build. It
 touches no domain, DNS or route. When Actions works again, the workflow is the
 normal path and this is the fallback.
