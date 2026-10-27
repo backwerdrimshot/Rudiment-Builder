@@ -84,10 +84,10 @@ export function liveVersion(json) {
   return v;
 }
 
-async function verifyLive(distVersion, launchUrl) {
+export async function verifyLive(distVersion, launchUrl, { tries = 6, delayMs = 5000 } = {}) {
   const url = new URL("capabilities.json", launchUrl);
   let seen = "(unreadable)";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < tries; i++) {
     try {
       url.searchParams.set("cb", String(Date.now()));
       const res = await fetch(url, { headers: { "cache-control": "no-cache" } });
@@ -96,7 +96,7 @@ async function verifyLive(distVersion, launchUrl) {
         if (seen === distVersion) return seen;
       }
     } catch { /* retry */ }
-    await new Promise((r) => setTimeout(r, 5000));
+    if (i < tries - 1) await new Promise((r) => setTimeout(r, delayMs));
   }
   throw new Error(`the live site reports ${seen}, not ${distVersion}. The deploy may not have taken effect.`);
 }

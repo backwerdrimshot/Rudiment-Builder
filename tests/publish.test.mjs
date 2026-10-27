@@ -8,7 +8,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { extractReadmeCheck, liveVersion } from "../tools/publish.mjs";
+import http from "node:http";
+import { extractReadmeCheck, liveVersion, verifyLive } from "../tools/publish.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WORKFLOW = fs.readFileSync(path.join(ROOT, ".github/workflows/readme-standard.yml"), "utf8");
@@ -60,4 +61,37 @@ test("the live version is read from capabilities.json and nothing else is truste
   assert.throws(() => liveVersion('{"version":""}'), /no version/);
   assert.throws(() => liveVersion('{"version":7}'), /no version/);
   assert.throws(() => liveVersion("<html>"), SyntaxError);
+});
+
+function serve(handler) {
+  return new Promise((resolve) => {
+    const server = http.createServer(handler).listen(0, "127.0.0.1", () => resolve({
+      url: `http://127.0.0.1:${server.address().port}/`,
+      close: () => new Promise((r) => server.close(r)),
+    }));
+  });
+}
+
+test("verifying the live site accepts the new build, even after a stale answer or two", async () => {
+  let hits = 0;
+  const site = await serve((req, res) => {
+    hits++;
+    assert.match(req.url, /^\/capabilities\.json\?cb=\d+$/, "cache-busted so an edge copy cannot answer");
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ version: hits < 3 ? "2026-10-18.3" : "2026-10-27.6" }));
+  });
+  try {
+    assert.equal(await verifyLive("2026-10-27.6", site.url, { tries: 5, delayMs: 10 }), "2026-10-27.6");
+    assert.equal(hits, 3);
+  } finally { await site.close(); }
+});
+
+test("verifying the live site refuses an old build, a broken answer and an unreachable site", async () => {
+  const old = await serve((req, res) => res.end(JSON.stringify({ version: "2026-10-18.3" })));
+  const broken = await serve((req, res) => { res.statusCode = 500; res.end("nope"); });
+  try {
+    await assert.rejects(verifyLive("2026-10-27.6", old.url, { tries: 2, delayMs: 5 }), /reports 2026-10-18\.3, not 2026-10-27\.6/);
+    await assert.rejects(verifyLive("2026-10-27.6", broken.url, { tries: 2, delayMs: 5 }), /\(unreadable\)/);
+  } finally { await old.close(); await broken.close(); }
+  await assert.rejects(verifyLive("2026-10-27.6", "http://127.0.0.1:9/", { tries: 2, delayMs: 5 }), /\(unreadable\)/);
 });
