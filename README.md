@@ -16,12 +16,17 @@ hears and watches the stroke sequence, and practices it three ways:
 - **Open–close–open** — slow → peak → slow as a predictable state sequence
   (closing / peak / opening back up), with seamless tempo changes at cycle
   boundaries and an on-screen warning before each change.
+- **Build up** — learn a rudiment in layers at one tempo: the hands alone, then
+  the accents, then the flams, drags or buzz. Layers come from the rudiment's own
+  data (each only removes what is written, and the last is the rudiment as
+  written), change at a cycle boundary with a warning, and a rudiment with
+  nothing to add says so.
 
 No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-16.3`
+- **Build:** `2026-10-27.8`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -42,7 +47,6 @@ purpose, and are Taylor's to move:
 | The public hostname, DNS record and Workers route | Cloudflare work, and see the route caveat below |
 | The GitHub repository name | A GitHub setting, not a file |
 | `STORE_KEY` in `js/rudiment-app.js` | Renaming it factory-resets every existing user's saved settings |
-| `APP` in the visit counter (`index.html`) | A new key restarts the running total from zero |
 | `assets/notation/` | Vendored; regenerate upstream, do not edit here |
 
 A hostname move is the clean moment to fix the route compromise described under
@@ -112,6 +116,57 @@ the app (see *Sources & educational lineage* below).
   and total time count it, a fixed-mode tempo change waits for the app's next
   cycle so a new tempo is always heard before it is played alone, and a share
   link carries it
+- **Dynamics** — practice Full (the original loudness), Medium, Soft, or Swell,
+  which rises from soft to full and back across each tempo's reps (two reps
+  play soft, then full). The core decides the level from the playback position;
+  a change lands on the next stroke without stopping, and a share link carries it
+- **Quiz: name that rudiment** (in Settings) — ten multiple-choice questions, four
+  names each, one right: **by ear** (the written rudiment is played, right lead,
+  at its default tempo, in the chosen stroke sound) or **from the notation** (the
+  drawn card, with a description that leaves the name out), or mixed, drawn from
+  all 40, a level, or the rudiments marked learned. Wrong names come from the
+  same family first. A right or wrong answer shows its name, and an ear question
+  then shows what was heard written down; the results list what was missed with a
+  **Practice it** button. Nothing is graded against playing and the score is not
+  stored. No two rudiments are identical on the data, so every question has one
+  right answer.
+- **My progress** (in Settings) — the student's own record for the chosen
+  rudiment and hand, on the device only. Each **Clean at** mark is also kept as
+  a dated entry (the day's best, newest 90 kept) and drawn as a small line chart
+  with the goal as a dashed line; the student can set a **goal tempo** per hand
+  and see how near their best clean mark is; and can mark a rudiment **"I can
+  play this"**. Every one of these is the student's claim: the app never
+  listens. **Copy my progress** copies a plain-text summary that names no one.
+  Clearing a rudiment's best also clears its history; the goal and the learned
+  mark stay.
+- **Learning path** (in the rudiment chooser) — "N of 40 learned" with a
+  **Next up** pointer and a **Go to next** button, ✓ Learned and Next up badges on
+  the cards, and an All / To learn / Learned filter. The order is derived from
+  the data alone (level, then PAS number), so it invents no teaching sequence;
+  a curated order would replace one function (`Core.learningPath`). When a goal
+  is set, the chooser also names the rudiment and hand closest to it.
+- **Routine** (in Settings) — save up to 8 drills and play them in order, each
+  with its own count-in: "Add this drill" saves the drill as it is set up
+  (rudiment, hand, mode and numbers, Your turn, dynamics), and a Fixed drill is
+  given a length in reps because it would otherwise loop forever. A routine
+  borrows the settings while it runs and puts the student's own back when it
+  ends or when anything structural is touched, and nothing it plays is saved as
+  the student's settings. It finishes with one **Copy practice log** covering
+  every drill. The saved routine has its own storage key; the Assignment dialog
+  can carry it in the link and QR code (`routine=`, a compact form the app
+  re-validates on the way in), and a routine opened from a link is used for that
+  visit without overwriting the saved one
+- **Assignment** (in Settings, beside Copy link) — a teacher sets a drill and an
+  optional **goal tempo** and gets a link, a **QR code** and a **printable
+  sheet**. The code encodes the shop's short link
+  `backwerdrhythmshop.com/rudiment-room` with the drill's settings in the query
+  (the site redirects to the app and keeps the query), so a printed sheet
+  survives a hostname move, as ADR 0271 in praxis-platform requires. A student
+  who opens it sees the assigned goal, and the practice log names it. The app
+  never listens: reaching the goal is still the student's own Clean mark
+- **Class view** — large sticking and tempo with the setup panels out of the
+  way, for a projector or a shared screen. Layout only; the drill and transport
+  are untouched
 - Optional **pulse under the sticking** (a soft click on every beat, so the
   grid never disappears through rests and ringing releases) or a lighter
   downbeat-only cue
@@ -128,6 +183,10 @@ the app (see *Sources & educational lineage* below).
   in the rudiment panel and on its card in the chooser. The app never listens —
   "clean" is the student's call — and the log stays on the device. In Fixed
   mode, **Start at your best** sets the tempo to that best for the current hand
+- **Copy practice log** appears when a Steps or Open–close–open run finishes:
+  plain text for a class assignment with the date, rudiment, leading hand, the
+  tempo steps completed, the best clean tempo the student marked, and the drill
+  link. It names no one, sends nothing, and says the app does not grade
 - **Works offline** after one visit: a service worker (`sw.js`) stores the
   whole build — page, scripts, fonts, all 40 notation cards and the marching
   snare, about 1.3 MB — and answers from it with no connection, share links
@@ -184,12 +243,14 @@ assets/notation/      vendored notation (see its README); only rudiments/*.svg
                       and the Bravura license ship, via NOTATION_ASSETS
 assets/audio/         the marching snare takes (generated by
                       tools/pack-marching-snare.py) + their CC0 credit
+assets/vendor/        qrcode-generator (MIT) for the assignment QR code
 js/rudiment-data.js   frozen rudiment records — data only
 js/rudiment-core.js   validation · withLead (leading hand) · expandPattern ·
-                      buildPlan (fixed/ladder/oco) · playback position machine
+                      buildPlan (fixed/ladder/oco) · playback position machine · dynamics scale
 js/rudiment-app.js    Web Audio look-ahead scheduler · voices · visual queue ·
                       transport · settings persistence + share links
 tests/                cases.js (shared) · test.html (browser) · core.test.cjs (Node)
+tools/                pack-marching-snare.py · publish.mjs (check and publish without Actions)
 sw.js                 offline service worker; build.mjs writes dist/sw.js with
                       the build number and the files to store
 serve.ps1             tiny PowerShell dev server
@@ -203,8 +264,10 @@ timestamped visual queue drives the display at hear-time.
 
 ## Privacy and accessibility
 
-Rudiment Room requires no account or backend. Settings and the best-clean-tempo log stay
-in the browser's local storage, and neither travels in a share link. For offline use the
+Rudiment Room requires no account or backend. Settings, the saved routine, the progress record (history, goals, learned marks) and the
+best-clean-tempo log stay in the browser's local storage. The best-tempo log and the
+progress record never travel in a link; a routine
+travels only when the teacher chooses to include it in an assignment link. For offline use the
 browser also keeps a copy of the app's own files (Cache Storage, via `sw.js`); it holds
 nothing about the student and sends nothing anywhere. One script does load: a Cloudflare Web Analytics beacon that counts page views
 and nothing else — no cookies, no fingerprinting, no following anyone to another site.
@@ -224,6 +287,20 @@ fix.
 a successful **README standard** run against `main`, re-runs both test suites,
 rebuilds `dist/` and proves the committed copy matches what `build.mjs` produces
 from that commit, then deploys the exact commit CI validated.
+
+**Publishing when Actions cannot run.** The workflow depends on GitHub's hosted
+runners, and a hold on the account (a failed payment, or an Actions spending
+limit) stops them before any step starts: the run fails in a second or two with
+0 billable milliseconds and an empty log, which is how it looked on 2026-10-27.
+`node tools/publish.mjs` does the workflow's checks on your own machine: a clean
+checkout of exactly `origin/main`, both test suites, the README standard script
+(read out of `readme-standard.yml` and run as written, so the two cannot
+drift), and a fresh build that must match the committed `dist/`. It publishes
+nothing on its own. `node tools/publish.mjs --deploy` then runs
+`wrangler deploy` with the exact version `workers.yml` pins (it needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`)
+and confirms the live site's `capabilities.json` reports the new build. It
+touches no domain, DNS or route. When Actions works again, the workflow is the
+normal path and this is the fallback.
 
 This section previously read *"There is no deploy workflow, and none is
 wanted."* That was a deliberate choice and it had a cost nobody could see from
@@ -280,10 +357,10 @@ that happens, the route is load-bearing: do not remove it.
 
 ## Support and feedback
 
-- **Report a problem** emails `support@backwerdrhythmshop.com`.
-- **Request a feature** emails `feedback@backwerdrhythmshop.com`.
-- Both controls are available in the app footer and prefill the app name, build,
-  page URL, and browser details to make follow-up easier.
+- **Report a problem** opens the shop's problem form in a new tab, with the app name, build, and page address filled in. The page address is the same as a share link: the rudiment and its settings. Saved best tempos stay in the browser and are not sent.
+- **Request a feature** opens the shop's feature form the same way.
+- **Email support** (`support@backwerdrhythmshop.com`) and **Email feedback** (`feedback@backwerdrhythmshop.com`) are plain email links in the Feedback dialog, always available. They never depend on a form, and no form is required to send a message.
+- If a form is ever unset, its form control falls back to the matching email address.
 
 ## Sources & educational lineage
 
@@ -313,6 +390,16 @@ The Marching sound is the solo snare from [MuseScore Drumline](https://github.co
 programming by S. Christian Collins; `assets/audio/LICENSE-marching-snare.txt`
 says what was done to it.
 
+The assignment QR code is drawn by [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)
+2.0.4 (MIT, Kazuhiko Arase), vendored in `assets/vendor/qrcode-generator/` with its
+license. "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
+
+**Praxis ids.** Praxis publishes the 40 rudiments as permanent skill ids,
+`rudiment.<name>.core`. 38 of this app's ids already match. The two that differ
+are mapped by `Core.PRAXIS_ALIAS` (`double-stroke-open-roll` is Praxis's
+`double-stroke-roll`; `single-paradiddle-diddle` is `paradiddle-diddle`), and
+`Core.praxisSkillId(id)` returns the skill id. Neither project renames anything.
+
 Rudiment Room is an independent Backwerd Rhythm Shop project and is not
 affiliated with or endorsed by the Percussive Arts Society or N.A.R.D.
 
@@ -324,17 +411,6 @@ Eleven free apps, all listed at
 Pulse Pocket · Grid Board · Click Drop · Stick Lab · Rhythm Repper ·
 Count It · Mallet Board · Mallet Map · Scale Trail · Drum Map ·
 **Rudiment Room**
-
-## Visit counter
-
-The footer shows a running visit count next to the build stamp. It comes from our own
-Cloudflare Worker at `counter.backwerdrhythmshop.com`, which stores exactly one thing:
-an integer per app. No IP, no user agent, no cookie, no timestamp — nothing tied to a
-visitor. Counted once per browser session; localhost and file:// only read the number
-so development never inflates it.
-
-It is progressive enhancement. If the endpoint is offline, blocked, or not yet
-deployed, the footer renders exactly as it did before and the app is unaffected.
 
 ## Follow
 
@@ -352,4 +428,4 @@ These three links also appear as icon buttons in the app footer.
 
 ## Compact practice workspace
 
-The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions and About contains the app, support, and build information. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.
+The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions, and About contains the app name, its build, More apps, the guide and the copyright. The support links are in the footer and the Feedback dialog. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.

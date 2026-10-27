@@ -23,13 +23,28 @@ const Data = (typeof module !== "undefined" && module.exports)
 if (!Data) throw new Error("rudiment-core.js needs rudiment-data.js loaded first");
 
 /* ---------------- constants ---------------- */
-const HANDS = { R: true, L: true };
-const FAMILIES = { Roll: true, Diddle: true, Flam: true, Drag: true };
-const LEAD_BEHAVIORS = { mirror: true, fixed: true };
-const MODES = { fixed: true, ladder: true, oco: true };
+/* Lookup tables have no prototype. Every one of them is read as TABLE[key] with
+   a key that may come from storage or a link, and on an ordinary object a key
+   like "toString" or "constructor" finds an inherited function and passes a
+   truthiness check. A table built here simply does not have those keys. */
+function table(o) { return Object.assign(Object.create(null), o); }
+
+const HANDS = table({ R: true, L: true });
+const FAMILIES = table({ Roll: true, Diddle: true, Flam: true, Drag: true });
+const LEAD_BEHAVIORS = table({ mirror: true, fixed: true });
+const MODES = table({ fixed: true, ladder: true, oco: true, build: true });
 
 // Playback loudness tiers; a stroke's optional `velocity` field overrides.
 const VELOCITY = { accent: 1.0, normal: 0.62, grace: 0.2 };
+
+/* Dynamics: how loud the student's practice is, as a multiplier on every
+   stroke's velocity. "full" is the app's original loudness and changes nothing.
+   "swell" rises from soft to full and back across a stage's reps (or across 8
+   reps in endless Fixed mode), so a stage reads as a crescendo then a
+   decrescendo; a two-rep stage plays soft then full, and one rep plays full. A scale is always in (0, 1], which keeps velocity valid. */
+const DYNAMICS = table({ full: 1, medium: 0.75, soft: 0.5, swell: null });
+const SWELL_MIN = 0.45;
+const SWELL_ENDLESS_REPS = 8;
 
 const BPM_MIN = 30, BPM_MAX = 300;
 const STEP_MIN = 1, STEP_MAX = 60;
@@ -234,6 +249,56 @@ function notationCard(rudiment) {
   return "assets/notation/rudiments/rudiment-" + n + "-" + rudiment.id + ".svg";
 }
 
+/* ---------------- build-up layers ----------------
+   "Build it up" teaches a rudiment in layers, each one the written rudiment
+   with less of it switched on: the hands alone (every stroke the same), then
+   the accents, then the ornaments (flams, drags, buzz) — which is the rudiment
+   as written. A layer exists only if the rudiment has something to add, and the
+   last layer is always the rudiment exactly as written. Layers are derived from
+   the record; nothing is stored per rudiment, and nothing is invented: a layer
+   only ever removes what the data already says. */
+const LAYER_IDS = table({ sticking: true, accents: true, ornaments: true });
+function hasAccent(r) { return r.strokes.some(function (s) { return !!s.accent; }); }
+function ornamentWord(r) {
+  let flam = false, drag = false, buzz = false;
+  r.strokes.forEach(function (s) {
+    const g = (s.grace || []).length;
+    if (g === 1) flam = true;
+    if (g >= 2) drag = true;
+    if (s.buzz) buzz = true;
+  });
+  const kinds = (flam ? 1 : 0) + (drag ? 1 : 0) + (buzz ? 1 : 0);
+  if (kinds === 0) return null;
+  if (kinds > 1) return "ornaments";
+  return flam ? "flams" : drag ? "drags" : "buzz strokes";
+}
+function buildLayers(rudiment) {
+  const layers = [{ id: "sticking", label: "Hands only",
+    hint: "Just the sticking, every stroke the same." }];
+  if (hasAccent(rudiment))
+    layers.push({ id: "accents", label: "Add the accents",
+      hint: "The same sticking, now with the accents." });
+  const word = ornamentWord(rudiment);
+  if (word)
+    layers.push({ id: "ornaments", label: "Add the " + word,
+      hint: "The full rudiment, " + word + " included." });
+  return layers;
+}
+// A copy of a playable pattern with the layer applied. "ornaments" is the
+// pattern as written. Never mutates the pattern it is given.
+function withLayer(pattern, layer) {
+  if (!LAYER_IDS[layer]) throw new Error('unknown layer "' + layer + '"');
+  const keepAccents = layer !== "sticking";
+  const keepOrnaments = layer === "ornaments";
+  const out = Object.assign({}, pattern, { strokes: pattern.strokes.map(function (s) {
+    const c = Object.assign({}, s, { grace: s.grace.map(function (g) { return { hand: g.hand }; }) });
+    if (!keepAccents) { c.accent = false; c.velocity = undefined; }
+    if (!keepOrnaments) { c.grace = []; c.buzz = false; }
+    return c;
+  }) });
+  return out;
+}
+
 /* ---------------- expansion ----------------
    Pattern -> ordered playable events, positioned in BEATS from the cycle
    start (tempo-free: changing BPM rescales seconds, never this list).
@@ -426,13 +491,32 @@ function buildPlan(mode, settings, pattern) {
 
   if (mode === "fixed") {
     const bpm = intIn(settings.bpm, BPM_MIN, BPM_MAX, "bpm");
+    // Fixed mode loops until stopped, unless a routine gives it a length.
+    const fixedReps = settings.reps === undefined ? null : intIn(settings.reps, REPS_MIN, REPS_MAX, "reps");
     return { mode: mode, turn: turn, rungs: [bpm], stages: [
       listen("count-in", bpm, 0, 1, "steady"),
-      play(bpm, null, 0, 1, "steady"),
+      play(bpm, fixedReps, 0, 1, "steady"),
     ]};
   }
 
   const reps = intIn(settings.repsPerStep, REPS_MIN, REPS_MAX, "repsPerStep");
+
+  if (mode === "build") {
+    // One tempo, one stage per layer, each the same number of reps. Layers
+    // change seamlessly at a cycle boundary, so there are no transition
+    // blocks; the count-in opens on the first layer.
+    const bpm = intIn(settings.bpm, BPM_MIN, BPM_MAX, "bpm");
+    const layers = buildLayers(Data.RUDIMENT_MAP[pattern.rudimentId]);
+    const named = function (stage, layer) {
+      stage.layer = layer.id; stage.layerLabel = layer.label; return stage;
+    };
+    const stages = [named(listen("count-in", bpm, 0, layers.length, "building"), layers[0])];
+    layers.forEach(function (layer, i) {
+      stages.push(named(play(bpm, reps, i, layers.length, "building"), layer));
+    });
+    return { mode: mode, turn: turn, rungs: [bpm], layers: layers.map(function (l) { return l.id; }),
+             stages: stages };
+  }
 
   if (mode === "ladder") {
     const rungs = buildLadderRungs(settings);
@@ -517,6 +601,11 @@ function createPracticePlayback(plan) {
     },
 
     // BPM of the next stage the student PLAYS (skips click-only stages).
+    // Build-up: the layer being played, and the layer the next stage plays.
+    // null outside build-up mode.
+    currentLayer() { return pb.currentStage().layer || null; },
+    nextLayer() { const n = pb.nextStage(); return n && n.layer ? n.layer : null; },
+
     nextPlayedBpm() {
       for (let i = pb.stageIndex + 1; i < stages.length; i++)
         if (stages[i].kind === "play") return stages[i].bpm;
@@ -583,6 +672,38 @@ function createPracticePlayback(plan) {
   return pb;
 }
 
+/* ---------------- dynamics ----------------
+   dynamicScale picks the multiplier for the stroke about to sound. It reads
+   only the playback's position (rep within the stage), so pause, resume and
+   restore need to remember nothing, and a mid-play change of dynamics takes
+   effect on the next stroke scheduled. Anything unrecognized plays at full. */
+function dynamicScale(dynamics, pb) {
+  if (!Object.prototype.hasOwnProperty.call(DYNAMICS, dynamics)) return 1;
+  if (dynamics !== "swell") return DYNAMICS[dynamics];
+  const reps = pb.repsInStage();
+  const n = reps === null ? SWELL_ENDLESS_REPS : reps;
+  if (n < 2) return 1;
+  const r = (pb.repNumber() - 1) % n;
+  if (n === 2) return r === 0 ? SWELL_MIN : 1; // too short to fall back: soft, then full
+  const peak = 1 - Math.abs((2 * r) / (n - 1) - 1); // 0 at both ends, 1 in the middle
+  return SWELL_MIN + (1 - SWELL_MIN) * peak;
+}
+function scaleVelocity(velocity, scale) { return velocity * scale; }
+
+/* ---------------- Praxis skill ids ----------------
+   Praxis publishes all 40 rudiments as permanent skill ids,
+   rudiment.<name>.core (praxis-platform data/rudiments/pas-40.json). 38 of
+   this app's ids already match. These two differ, both ids are frozen on their
+   side, and neither project renames anything, so this map is the whole bridge. */
+const PRAXIS_ALIAS = {
+  "double-stroke-open-roll": "double-stroke-roll",
+  "single-paradiddle-diddle": "paradiddle-diddle",
+};
+function praxisSkillId(rudimentId) {
+  if (!Data.RUDIMENT_MAP[rudimentId]) throw new Error('unknown rudiment "' + rudimentId + '"');
+  return "rudiment." + (PRAXIS_ALIAS[rudimentId] || rudimentId) + ".core";
+}
+
 /* ---------------- best clean tempo (the student's own log) ----------------
    The fastest tempo a student says they played a rudiment cleanly, kept per
    leading hand. "Clean" is theirs to judge: the app never listens, so a mark
@@ -635,6 +756,382 @@ function clearBest(log, rudimentId) {
   return next;
 }
 
+/* ---------------- practice log ----------------
+   Plain text a student pastes into a class assignment after a finished run.
+   It carries what the app knows (rudiment, hand, the tempo steps it played,
+   the drill link) and the best clean tempo the student marked, labelled as
+   theirs. No name, and nothing is sent.
+     run: { date, rudimentId, lead, mode ("ladder"|"oco"), rungs, reps, best, link }
+   `best` is { bpm, date } from the best log, or null. */
+const LOG_MODE = table({ fixed: "Fixed tempo", ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" });
+/* ---------------- progress ----------------
+   Everything a student keeps about their own practice, on the device only:
+     history  dated "clean at" marks, one per day per rudiment per hand (the
+              day's best), newest HISTORY_KEEP kept
+     goals    the student's own goal tempo per rudiment per hand
+     learned  rudiments the student says they can play, with the day marked
+   The app never listens, so each of these is a claim, exactly like the best
+   clean tempo. It sits beside that log rather than replacing it, which keeps
+   the all-time best even after old history is trimmed. Every function returns a
+   new object and none mutates its input; sanitizeProgress is what stands
+   between the page and whatever storage hands back. */
+const HISTORY_KEEP = 90;
+function emptyProgress() { return { history: {}, goals: {}, learned: {} }; }
+function validDay(d) { return typeof d === "string" && ISO_DAY.test(d); }
+function validBpm(n) { return Number.isInteger(n) && n >= BPM_MIN && n <= BPM_MAX; }
+function tidyHistory(list) {
+  const byDay = {};
+  list.forEach(function (e) {
+    if (e && validDay(e.date) && validBpm(e.bpm) && (!byDay[e.date] || e.bpm > byDay[e.date])) byDay[e.date] = e.bpm;
+  });
+  return Object.keys(byDay).sort().slice(-HISTORY_KEEP).map(function (d) { return { date: d, bpm: byDay[d] }; });
+}
+function sanitizeProgress(raw) {
+  const out = emptyProgress();
+  if (!raw || typeof raw !== "object") return out;
+  const known = function (id) { return Object.prototype.hasOwnProperty.call(Data.RUDIMENT_MAP, id); };
+  if (raw.history && typeof raw.history === "object") Object.keys(raw.history).forEach(function (id) {
+    if (!known(id) || !raw.history[id] || typeof raw.history[id] !== "object") return;
+    ["R", "L"].forEach(function (lead) {
+      const list = Array.isArray(raw.history[id][lead]) ? tidyHistory(raw.history[id][lead]) : [];
+      if (list.length) (out.history[id] = out.history[id] || {})[lead] = list;
+    });
+  });
+  if (raw.goals && typeof raw.goals === "object") Object.keys(raw.goals).forEach(function (id) {
+    if (!known(id) || !raw.goals[id] || typeof raw.goals[id] !== "object") return;
+    ["R", "L"].forEach(function (lead) {
+      if (validBpm(raw.goals[id][lead])) (out.goals[id] = out.goals[id] || {})[lead] = raw.goals[id][lead];
+    });
+  });
+  if (raw.learned && typeof raw.learned === "object") Object.keys(raw.learned).forEach(function (id) {
+    if (known(id) && validDay(raw.learned[id])) out.learned[id] = raw.learned[id];
+  });
+  return out;
+}
+function checkProgressArgs(id, lead) {
+  if (!Data.RUDIMENT_MAP[id]) throw new Error("unknown rudiment " + id);
+  if (lead !== undefined && lead !== "R" && lead !== "L") throw new Error('lead must be "R" or "L"');
+}
+function recordClean(progress, id, lead, bpm, date) {
+  checkProgressArgs(id, lead);
+  intIn(bpm, BPM_MIN, BPM_MAX, "bpm");
+  if (!validDay(date)) throw new Error("date must be YYYY-MM-DD");
+  const next = sanitizeProgress(progress);
+  const list = ((next.history[id] || {})[lead] || []).concat([{ date: date, bpm: bpm }]);
+  next.history[id] = Object.assign({}, next.history[id]);
+  next.history[id][lead] = tidyHistory(list);
+  return next;
+}
+function setGoal(progress, id, lead, bpm) {
+  checkProgressArgs(id, lead);
+  const next = sanitizeProgress(progress);
+  if (bpm === null) {
+    if (next.goals[id]) {
+      delete next.goals[id][lead];
+      if (!Object.keys(next.goals[id]).length) delete next.goals[id];
+    }
+    return next;
+  }
+  intIn(bpm, BPM_MIN, BPM_MAX, "goal");
+  next.goals[id] = Object.assign({}, next.goals[id]);
+  next.goals[id][lead] = bpm;
+  return next;
+}
+function setLearned(progress, id, date) {
+  checkProgressArgs(id);
+  const next = sanitizeProgress(progress);
+  if (date === null) delete next.learned[id];
+  else {
+    if (!validDay(date)) throw new Error("date must be YYYY-MM-DD");
+    next.learned[id] = date;
+  }
+  return next;
+}
+// Forget one rudiment's dated marks. Goals and the learned mark are the
+// student's own statements and stay.
+function clearHistory(progress, id) {
+  checkProgressArgs(id);
+  const next = sanitizeProgress(progress);
+  delete next.history[id];
+  return next;
+}
+function historySeries(progress, id, lead) {
+  const h = progress && progress.history && progress.history[id] && progress.history[id][lead];
+  return Array.isArray(h) ? h.slice() : [];
+}
+// How near a hand is to its goal: { goal, best, pct, reached }, or null with no goal.
+function goalStatus(progress, bestLogIn, id, lead) {
+  const goal = progress && progress.goals && progress.goals[id] && progress.goals[id][lead];
+  if (!validBpm(goal)) return null;
+  const b = bestLogIn && bestLogIn[id] && bestLogIn[id][lead];
+  const best = b && validBpm(b.bpm) ? b.bpm : null;
+  return { goal: goal, best: best, pct: best === null ? 0 : Math.min(100, Math.floor(best * 100 / goal)),
+           reached: best !== null && best >= goal };
+}
+
+/* The learning path. Order comes from the data alone — level, then PAS number
+   — so it invents no pedagogy: a curated order is the owner's call, and would
+   replace this one function. */
+const LEVEL_RANK = table({ Beginner: 0, Intermediate: 1, Advanced: 2 });
+function learningPath() {
+  return Data.RUDIMENTS.slice().sort(function (a, b) {
+    const ra = LEVEL_RANK[a.level] === undefined ? 9 : LEVEL_RANK[a.level];
+    const rb = LEVEL_RANK[b.level] === undefined ? 9 : LEVEL_RANK[b.level];
+    return ra - rb || a.pas - b.pas;
+  }).map(function (r) { return r.id; });
+}
+function pathStatus(progress) {
+  const path = learningPath();
+  const learned = path.filter(function (id) { return progress && progress.learned && progress.learned[id]; });
+  const next = path.find(function (id) { return !(progress && progress.learned && progress.learned[id]); });
+  return { total: path.length, learned: learned.length, next: next || null };
+}
+// The rudiment and hand with a goal set that is nearest, without reaching it.
+function closestToGoal(progress, bestLogIn) {
+  let pick = null;
+  learningPath().forEach(function (id) {
+    ["R", "L"].forEach(function (lead) {
+      const g = goalStatus(progress, bestLogIn, id, lead);
+      if (g && !g.reached && g.best !== null && (!pick || g.pct > pick.pct))
+        pick = { id: id, lead: lead, goal: g.goal, best: g.best, pct: g.pct };
+    });
+  });
+  return pick;
+}
+// A plain-text summary a student can paste to a teacher. Names no one.
+function progressSummary(info) {
+  const progress = info.progress, log = info.bestLog || {};
+  const path = learningPath(), st = pathStatus(progress);
+  const name = function (id) { return Data.RUDIMENT_MAP[id].name; };
+  const lines = ["Rudiment Room progress", "Date: " + info.date,
+    "Learned: " + st.learned + " of " + st.total + " (the student's own mark)"];
+  const learned = path.filter(function (id) { return progress.learned[id]; });
+  if (learned.length) lines.push("Learned: " + learned.map(name).join(", "));
+  lines.push("Next on the path: " + (st.next ? name(st.next) : "all learned"));
+  const rows = [];
+  path.forEach(function (id) {
+    const parts = [];
+    ["R", "L"].forEach(function (lead) {
+      const b = log[id] && log[id][lead], g = progress.goals[id] && progress.goals[id][lead];
+      if (b || g) parts.push((lead === "R" ? "right" : "left") + " " + (b ? "best " + b.bpm + " BPM" : "no best yet") +
+        (g ? ", goal " + g + " BPM" : ""));
+    });
+    if (parts.length) rows.push(name(id) + " (PAS #" + Data.RUDIMENT_MAP[id].pas + "): " + parts.join("; "));
+  });
+  if (rows.length) { lines.push("", "Best clean tempos and goals:"); Array.prototype.push.apply(lines, rows); }
+  lines.push("", "Rudiment Room does not listen or grade. Every mark here is the student's own.");
+  return lines.join("\n");
+}
+
+/* ---------------- quiz: "Name that rudiment" ----------------
+   Multiple choice, four names, one right answer. Questions are either by ear
+   (the rudiment is played, the student names it) or by notation (the drawn
+   card is shown). Nothing is graded against playing: the app never listens, and
+   a quiz score is not kept anywhere. Question building is pure and takes an
+   rng, so a test can fix it. Distractors come from the same family first, then
+   the same level, then anywhere in the pool, then outside the pool, so a
+   question is always four distinct names however small the scope. */
+const QUIZ_CHOICES = 4;
+const QUIZ_COUNT = 10;
+const QUIZ_SCOPES = table({ all: true, Beginner: true, Intermediate: true, Advanced: true, learned: true });
+const QUIZ_TYPES = table({ ear: true, eye: true, mixed: true });
+function quizPool(scope, progress) {
+  if (!Object.prototype.hasOwnProperty.call(QUIZ_SCOPES, scope)) throw new Error('unknown quiz scope "' + scope + '"');
+  return Data.RUDIMENTS.filter(function (r) {
+    if (scope === "all") return true;
+    if (scope === "learned") return !!(progress && progress.learned && progress.learned[r.id]);
+    return r.level === scope;
+  }).map(function (r) { return r.id; });
+}
+function shuffled(list, rng) {
+  const a = list.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.min(i, Math.floor(rng() * (i + 1)));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function quizDistractors(answerId, pool, rng) {
+  const ans = Data.RUDIMENT_MAP[answerId];
+  const others = Data.RUDIMENTS.filter(function (r) { return r.id !== answerId; });
+  const inPool = {};
+  pool.forEach(function (id) { inPool[id] = true; });
+  const tiers = [
+    function (r) { return inPool[r.id] && r.family === ans.family; },
+    function (r) { return inPool[r.id] && r.level === ans.level; },
+    function (r) { return inPool[r.id]; },
+    function (r) { return r.family === ans.family; },
+    function () { return true; },
+  ];
+  const picked = [];
+  tiers.forEach(function (test) {
+    shuffled(others.filter(function (r) { return test(r) && picked.indexOf(r.id) === -1; }), rng).forEach(function (r) {
+      if (picked.length < QUIZ_CHOICES - 1) picked.push(r.id);
+    });
+  });
+  return picked;
+}
+function buildQuiz(opts) {
+  const rng = opts.rng || Math.random;
+  const type = opts.type || "mixed";
+  if (!Object.prototype.hasOwnProperty.call(QUIZ_TYPES, type)) throw new Error('unknown quiz type "' + type + '"');
+  const pool = (opts.pool || []).filter(function (id) { return Data.RUDIMENT_MAP[id]; });
+  const count = opts.count === undefined ? QUIZ_COUNT : intIn(opts.count, 1, 40, "count");
+  if (pool.length < 1) throw new Error("the quiz pool is empty");
+  // Every answer is different until the pool runs out, then the pool repeats.
+  let answers = [];
+  while (answers.length < count) answers = answers.concat(shuffled(pool, rng));
+  answers = answers.slice(0, count);
+  return answers.map(function (id) {
+    const kind = type === "mixed" ? (rng() < 0.5 ? "ear" : "eye") : type;
+    const choices = shuffled([id].concat(quizDistractors(id, pool, rng)), rng);
+    return { type: kind, answer: id, choices: choices };
+  });
+}
+function scoreQuiz(questions, picks) {
+  const missed = [];
+  let correct = 0;
+  questions.forEach(function (q, i) {
+    if (picks[i] === q.answer) correct++;
+    else if (missed.indexOf(q.answer) === -1) missed.push(q.answer);
+  });
+  return { correct: correct, total: questions.length, missed: missed };
+}
+
+function logLines(run) {
+  const r = Data.RUDIMENT_MAP[run.rudimentId];
+  if (!r) throw new Error("unknown rudiment " + run.rudimentId);
+  const rungs = run.rungs || [];
+  const lines = [
+    "Rudiment: " + r.name + " (PAS #" + r.pas + ")",
+    "Leading hand: " + (run.lead === "L" ? "Left" : "Right"),
+    "Practice: " + (LOG_MODE[run.mode] || "Tempo steps") + ", " + run.reps +
+      (run.reps === 1 ? " rep" : " reps") + (run.mode === "build" ? " at each layer" : " at each tempo"),
+    run.mode === "build" && Array.isArray(run.layers)
+      ? "Layers completed: " + run.layers.length + " (" + run.layers.join(", ") + ") at " + rungs[0] + " BPM"
+      : run.mode === "fixed" ? "Tempo: " + rungs[0] + " BPM"
+      : "Tempo steps completed: " + rungs.length + " (" + rungs.join(", ") + " BPM)",
+    "Best clean tempo: " + (run.best
+      ? run.best.bpm + " BPM (marked " + run.best.date + ")"
+      : "not marked yet"),
+  ];
+  if (Number.isInteger(run.goal) && run.goal >= BPM_MIN && run.goal <= BPM_MAX)
+    lines.push("Assigned goal tempo: " + run.goal + " BPM");
+  if (run.link) lines.push("Drill link: " + run.link);
+  return lines;
+}
+const LOG_TRAILER = "Rudiment Room does not listen or grade. The best clean tempo is the student's own mark.";
+function practiceLog(run) {
+  const lines = ["Rudiment Room practice log", "Date: " + run.date].concat(logLines(run));
+  lines.push("", LOG_TRAILER);
+  return lines.join("\n");
+}
+
+/* ---------------- routines ----------------
+   A routine is up to ROUTINE_MAX saved drills played in order, each with its
+   own count-in. An item is the settings of one drill, and only the numbers its
+   own mode uses:
+     { rudimentId, lead, mode, turn, dynamics, p }
+   where p is { bpm, reps } for fixed, { startBpm, endBpm, stepBpm, repsPerStep }
+   for steps, { startBpm, peakBpm, stepBpm, repsPerStep } for open-close-open
+   and { bpm, repsPerStep } for build-up. Fixed mode loops forever, so a routine
+   item gives it a length in reps. Everything that comes back from storage or a
+   link goes through sanitizeRoutine, which drops an item rather than guess. */
+const ROUTINE_MAX = 8;
+const ROUTINE_FIXED_REPS = 8;
+const ROUTINE_FIELDS = table({
+  fixed: [["bpm", BPM_MIN, BPM_MAX], ["reps", REPS_MIN, REPS_MAX]],
+  ladder: [["startBpm", BPM_MIN, BPM_MAX], ["endBpm", BPM_MIN, BPM_MAX], ["stepBpm", STEP_MIN, STEP_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
+  oco: [["startBpm", BPM_MIN, BPM_MAX], ["peakBpm", BPM_MIN, BPM_MAX], ["stepBpm", STEP_MIN, STEP_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
+  build: [["bpm", BPM_MIN, BPM_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
+});
+function cleanRoutineItem(raw) {
+  if (!raw || typeof raw !== "object") throw new Error("item is not an object");
+  if (!Data.RUDIMENT_MAP[raw.rudimentId]) throw new Error("unknown rudiment");
+  if (raw.lead !== "R" && raw.lead !== "L") throw new Error("bad lead");
+  if (!ROUTINE_FIELDS[raw.mode]) throw new Error("bad mode");
+  if (!Object.prototype.hasOwnProperty.call(DYNAMICS, raw.dynamics)) throw new Error("bad dynamics");
+  const turn = intIn(raw.turn, 0, TURN_MAX, "turn");
+  const src = raw.p || {}, p = {};
+  ROUTINE_FIELDS[raw.mode].forEach(function (f) { p[f[0]] = intIn(src[f[0]], f[1], f[2], f[0]); });
+  if (raw.mode === "oco" && p.peakBpm <= p.startBpm) throw new Error("peak must be above the start");
+  return { rudimentId: raw.rudimentId, lead: raw.lead, mode: raw.mode, turn: turn, dynamics: raw.dynamics, p: p };
+}
+// Build an item from the app's settings. Throws on anything invalid.
+function routineItem(settings, fixedReps) {
+  const mode = settings.mode;
+  const src = mode === "fixed" ? { bpm: settings.bpm, reps: fixedReps === undefined ? ROUTINE_FIXED_REPS : fixedReps }
+    : mode === "ladder" ? settings.ladder : mode === "oco" ? settings.oco : mode === "build" ? settings.build : null;
+  return cleanRoutineItem({ rudimentId: settings.rudimentId, lead: settings.lead, mode: mode,
+    turn: settings.turn === undefined ? 0 : settings.turn, dynamics: settings.dynamics || "full", p: src });
+}
+function sanitizeRoutine(raw) {
+  const out = [];
+  if (!Array.isArray(raw)) return out;
+  for (let i = 0; i < raw.length && out.length < ROUTINE_MAX; i++) {
+    try { out.push(cleanRoutineItem(raw[i])); } catch (e) { /* drop it */ }
+  }
+  return out;
+}
+// The plan one item plays.
+function planForItem(item) {
+  const r = Data.RUDIMENT_MAP[item.rudimentId];
+  const pattern = withLead(r, item.lead);
+  const settings = Object.assign({}, item.p, { turn: item.turn });
+  return buildPlan(item.mode, settings, pattern);
+}
+function routineSeconds(items) {
+  return items.reduce(function (sum, it) { return sum + totalSeconds(planForItem(it)); }, 0);
+}
+const ROUTINE_MODE_WORD = table({ fixed: "Fixed", ladder: "Steps", oco: "Open\u2013close\u2013open", build: "Build up" });
+const DYNAMICS_WORD = table({ medium: "medium", soft: "soft", swell: "swell" });
+function describeRoutineItem(item) {
+  const r = Data.RUDIMENT_MAP[item.rudimentId], p = item.p;
+  const lead = r.leadingHand === "mirror" ? (item.lead === "L" ? ", left lead" : ", right lead") : "";
+  const how = item.mode === "fixed" ? "Fixed " + p.bpm + " BPM \u00d7 " + p.reps
+    : item.mode === "ladder" ? "Steps " + p.startBpm + "\u2192" + p.endBpm + " BPM \u00d7 " + p.repsPerStep
+    : item.mode === "oco" ? "Open\u2013close\u2013open " + p.startBpm + "\u2192" + p.peakBpm + " BPM \u00d7 " + p.repsPerStep
+    : "Build up " + p.bpm + " BPM \u00d7 " + p.repsPerStep;
+  return r.name + lead + " \u00b7 " + how +
+    (item.turn ? " \u00b7 Your turn \u00d7" + item.turn : "") +
+    (DYNAMICS_WORD[item.dynamics] ? " \u00b7 " + DYNAMICS_WORD[item.dynamics] : "");
+}
+/* A routine in a link: items joined by "~", fields by ".", e.g.
+   single-paradiddle.R.f.0.full.80.8 — rudiment, lead, mode, turn, dynamics,
+   then the mode's numbers in ROUTINE_FIELDS order. decodeRoutine trusts nothing. */
+const MODE_CODE = table({ fixed: "f", ladder: "s", oco: "o", build: "b" });
+function encodeRoutine(items) {
+  return items.map(function (it) {
+    return [it.rudimentId, it.lead, MODE_CODE[it.mode], it.turn, it.dynamics]
+      .concat(ROUTINE_FIELDS[it.mode].map(function (f) { return it.p[f[0]]; })).join(".");
+  }).join("~");
+}
+function decodeRoutine(text) {
+  if (typeof text !== "string" || !text) return [];
+  const byCode = table({});
+  Object.keys(MODE_CODE).forEach(function (m) { byCode[MODE_CODE[m]] = m; });
+  const raw = text.split("~").slice(0, ROUTINE_MAX).map(function (chunk) {
+    const f = chunk.split("."), mode = byCode[f[2]];
+    if (!mode || f.length !== 5 + ROUTINE_FIELDS[mode].length) return null;
+    const p = {};
+    ROUTINE_FIELDS[mode].forEach(function (fld, i) { p[fld[0]] = f[5 + i] === "" ? NaN : Number(f[5 + i]); });
+    return { rudimentId: f[0], lead: f[1], mode: mode, turn: Number(f[3]), dynamics: f[4], p: p };
+  });
+  return sanitizeRoutine(raw);
+}
+// The log for a finished routine: each item's run in order.
+function routineLog(info) {
+  const runs = info.runs || [];
+  const lines = ["Rudiment Room routine log", "Date: " + info.date,
+    "Drills completed: " + runs.length + " of " + info.total];
+  runs.forEach(function (run, i) {
+    lines.push("", "Drill " + (i + 1));
+    Array.prototype.push.apply(lines, logLines(run));
+  });
+  lines.push("", LOG_TRAILER);
+  return lines.join("\n");
+}
+
 /* ---------------- export ---------------- */
 const RudimentCore = {
   RUDIMENTS: Data.RUDIMENTS,
@@ -646,6 +1143,24 @@ const RudimentCore = {
   REPS_MIN: REPS_MIN, REPS_MAX: REPS_MAX,
   COUNT_IN_BEATS: COUNT_IN_BEATS, TRANSITION_BEATS: TRANSITION_BEATS,
   TURN_MAX: TURN_MAX,
+  DYNAMICS: Object.keys(DYNAMICS),
+  PRAXIS_ALIAS: PRAXIS_ALIAS,
+  dynamicScale: dynamicScale,
+  scaleVelocity: scaleVelocity,
+  praxisSkillId: praxisSkillId,
+  ROUTINE_MAX: ROUTINE_MAX, ROUTINE_FIXED_REPS: ROUTINE_FIXED_REPS,
+  routineItem: routineItem, sanitizeRoutine: sanitizeRoutine, planForItem: planForItem,
+  routineSeconds: routineSeconds, describeRoutineItem: describeRoutineItem,
+  encodeRoutine: encodeRoutine, decodeRoutine: decodeRoutine, routineLog: routineLog,
+  HISTORY_KEEP: HISTORY_KEEP,
+  emptyProgress: emptyProgress, sanitizeProgress: sanitizeProgress, recordClean: recordClean,
+  setGoal: setGoal, setLearned: setLearned, clearHistory: clearHistory, historySeries: historySeries,
+  goalStatus: goalStatus, learningPath: learningPath, pathStatus: pathStatus,
+  closestToGoal: closestToGoal, progressSummary: progressSummary,
+  QUIZ_CHOICES: QUIZ_CHOICES, QUIZ_COUNT: QUIZ_COUNT,
+  quizPool: quizPool, buildQuiz: buildQuiz, scoreQuiz: scoreQuiz,
+  buildLayers: buildLayers,
+  withLayer: withLayer,
   validateRudiment: validateRudiment,
   assertValidRegistry: assertValidRegistry,
   withLead: withLead,
@@ -667,6 +1182,7 @@ const RudimentCore = {
   markClean: markClean,
   bestTempo: bestTempo,
   clearBest: clearBest,
+  practiceLog: practiceLog,
 };
 
 if (typeof module !== "undefined" && module.exports) module.exports = RudimentCore;

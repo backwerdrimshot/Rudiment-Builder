@@ -18,7 +18,7 @@
    old worker keeps serving.
 
    Only same-origin GETs for files on the list are answered; everything else —
-   the analytics beacon, the visit counter, capabilities.json — goes to the
+   the analytics beacon, capabilities.json — goes to the
    network untouched. A page load at the root, with or without a share link's
    query string, is answered with the stored page.
 
@@ -33,7 +33,7 @@
 "use strict";
 
 // BUILD MANIFEST — written by build.mjs; do not edit in dist.
-var BUILD = "2026-10-16.3";
+var BUILD = "2026-10-27.8";
 var ASSETS = [
   "./",
   "apple-touch-icon.png",
@@ -83,10 +83,13 @@ var ASSETS = [
   "assets/notation/rudiments/rudiment-38-single-ratamacue.svg",
   "assets/notation/rudiments/rudiment-39-double-ratamacue.svg",
   "assets/notation/rudiments/rudiment-40-triple-ratamacue.svg",
+  "assets/vendor/qrcode-generator/qrcode.js",
   "brs-monogram.svg",
+  "favicon.ico",
   "favicon.svg",
   "icon-192.png",
   "icon-512.png",
+  "js/feedback-links.js",
   "js/rudiment-app.js",
   "js/rudiment-core.js",
   "js/rudiment-data.js",
