@@ -1132,6 +1132,14 @@ function getCases(core) {
     assert.ok(!/name:|student id/i.test(text), "no identity field");
   }},
 
+  { name: "practice log: names an assigned goal tempo only when it is a valid tempo", fn: function (assert) {
+    const base = { date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "ladder", rungs: [80], reps: 2, best: null, link: "" };
+    assert.ok(core.practiceLog(Object.assign({ goal: 120 }, base)).split("\n").includes("Assigned goal tempo: 120 BPM"));
+    [undefined, 5, 400, 99.5, "120"].forEach(function (g) {
+      assert.ok(!/Assigned goal/.test(core.practiceLog(Object.assign({ goal: g }, base))), String(g));
+    });
+  }},
+
   { name: "practice log: open-close-open, and a best that was never marked", fn: function (assert) {
     const text = core.practiceLog({ date: "2026-10-17", rudimentId: "flam-tap", lead: "R",
       mode: "oco", rungs: [60, 70, 60], reps: 1, best: null, link: "" });
@@ -1140,6 +1148,469 @@ function getCases(core) {
     assert.ok(text.includes("Best clean tempo: not marked yet"));
     assert.ok(!/Drill link/.test(text), "no link line without a link");
     assert.throws(function () { core.practiceLog({ rudimentId: "nope", rungs: [] }); });
+  }},
+
+  { name: "dynamics: full is the original loudness, soft and medium are quieter", fn: function (assert) {
+    const pb = core.createPracticePlayback(core.buildPlan("fixed", { bpm: 80 }, core.withLead(MAP["single-paradiddle"], "R")));
+    assert.deepEqual(core.DYNAMICS, ["full", "medium", "soft", "swell"]);
+    assert.equal(core.dynamicScale("full", pb), 1);
+    assert.equal(core.dynamicScale("medium", pb), 0.75);
+    assert.equal(core.dynamicScale("soft", pb), 0.5);
+    assert.equal(core.dynamicScale("nonsense", pb), 1, "unknown plays at full");
+    assert.equal(core.dynamicScale(undefined, pb), 1);
+    assert.equal(core.dynamicScale("toString", pb), 1, "inherited keys are not dynamics");
+    const v = core.RUDIMENTS.map(function (r) { return core.expandPattern(core.withLead(r, "R")); })
+      .reduce(function (a, ev) { return a.concat(ev.map(function (e) { return e.velocity; })); }, []);
+    assert.ok(v.length > 0 && v.every(function (x) { return x * 0.5 > 0 && core.scaleVelocity(x, 0.5) <= 1; }), "scaled velocity stays valid");
+  }},
+
+  { name: "dynamics: swell rises to full mid-stage and falls back, per stage", fn: function (assert) {
+    const pat = core.withLead(MAP["single-paradiddle"], "R");
+    const pb = core.createPracticePlayback(core.buildPlan("ladder",
+      { startBpm: 60, endBpm: 70, stepBpm: 10, repsPerStep: 5 }, pat));
+    pb.advanceBlock(); // leave the count-in: first play stage
+    const seen = [];
+    for (let i = 0; i < 5; i++) { seen.push(core.dynamicScale("swell", pb)); pb.advanceBlock(); }
+    assert.equal(seen[0], 0.45, "starts soft");
+    assert.equal(seen[2], 1, "full in the middle");
+    assert.equal(seen[4], 0.45, "ends soft");
+    assert.ok(seen[1] > seen[0] && seen[1] < seen[2], "rising");
+    assert.equal(seen[1], seen[3], "symmetric");
+  }},
+
+  { name: "dynamics: swell counts trades with Your turn on, and survives pause/resume", fn: function (assert) {
+    const pat = core.withLead(MAP["flam-tap"], "R");
+    const plan = core.buildPlan("fixed", { bpm: 80, turn: 2 }, pat);
+    const pb = core.createPracticePlayback(plan);
+    pb.advanceBlock(); // play stage, first trade
+    const first = core.dynamicScale("swell", pb);
+    pb.advanceBlock(); pb.advanceBlock(); // the student's two cycles: same trade, same level
+    assert.equal(core.dynamicScale("swell", pb), first);
+    pb.advanceBlock(); // second trade
+    const second = core.dynamicScale("swell", pb);
+    assert.ok(second > first, "next trade is louder in the crescendo");
+    const snap = pb.snapshot();
+    const pb2 = core.createPracticePlayback(plan);
+    pb2.restore(snap);
+    assert.equal(core.dynamicScale("swell", pb2), second, "restore reproduces the level");
+  }},
+
+  { name: "dynamics: a two-rep stage swells soft then full, so it still reaches full", fn: function (assert) {
+    const pb = core.createPracticePlayback(core.buildPlan("ladder",
+      { startBpm: 60, endBpm: 70, stepBpm: 10, repsPerStep: 2 }, core.withLead(MAP["single-paradiddle"], "R")));
+    pb.advanceBlock();
+    assert.equal(core.dynamicScale("swell", pb), 0.45);
+    pb.advanceBlock();
+    assert.equal(core.dynamicScale("swell", pb), 1);
+  }},
+
+  { name: "build-up layers: the last layer is the rudiment as written, for all 40", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      const layers = core.buildLayers(r);
+      assert.ok(layers.length >= 1 && layers.length <= 3, r.id + " layer count");
+      assert.equal(layers[0].id, "sticking", r.id + " opens on the hands");
+      const written = core.withLead(r, "R");
+      const last = core.withLayer(written, layers[layers.length - 1].id);
+      // A rudiment with nothing to add is its own hands-only layer; otherwise the last layer IS the written one.
+      assert.deepEqual(last.strokes.map(function (s) { return [s.slot, s.hand, !!s.accent, s.grace.length, !!s.buzz]; }),
+        written.strokes.map(function (s) { return [s.slot, s.hand, !!s.accent, s.grace.length, !!s.buzz]; }), r.id + " last layer");
+      layers.forEach(function (l) { assert.ok(l.label && l.hint, r.id + " " + l.id + " has words"); });
+    });
+  }},
+
+  { name: "build-up layers: each layer only removes, never changes hands or timing", fn: function (assert) {
+    core.RUDIMENTS.forEach(function (r) {
+      ["R", "L"].forEach(function (lead) {
+        const full = core.withLead(r, lead);
+        ["sticking", "accents", "ornaments"].forEach(function (id) {
+          const l = core.withLayer(full, id);
+          assert.equal(l.strokes.length, full.strokes.length);
+          l.strokes.forEach(function (s, i) {
+            const f = full.strokes[i];
+            assert.equal(s.slot, f.slot); assert.equal(s.hand, f.hand);
+            assert.equal(s.diddle, f.diddle); assert.equal(s.duration, f.duration);
+            assert.ok(!s.accent || f.accent, "no invented accent");
+            assert.ok(s.grace.length <= f.grace.length, "no invented grace");
+            assert.ok(!s.buzz || f.buzz, "no invented buzz");
+          });
+        });
+      });
+    });
+    assert.throws(function () { core.withLayer(core.withLead(MAP["flam-tap"], "R"), "nonsense"); });
+  }},
+
+  { name: "build-up layers: hands only is flat, accents keep accents, ornaments keep flams; source untouched", fn: function (assert) {
+    const r = MAP["flam-tap"], full = core.withLead(r, "R");
+    assert.deepEqual(core.buildLayers(r).map(function (l) { return l.id; }), ["sticking", "accents", "ornaments"]);
+    assert.equal(core.buildLayers(r)[2].label, "Add the flams");
+    const h = core.withLayer(full, "sticking"), a = core.withLayer(full, "accents"), o = core.withLayer(full, "ornaments");
+    assert.ok(h.strokes.every(function (s) { return !s.accent && s.grace.length === 0 && !s.buzz; }));
+    assert.ok(a.strokes.some(function (s) { return s.accent; }) && a.strokes.every(function (s) { return s.grace.length === 0; }));
+    assert.ok(o.strokes.some(function (s) { return s.grace.length === 1; }));
+    assert.ok(full.strokes.some(function (s) { return s.accent; }) && full.strokes.some(function (s) { return s.grace.length === 1; }), "input unchanged");
+    const ev = core.expandPattern(h);
+    assert.ok(ev.every(function (e) { return e.velocity === core.VELOCITY.normal && e.graces.length === 0; }), "plays flat");
+    assert.equal(core.buildLayers(MAP["single-stroke-roll"]).length, 1, "nothing to add");
+    assert.deepEqual(core.buildLayers(MAP["multiple-bounce-roll"]).map(function (l) { return l.label; }), ["Hands only", "Add the buzz strokes"]);
+  }},
+
+  { name: "build plan: one stage per layer at one tempo, count-in opens on the first layer", fn: function (assert) {
+    const pat = core.withLead(MAP["flam-tap"], "R");
+    const plan = core.buildPlan("build", { bpm: 70, repsPerStep: 3, turn: 0 }, pat);
+    assert.equal(plan.mode, "build");
+    assert.deepEqual(plan.rungs, [70]);
+    assert.deepEqual(plan.layers, ["sticking", "accents", "ornaments"]);
+    assert.deepEqual(plan.stages.map(function (s) { return s.kind; }), ["count-in", "play", "play", "play"]);
+    assert.deepEqual(plan.stages.map(function (s) { return s.layer; }), ["sticking", "sticking", "accents", "ornaments"]);
+    plan.stages.filter(function (s) { return s.kind === "play"; }).forEach(function (s, i) {
+      assert.equal(s.bpm, 70); assert.equal(s.blocks, 3); assert.equal(s.stepIndex, i); assert.equal(s.stepCount, 3);
+      assert.ok(s.layerLabel);
+    });
+    assert.ok(core.totalSeconds(plan) > 0);
+    assert.throws(function () { core.buildPlan("build", { bpm: 10, repsPerStep: 3 }, pat); });
+    assert.throws(function () { core.buildPlan("build", { bpm: 70, repsPerStep: 0 }, pat); });
+  }},
+
+  { name: "build plan: Your turn trades per layer, and the machine walks layers in order", fn: function (assert) {
+    const pat = core.withLead(MAP["single-paradiddle"], "R");
+    const plan = core.buildPlan("build", { bpm: 80, repsPerStep: 2, turn: 1 }, pat);
+    assert.equal(plan.stages[1].blocks, 4, "2 reps x (1 + turn 1)");
+    const pb = core.createPracticePlayback(plan);
+    assert.equal(pb.currentLayer(), "sticking", "count-in carries the first layer");
+    pb.advanceBlock();
+    const seen = [];
+    for (let i = 0; i < 8; i++) { seen.push(pb.currentLayer()); if (pb.advanceBlock() === "done") break; }
+    assert.deepEqual(seen, ["sticking", "sticking", "sticking", "sticking", "accents", "accents", "accents", "accents"]);
+    assert.ok(pb.done);
+    pb.reset(); pb.advanceBlock(); for (let i = 0; i < 3; i++) pb.advanceBlock();
+    assert.ok(pb.isFinalBlockOfStage(), "fourth block of the hands-only stage is its last");
+    assert.equal(pb.currentLayer(), "sticking");
+    assert.equal(pb.nextLayer(), "accents", "so the app can warn about the layer change");
+  }},
+
+  { name: "build plan: a rudiment with nothing to add is one stage, and the log says layers", fn: function (assert) {
+    const plan = core.buildPlan("build", { bpm: 90, repsPerStep: 4 }, core.withLead(MAP["single-stroke-roll"], "R"));
+    assert.equal(plan.stages.length, 2);
+    const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "build",
+      rungs: [70], reps: 3, layers: ["Hands only", "Add the accents", "Add the flams"], best: null, link: "" });
+    assert.ok(text.includes("Practice: Build-up, 3 reps at each layer"));
+    assert.ok(text.includes("Layers completed: 3 (Hands only, Add the accents, Add the flams) at 70 BPM"));
+  }},
+
+  { name: "routine: an item keeps only its own mode's numbers, and fixed gets a length", fn: function (assert) {
+    const base = { rudimentId: "flam-tap", lead: "L", turn: 1, dynamics: "soft", bpm: 90,
+      ladder: { startBpm: 60, endBpm: 100, stepBpm: 10, repsPerStep: 3 },
+      oco: { startBpm: 60, peakBpm: 100, stepBpm: 10, repsPerStep: 2 }, build: { bpm: 70, repsPerStep: 4 } };
+    const fixed = core.routineItem(Object.assign({ mode: "fixed" }, base));
+    assert.deepEqual(fixed.p, { bpm: 90, reps: core.ROUTINE_FIXED_REPS });
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "fixed" }, base), 3).p, { bpm: 90, reps: 3 });
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "ladder" }, base)).p, base.ladder);
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "oco" }, base)).p, base.oco);
+    assert.deepEqual(core.routineItem(Object.assign({ mode: "build" }, base)).p, base.build);
+    assert.equal(fixed.lead, "L"); assert.equal(fixed.turn, 1); assert.equal(fixed.dynamics, "soft");
+    assert.throws(function () { core.routineItem(Object.assign({ mode: "oco" }, base, { oco: { startBpm: 100, peakBpm: 90, stepBpm: 5, repsPerStep: 2 } })); });
+    assert.throws(function () { core.routineItem(Object.assign({ mode: "fixed" }, base, { bpm: 5 })); });
+    assert.throws(function () { core.routineItem(Object.assign({ mode: "fixed" }, base, { dynamics: "toString" })); });
+  }},
+
+  { name: "routine: every item plays as a finite plan, and a routine is at most 8 long", fn: function (assert) {
+    const mk = function (mode, id) { return core.routineItem({ rudimentId: id || "single-paradiddle", lead: "R", mode: mode, turn: 0, dynamics: "full", bpm: 100,
+      ladder: { startBpm: 80, endBpm: 100, stepBpm: 10, repsPerStep: 2 }, oco: { startBpm: 80, peakBpm: 100, stepBpm: 10, repsPerStep: 2 },
+      build: { bpm: 90, repsPerStep: 2 } }, 4); };
+    ["fixed", "ladder", "oco", "build"].forEach(function (m) {
+      const plan = core.planForItem(mk(m));
+      assert.equal(plan.mode, m);
+      assert.ok(core.totalSeconds(plan) > 0 && isFinite(core.totalSeconds(plan)), m + " is finite");
+    });
+    assert.equal(core.planForItem(mk("fixed")).stages[1].blocks, 4);
+    assert.ok(core.routineSeconds([mk("fixed"), mk("build", "flam-tap")]) > 0);
+    const many = []; for (let i = 0; i < 12; i++) many.push(mk("fixed"));
+    assert.equal(core.sanitizeRoutine(many).length, core.ROUTINE_MAX);
+  }},
+
+  { name: "routine: sanitize drops what it cannot trust and never mutates its input", fn: function (assert) {
+    const good = { rudimentId: "flam-tap", lead: "R", mode: "fixed", turn: 0, dynamics: "full", p: { bpm: 80, reps: 4 } };
+    const input = [good, null, 7, "x", { rudimentId: "nope", lead: "R", mode: "fixed", turn: 0, dynamics: "full", p: { bpm: 80, reps: 4 } },
+      Object.assign({}, good, { lead: "X" }), Object.assign({}, good, { mode: "polka" }),
+      Object.assign({}, good, { p: { bpm: 80 } }), Object.assign({}, good, { p: { bpm: 9999, reps: 4 } }),
+      Object.assign({}, good, { turn: 9 }), Object.assign({}, good, { dynamics: "loud" }),
+      Object.assign({}, good, { mode: "oco", p: { startBpm: 90, peakBpm: 80, stepBpm: 5, repsPerStep: 2 } }), good];
+    const before = JSON.stringify(input);
+    const out = core.sanitizeRoutine(input);
+    assert.equal(out.length, 2);
+    assert.deepEqual(out[0], good);
+    assert.equal(JSON.stringify(input), before);
+    assert.deepEqual(core.sanitizeRoutine(undefined), []);
+    assert.deepEqual(core.sanitizeRoutine({ length: 3 }), []);
+    const extra = core.sanitizeRoutine([Object.assign({}, good, { evil: "<img onerror=x>", p: { bpm: 80, reps: 4, junk: 1 } })]);
+    assert.deepEqual(extra[0], good, "unknown fields are not carried");
+  }},
+
+  { name: "routine: link encoding round-trips, and a hostile link decodes to nothing harmful", fn: function (assert) {
+    const items = [
+      { rudimentId: "single-paradiddle", lead: "R", mode: "fixed", turn: 0, dynamics: "full", p: { bpm: 80, reps: 8 } },
+      { rudimentId: "flam-tap", lead: "L", mode: "ladder", turn: 2, dynamics: "swell", p: { startBpm: 60, endBpm: 100, stepBpm: 10, repsPerStep: 3 } },
+      { rudimentId: "double-stroke-open-roll", lead: "R", mode: "oco", turn: 1, dynamics: "soft", p: { startBpm: 60, peakBpm: 120, stepBpm: 10, repsPerStep: 2 } },
+      { rudimentId: "flam-accent", lead: "R", mode: "build", turn: 0, dynamics: "medium", p: { bpm: 70, repsPerStep: 4 } },
+    ];
+    const text = core.encodeRoutine(items);
+    assert.ok(/^[a-z0-9.~-]+$/i.test(text), "only characters that need no escaping in a URL: " + text);
+    assert.deepEqual(core.decodeRoutine(text), items);
+    assert.deepEqual(core.decodeRoutine(core.encodeRoutine([])), []);
+    ["", "x", "~~~", "a.b.c", "single-paradiddle.R.f.0.full.80", "single-paradiddle.R.f.0.full.80.8.9",
+     "single-paradiddle.R.z.0.full.80.8", "single-paradiddle.R.f.0.full..8", "single-paradiddle.R.f.0.full.abc.8",
+     "<script>.R.f.0.full.80.8", null, undefined, 42].forEach(function (bad) {
+      assert.deepEqual(core.decodeRoutine(bad), [], String(bad));
+    });
+    const mixed = core.decodeRoutine("junk~" + text.split("~")[0]);
+    assert.equal(mixed.length, 1, "a bad item is dropped, a good one kept");
+    const long = new Array(20).fill(text.split("~")[0]).join("~");
+    assert.equal(core.decodeRoutine(long).length, core.ROUTINE_MAX);
+  }},
+
+  { name: "routine: describes an item, and the routine log lists each drill", fn: function (assert) {
+    const it = { rudimentId: "flam-tap", lead: "L", mode: "ladder", turn: 1, dynamics: "soft", p: { startBpm: 60, endBpm: 100, stepBpm: 10, repsPerStep: 3 } };
+    const d = core.describeRoutineItem(it);
+    assert.ok(d.includes("Flam Tap") && d.includes("left lead") && d.includes("Steps 60\u2192100 BPM \u00d7 3") &&
+      d.includes("Your turn \u00d71") && d.includes("soft"), d);
+    const run = function (id, mode, extra) { return Object.assign({ rudimentId: id, lead: "R", mode: mode, rungs: [80], reps: 4, best: null, link: "" }, extra); };
+    const text = core.routineLog({ date: "2026-10-27", total: 3, runs: [run("flam-tap", "fixed"), run("single-paradiddle", "build", { layers: ["Hands only", "Add the accents"] })] });
+    const lines = text.split("\n");
+    assert.equal(lines[0], "Rudiment Room routine log");
+    assert.ok(lines.includes("Drills completed: 2 of 3"));
+    assert.ok(lines.includes("Drill 1") && lines.includes("Drill 2") && !lines.includes("Drill 3"));
+    assert.ok(text.includes("Rudiment: Flam Tap") && text.includes("Practice: Fixed tempo, 4 reps at each tempo"));
+    assert.ok(text.includes("Layers completed: 2 (Hands only, Add the accents) at 80 BPM"));
+    assert.equal((text.match(/does not listen or grade/g) || []).length, 1, "one trailer for the whole log");
+    assert.ok(core.practiceLog(run("flam-tap", "ladder", { date: "2026-10-27" })).startsWith("Rudiment Room practice log"), "single log unchanged");
+  }},
+
+  { name: "progress: history keeps the day's best, sorted, capped, and never mutates", fn: function (assert) {
+    let p = core.emptyProgress();
+    const frozen = JSON.stringify(p);
+    p = core.recordClean(p, "flam-tap", "R", 80, "2026-10-20");
+    p = core.recordClean(p, "flam-tap", "R", 92, "2026-10-22");
+    p = core.recordClean(p, "flam-tap", "R", 88, "2026-10-22");
+    p = core.recordClean(p, "flam-tap", "R", 70, "2026-10-21");
+    p = core.recordClean(p, "flam-tap", "L", 60, "2026-10-21");
+    assert.equal(JSON.stringify(core.emptyProgress()), frozen);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "R"),
+      [{ date: "2026-10-20", bpm: 80 }, { date: "2026-10-21", bpm: 70 }, { date: "2026-10-22", bpm: 92 }]);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "L"), [{ date: "2026-10-21", bpm: 60 }]);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "X"), []);
+    assert.deepEqual(core.historySeries(p, "nope", "R"), []);
+    const before = JSON.stringify(p);
+    core.recordClean(p, "flam-tap", "R", 99, "2026-10-23");
+    assert.equal(JSON.stringify(p), before, "input unchanged");
+    let big = core.emptyProgress();
+    for (let i = 0; i < core.HISTORY_KEEP + 25; i++) {
+      const d = new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10);
+      big = core.recordClean(big, "flam-tap", "R", 60 + (i % 30), d);
+    }
+    const series = core.historySeries(big, "flam-tap", "R");
+    assert.equal(series.length, core.HISTORY_KEEP);
+    assert.equal(series[series.length - 1].date, new Date(Date.UTC(2026, 0, 1 + core.HISTORY_KEEP + 24)).toISOString().slice(0, 10), "newest kept");
+    assert.throws(function () { core.recordClean(p, "nope", "R", 80, "2026-10-20"); });
+    assert.throws(function () { core.recordClean(p, "flam-tap", "X", 80, "2026-10-20"); });
+    assert.throws(function () { core.recordClean(p, "flam-tap", "R", 5, "2026-10-20"); });
+    assert.throws(function () { core.recordClean(p, "flam-tap", "R", 80, "Oct 20"); });
+  }},
+
+  { name: "progress: goals and learned marks set, clear, and clear history leaves them", fn: function (assert) {
+    let p = core.recordClean(core.emptyProgress(), "flam-tap", "R", 80, "2026-10-20");
+    p = core.setGoal(p, "flam-tap", "R", 120);
+    p = core.setGoal(p, "flam-tap", "L", 100);
+    p = core.setLearned(p, "flam-tap", "2026-10-21");
+    assert.deepEqual(p.goals["flam-tap"], { R: 120, L: 100 });
+    assert.equal(p.learned["flam-tap"], "2026-10-21");
+    const cleared = core.clearHistory(p, "flam-tap");
+    assert.deepEqual(core.historySeries(cleared, "flam-tap", "R"), []);
+    assert.deepEqual(cleared.goals["flam-tap"], { R: 120, L: 100 }, "goal stays");
+    assert.equal(cleared.learned["flam-tap"], "2026-10-21", "learned stays");
+    assert.equal(core.historySeries(p, "flam-tap", "R").length, 1, "original untouched");
+    p = core.setGoal(p, "flam-tap", "R", null); p = core.setGoal(p, "flam-tap", "L", null);
+    assert.ok(!p.goals["flam-tap"], "empty goal record is removed");
+    p = core.setLearned(p, "flam-tap", null);
+    assert.ok(!p.learned["flam-tap"]);
+    assert.throws(function () { core.setGoal(p, "flam-tap", "R", 9999); });
+    assert.throws(function () { core.setLearned(p, "flam-tap", "yesterday"); });
+  }},
+
+  { name: "progress: sanitize drops everything it cannot trust, including prototype keys", fn: function (assert) {
+    const bad = { history: { "flam-tap": { R: [{ date: "2026-10-20", bpm: 80 }, { date: "bad", bpm: 80 }, { date: "2026-10-21", bpm: 9999 }, null, 7,
+        { date: "2026-10-20", bpm: 95 }], L: "nope", X: [{ date: "2026-10-20", bpm: 80 }] },
+        nope: { R: [{ date: "2026-10-20", bpm: 80 }] }, __proto__: { R: [] }, constructor: { R: [] }, toString: 5 },
+      goals: { "flam-tap": { R: 120, L: 12.5, X: 100 }, nope: { R: 100 }, "single-paradiddle": "x" },
+      learned: { "flam-tap": "2026-10-20", "single-paradiddle": "soon", nope: "2026-10-20", constructor: "2026-10-20" } };
+    const p = core.sanitizeProgress(bad);
+    assert.deepEqual(core.historySeries(p, "flam-tap", "R"), [{ date: "2026-10-20", bpm: 95 }]);
+    assert.deepEqual(Object.keys(p.history), ["flam-tap"], "only known rudiments, as own keys");
+    assert.deepEqual(Object.keys(p.learned), ["flam-tap"]);
+    assert.deepEqual(p.goals, { "flam-tap": { R: 120 } });
+    assert.deepEqual(p.learned, { "flam-tap": "2026-10-20" });
+    ["x", 5, null, undefined, [], true].forEach(function (junk) { assert.deepEqual(core.sanitizeProgress(junk), core.emptyProgress(), String(junk)); });
+    assert.deepEqual(core.sanitizeProgress(p), p, "idempotent");
+  }},
+
+  { name: "progress: goal status, closest to goal, and the learning path", fn: function (assert) {
+    const log = { "flam-tap": { R: { bpm: 90, date: "2026-10-20" }, L: { bpm: 130, date: "2026-10-20" } }, "single-paradiddle": { R: { bpm: 60, date: "2026-10-20" } } };
+    let p = core.setGoal(core.emptyProgress(), "flam-tap", "R", 120);
+    p = core.setGoal(p, "flam-tap", "L", 120);
+    p = core.setGoal(p, "single-paradiddle", "R", 200);
+    p = core.setGoal(p, "flam-accent", "R", 100);
+    assert.deepEqual(core.goalStatus(p, log, "flam-tap", "R"), { goal: 120, best: 90, pct: 75, reached: false });
+    assert.equal(core.goalStatus(p, log, "flam-tap", "L").reached, true);
+    assert.equal(core.goalStatus(p, log, "flam-tap", "L").pct, 100);
+    assert.deepEqual(core.goalStatus(p, log, "flam-accent", "R"), { goal: 100, best: null, pct: 0, reached: false });
+    assert.equal(core.goalStatus(p, log, "single-stroke-roll", "R"), null);
+    const near = core.closestToGoal(p, log);
+    assert.deepEqual(near, { id: "flam-tap", lead: "R", goal: 120, best: 90, pct: 75 }, "reached and no-best goals are not the nudge");
+    assert.equal(core.closestToGoal(core.emptyProgress(), log), null);
+    const path = core.learningPath();
+    assert.equal(path.length, 40); assert.equal(new Set(path).size, 40);
+    const rank = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+    for (let i = 1; i < path.length; i++) {
+      const a = core.RUDIMENT_MAP[path[i - 1]], b = core.RUDIMENT_MAP[path[i]];
+      assert.ok(rank[a.level] < rank[b.level] || (rank[a.level] === rank[b.level] && a.pas < b.pas), a.id + " before " + b.id);
+    }
+    assert.deepEqual(core.pathStatus(core.emptyProgress()), { total: 40, learned: 0, next: path[0] });
+    let q = core.setLearned(core.emptyProgress(), path[0], "2026-10-20");
+    q = core.setLearned(q, path[2], "2026-10-20");
+    assert.deepEqual(core.pathStatus(q), { total: 40, learned: 2, next: path[1] }, "next is the first not learned");
+    path.forEach(function (id) { q = core.setLearned(q, id, "2026-10-20"); });
+    assert.deepEqual(core.pathStatus(q), { total: 40, learned: 40, next: null });
+  }},
+
+  { name: "progress: the summary names no one and lists learned, next, bests and goals", fn: function (assert) {
+    const log = { "flam-tap": { R: { bpm: 90, date: "2026-10-20" } } };
+    let p = core.setLearned(core.emptyProgress(), "single-stroke-roll", "2026-10-20");
+    p = core.setGoal(p, "flam-tap", "R", 120);
+    const text = core.progressSummary({ date: "2026-10-27", progress: p, bestLog: log });
+    const lines = text.split("\n");
+    assert.equal(lines[0], "Rudiment Room progress");
+    assert.ok(lines.includes("Learned: 1 of 40 (the student's own mark)"));
+    assert.ok(lines.includes("Learned: Single Stroke Roll"));
+    assert.ok(lines.includes("Next on the path: " + core.RUDIMENT_MAP[core.learningPath()[1]].name));
+    assert.ok(lines.includes("Flam Tap (PAS #22): right best 90 BPM, goal 120 BPM"), text);
+    assert.ok(/does not listen or grade/.test(text));
+    assert.ok(!/name:|student id/i.test(text));
+    assert.ok(core.progressSummary({ date: "2026-10-27", progress: core.emptyProgress() }).includes("Next on the path: " + core.RUDIMENT_MAP[core.learningPath()[0]].name));
+  }},
+
+  { name: "quiz: pools follow level and the learned marks, and reject unknown scopes", fn: function (assert) {
+    assert.equal(core.quizPool("all").length, 40);
+    const lv = ["Beginner", "Intermediate", "Advanced"].map(function (l) { return core.quizPool(l); });
+    assert.equal(lv[0].length + lv[1].length + lv[2].length, 40);
+    lv.forEach(function (list, i) { list.forEach(function (id) { assert.equal(core.RUDIMENT_MAP[id].level, ["Beginner", "Intermediate", "Advanced"][i]); }); });
+    assert.deepEqual(core.quizPool("learned", core.emptyProgress()), []);
+    const p = core.setLearned(core.setLearned(core.emptyProgress(), "flam-tap", "2026-10-20"), "single-paradiddle", "2026-10-20");
+    assert.deepEqual(core.quizPool("learned", p).sort(), ["flam-tap", "single-paradiddle"]);
+    assert.throws(function () { core.quizPool("everything"); });
+    assert.throws(function () { core.quizPool("toString"); });
+  }},
+
+  { name: "quiz: every question has four distinct names, one of them right, whatever the pool", fn: function (assert) {
+    const seeded = function (seed) { let x = seed; return function () { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; }; };
+    [["all", 7], ["Beginner", 11], ["Advanced", 3]].forEach(function (c) {
+      const qs = core.buildQuiz({ pool: core.quizPool(c[0]), type: "mixed", rng: seeded(c[1]) });
+      assert.equal(qs.length, core.QUIZ_COUNT);
+      qs.forEach(function (q) {
+        assert.equal(q.choices.length, core.QUIZ_CHOICES);
+        assert.equal(new Set(q.choices).size, core.QUIZ_CHOICES, "distinct");
+        assert.ok(q.choices.indexOf(q.answer) !== -1, "answer is among the choices");
+        q.choices.forEach(function (id) { assert.ok(core.RUDIMENT_MAP[id], id); });
+        assert.ok(q.type === "ear" || q.type === "eye");
+      });
+      assert.equal(new Set(qs.map(function (q) { return q.answer; })).size, core.QUIZ_COUNT, "no repeated answer while the pool lasts");
+    });
+    const tiny = core.buildQuiz({ pool: ["flam-tap", "flam-accent"], count: 6, type: "ear", rng: seeded(5) });
+    assert.equal(tiny.length, 6);
+    tiny.forEach(function (q) { assert.equal(new Set(q.choices).size, 4, "a two-rudiment pool still gets four names"); assert.equal(q.type, "ear"); });
+    const one = core.buildQuiz({ pool: ["flam-tap"], count: 2, type: "eye", rng: seeded(1) });
+    one.forEach(function (q) { assert.equal(q.answer, "flam-tap"); assert.equal(new Set(q.choices).size, 4); });
+  }},
+
+  { name: "quiz: distractors prefer the same family, and the quiz is reproducible from its rng", fn: function (assert) {
+    const seeded = function (seed) { let x = seed; return function () { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; }; };
+    const a = core.buildQuiz({ pool: core.quizPool("all"), type: "eye", rng: seeded(42) });
+    const b = core.buildQuiz({ pool: core.quizPool("all"), type: "eye", rng: seeded(42) });
+    assert.deepEqual(a, b, "same rng, same quiz");
+    assert.notDeepEqual(a, core.buildQuiz({ pool: core.quizPool("all"), type: "eye", rng: seeded(43) }));
+    // With the whole catalog in play every wrong name comes from the answer's own family when it has enough members.
+    a.forEach(function (q) {
+      const fam = core.RUDIMENT_MAP[q.answer].family;
+      const same = core.RUDIMENTS.filter(function (r) { return r.family === fam; }).length;
+      const fromFam = q.choices.filter(function (id) { return core.RUDIMENT_MAP[id].family === fam; }).length;
+      assert.equal(fromFam, Math.min(same, core.QUIZ_CHOICES), q.answer + " draws its wrong names from its family");
+    });
+    assert.throws(function () { core.buildQuiz({ pool: [], type: "ear" }); });
+    assert.throws(function () { core.buildQuiz({ pool: ["flam-tap"], type: "psychic" }); });
+    assert.throws(function () { core.buildQuiz({ pool: ["flam-tap"], type: "constructor" }); });
+    assert.equal(core.buildQuiz({ pool: ["nope", "flam-tap"], type: "ear", count: 1 })[0].answer, "flam-tap", "unknown ids are ignored");
+  }},
+
+  { name: "quiz: scoring counts right answers and lists each missed rudiment once", fn: function (assert) {
+    const qs = [{ answer: "a" }, { answer: "b" }, { answer: "a" }, { answer: "c" }];
+    assert.deepEqual(core.scoreQuiz(qs, ["a", "x", "y", "c"]), { correct: 2, total: 4, missed: ["b", "a"] });
+    assert.deepEqual(core.scoreQuiz(qs, ["a", "b", "a", "c"]), { correct: 4, total: 4, missed: [] });
+    assert.deepEqual(core.scoreQuiz(qs, []), { correct: 0, total: 4, missed: ["a", "b", "c"] });
+  }},
+
+  { name: "inherited keys: no lookup table treats toString, constructor or __proto__ as a real entry", fn: function (assert) {
+    const hostile = ["toString", "constructor", "__proto__", "hasOwnProperty", "valueOf"];
+    const pat = core.withLead(MAP["flam-tap"], "R");
+    hostile.forEach(function (k) {
+      assert.equal(MAP[k], undefined, k + " is not a rudiment");
+      assert.throws(function () { core.buildPlan(k, { bpm: 80, startBpm: 60, endBpm: 80, peakBpm: 80, stepBpm: 5, repsPerStep: 2 }, pat); }, k + " as a practice mode");
+      assert.throws(function () { core.withLayer(pat, k); }, k + " as a layer");
+      assert.throws(function () { core.quizPool(k); }, k + " as a quiz scope");
+      assert.throws(function () { core.buildQuiz({ pool: ["flam-tap"], type: k }); }, k + " as a quiz type");
+      assert.throws(function () { core.markClean({}, k, "R", 80, "2026-10-20"); }, k + " as a rudiment id");
+      assert.throws(function () { core.praxisSkillId(k); }, k + " as a Praxis id");
+      assert.throws(function () { core.recordClean(core.emptyProgress(), k, "R", 80, "2026-10-20"); });
+      assert.throws(function () { core.routineItem({ rudimentId: k, lead: "R", mode: "fixed", turn: 0, dynamics: "full", bpm: 80 }); });
+      assert.throws(function () { core.routineItem({ rudimentId: "flam-tap", lead: "R", mode: k, turn: 0, dynamics: "full", bpm: 80 }); });
+      assert.throws(function () { core.routineItem({ rudimentId: "flam-tap", lead: "R", mode: "fixed", turn: 0, dynamics: k, bpm: 80 }); });
+      assert.deepEqual(core.decodeRoutine("flam-tap.R." + k + ".0.full.80.8"), [], k + " as a mode code");
+      assert.deepEqual(core.decodeRoutine(k + ".R.f.0.full.80.8"), [], k + " as a rudiment in a link");
+      assert.deepEqual(core.decodeRoutine("flam-tap.R.f.0." + k + ".80.8"), [], k + " as dynamics in a link");
+      assert.deepEqual(core.sanitizeBestLog(JSON.parse('{"' + k + '":{"R":{"bpm":80,"date":"2026-10-20"}}}')), {});
+      const p = core.sanitizeProgress(JSON.parse('{"history":{"' + k + '":{"R":[{"date":"2026-10-20","bpm":80}]}},"goals":{"' + k + '":{"R":100}},"learned":{"' + k + '":"2026-10-20"}}'));
+      assert.deepEqual(core.emptyProgress(), p, k + " in stored progress");
+      const rec = Object.assign({}, MAP["flam-tap"], { family: k, leadingHand: k });
+      assert.ok(core.validateRudiment(rec).some(function (e) { return /family/.test(e); }), k + " as a family");
+      assert.ok(core.validateRudiment(rec).some(function (e) { return /leadingHand/.test(e); }), k + " as a leading hand");
+    });
+    const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "toString", rungs: [80], reps: 2, best: null });
+    assert.ok(!/function|native code/.test(text), "a bad mode never prints a function into the log");
+  }},
+
+  { name: "practice log: a Fixed drill reports its tempo, not tempo steps", fn: function (assert) {
+    const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "fixed", rungs: [96], reps: 8, best: null });
+    assert.ok(text.split("\n").includes("Tempo: 96 BPM"), text);
+    assert.ok(!/Tempo steps completed/.test(text));
+  }},
+
+  { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
+    const pb = core.createPracticePlayback(core.buildPlan("ladder",
+      { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));
+    pb.advanceBlock();
+    assert.equal(core.dynamicScale("swell", pb), 1);
+  }},
+
+  { name: "Praxis ids: 38 match, two are aliased, and every id maps to a skill id", fn: function (assert) {
+    assert.deepEqual(Object.keys(core.PRAXIS_ALIAS).sort(), ["double-stroke-open-roll", "single-paradiddle-diddle"]);
+    assert.equal(core.praxisSkillId("double-stroke-open-roll"), "rudiment.double-stroke-roll.core");
+    assert.equal(core.praxisSkillId("single-paradiddle-diddle"), "rudiment.paradiddle-diddle.core");
+    assert.equal(core.praxisSkillId("single-paradiddle"), "rudiment.single-paradiddle.core");
+    core.RUDIMENTS.forEach(function (r) {
+      assert.ok(/^rudiment\.[a-z0-9-]+\.core$/.test(core.praxisSkillId(r.id)), r.id);
+    });
+    assert.throws(function () { core.praxisSkillId("nope"); });
+    Object.keys(core.PRAXIS_ALIAS).forEach(function (k) {
+      assert.ok(MAP[k], "alias key " + k + " is one of this app's ids");
+      assert.ok(!MAP[core.PRAXIS_ALIAS[k]], "alias value " + core.PRAXIS_ALIAS[k] + " is not");
+    });
   }},
 
   ];

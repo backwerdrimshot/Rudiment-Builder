@@ -42,6 +42,8 @@ export const SITE_ASSETS = [
   "js/rudiment-app.js",
   "js/rudiment-core.js",
   "js/rudiment-data.js",
+  "assets/vendor/qrcode-generator/qrcode.js",
+  "assets/vendor/qrcode-generator/LICENSE.txt",
   "favicon.svg",
   "favicon.ico",
   "brs-monogram.svg",
