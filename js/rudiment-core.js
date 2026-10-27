@@ -914,6 +914,81 @@ function progressSummary(info) {
   return lines.join("\n");
 }
 
+/* ---------------- quiz: "Name that rudiment" ----------------
+   Multiple choice, four names, one right answer. Questions are either by ear
+   (the rudiment is played, the student names it) or by notation (the drawn
+   card is shown). Nothing is graded against playing: the app never listens, and
+   a quiz score is not kept anywhere. Question building is pure and takes an
+   rng, so a test can fix it. Distractors come from the same family first, then
+   the same level, then anywhere in the pool, then outside the pool, so a
+   question is always four distinct names however small the scope. */
+const QUIZ_CHOICES = 4;
+const QUIZ_COUNT = 10;
+const QUIZ_SCOPES = { all: true, Beginner: true, Intermediate: true, Advanced: true, learned: true };
+const QUIZ_TYPES = { ear: true, eye: true, mixed: true };
+function quizPool(scope, progress) {
+  if (!Object.prototype.hasOwnProperty.call(QUIZ_SCOPES, scope)) throw new Error('unknown quiz scope "' + scope + '"');
+  return Data.RUDIMENTS.filter(function (r) {
+    if (scope === "all") return true;
+    if (scope === "learned") return !!(progress && progress.learned && progress.learned[r.id]);
+    return r.level === scope;
+  }).map(function (r) { return r.id; });
+}
+function shuffled(list, rng) {
+  const a = list.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.min(i, Math.floor(rng() * (i + 1)));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function quizDistractors(answerId, pool, rng) {
+  const ans = Data.RUDIMENT_MAP[answerId];
+  const others = Data.RUDIMENTS.filter(function (r) { return r.id !== answerId; });
+  const inPool = {};
+  pool.forEach(function (id) { inPool[id] = true; });
+  const tiers = [
+    function (r) { return inPool[r.id] && r.family === ans.family; },
+    function (r) { return inPool[r.id] && r.level === ans.level; },
+    function (r) { return inPool[r.id]; },
+    function (r) { return r.family === ans.family; },
+    function () { return true; },
+  ];
+  const picked = [];
+  tiers.forEach(function (test) {
+    shuffled(others.filter(function (r) { return test(r) && picked.indexOf(r.id) === -1; }), rng).forEach(function (r) {
+      if (picked.length < QUIZ_CHOICES - 1) picked.push(r.id);
+    });
+  });
+  return picked;
+}
+function buildQuiz(opts) {
+  const rng = opts.rng || Math.random;
+  const type = opts.type || "mixed";
+  if (!Object.prototype.hasOwnProperty.call(QUIZ_TYPES, type)) throw new Error('unknown quiz type "' + type + '"');
+  const pool = (opts.pool || []).filter(function (id) { return Data.RUDIMENT_MAP[id]; });
+  const count = opts.count === undefined ? QUIZ_COUNT : intIn(opts.count, 1, 40, "count");
+  if (pool.length < 1) throw new Error("the quiz pool is empty");
+  // Every answer is different until the pool runs out, then the pool repeats.
+  let answers = [];
+  while (answers.length < count) answers = answers.concat(shuffled(pool, rng));
+  answers = answers.slice(0, count);
+  return answers.map(function (id) {
+    const kind = type === "mixed" ? (rng() < 0.5 ? "ear" : "eye") : type;
+    const choices = shuffled([id].concat(quizDistractors(id, pool, rng)), rng);
+    return { type: kind, answer: id, choices: choices };
+  });
+}
+function scoreQuiz(questions, picks) {
+  const missed = [];
+  let correct = 0;
+  questions.forEach(function (q, i) {
+    if (picks[i] === q.answer) correct++;
+    else if (missed.indexOf(q.answer) === -1) missed.push(q.answer);
+  });
+  return { correct: correct, total: questions.length, missed: missed };
+}
+
 function logLines(run) {
   const r = Data.RUDIMENT_MAP[run.rudimentId];
   if (!r) throw new Error("unknown rudiment " + run.rudimentId);
@@ -1072,6 +1147,8 @@ const RudimentCore = {
   setGoal: setGoal, setLearned: setLearned, clearHistory: clearHistory, historySeries: historySeries,
   goalStatus: goalStatus, learningPath: learningPath, pathStatus: pathStatus,
   closestToGoal: closestToGoal, progressSummary: progressSummary,
+  QUIZ_CHOICES: QUIZ_CHOICES, QUIZ_COUNT: QUIZ_COUNT,
+  quizPool: quizPool, buildQuiz: buildQuiz, scoreQuiz: scoreQuiz,
   buildLayers: buildLayers,
   withLayer: withLayer,
   validateRudiment: validateRudiment,

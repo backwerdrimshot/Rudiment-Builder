@@ -558,6 +558,31 @@
   .hist svg{display:block;width:100%;max-width:420px;height:auto;color:var(--ink)}
   .hist .hist-cap{margin:4px 0 0;color:var(--ink-soft);font-size:.78rem;font-weight:700}
 
+  /* Quiz */
+  .quiz-scope{flex-wrap:wrap}
+  .quiz-scope button{flex:1 1 auto;min-height:44px}
+  .quiz-count{margin:0;color:var(--ink-soft);font-size:.85rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .quiz-prompt{margin:6px 0 12px;font-family:var(--serif);font-size:1.15rem;font-weight:700}
+  .quiz-media{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:12px}
+  .quiz-media .btn,.quiz-choice,#btnQuizNext{min-height:44px}
+  .quiz-media[data-kind="eye"] #btnQuizPlay{display:none}
+  .quiz-media[data-kind="ear"] #quizCard{display:none}
+  .quiz-card svg,.quiz-card img{display:block;color:var(--ink);max-width:100%;height:auto;width:calc(var(--card-w) * .045px);aspect-ratio:var(--card-w) / var(--card-h)}
+  @media (prefers-color-scheme:dark){.quiz-card img{filter:invert(1)}}
+  .quiz-choices{display:grid;gap:8px}
+  .quiz-choice{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:10px 14px;border:2px solid var(--ink);border-radius:10px;background:var(--warm-white);color:var(--ink);font:inherit;font-weight:800;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+  .quiz-choice:disabled{cursor:default;opacity:1}
+  .quiz-choice .mark{width:1.2em;text-align:center}
+  .quiz-choice.right{background:var(--ink);color:var(--warm-white)}
+  .quiz-choice.wrong{border-style:dashed;text-decoration:line-through}
+  .quiz-feedback{min-height:1.4em;margin:12px 0 0;font-weight:800}
+  .quiz-reveal{margin-top:8px}
+  .quiz-reveal:empty{display:none}
+  .quiz-score{font-family:var(--serif);font-size:1.4rem;font-weight:800;margin:0 0 10px}
+  #quizMissed ul{list-style:none;margin:6px 0 12px;padding:0;display:grid;gap:8px}
+  #quizMissed li{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  #quizMissed li .btn{min-height:44px}
+
   /* Routine */
   .rt-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
   .rt-list:empty{display:none}
@@ -935,6 +960,15 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
     </section>
 
+    <!-- ============ QUIZ ============ -->
+    <section class="panel area-quiz" aria-labelledby="hQuiz">
+      <h2 id="hQuiz">Quiz</h2>
+      <p class="hint">Name that rudiment, by ear or from the notation. Ten questions. The score is not saved anywhere.</p>
+      <div class="share-row">
+        <button class="btn ghost" id="btnQuiz" type="button" data-dialog-open="workspace-quiz">Start a quiz…</button>
+      </div>
+    </section>
+
     <!-- ============ MY PROGRESS ============ -->
     <section class="panel area-progress" aria-labelledby="hProgress">
       <h2 id="hProgress">My progress</h2>
@@ -1111,6 +1145,50 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   </div>
 </dialog>
 
+<dialog id="workspace-quiz" class="workspace-dialog" aria-labelledby="workspace-quiz-title">
+  <div class="workspace-dialog-heading"><h2 id="workspace-quiz-title">Name that rudiment</h2><button type="button" data-close-dialog aria-label="Close quiz">Close</button></div>
+  <div id="quizSetup">
+    <p class="hint">Four names, one right answer. Nothing here is graded against your playing, and the score is not kept.</p>
+    <div class="lead-row"><span class="lbl" id="quizTypeLbl">Questions</span>
+      <div class="seg" role="group" aria-labelledby="quizTypeLbl" id="segQuizType">
+        <button type="button" data-val="ear" aria-pressed="false">By ear</button>
+        <button type="button" data-val="eye" aria-pressed="false">Notation</button>
+        <button type="button" data-val="mixed" aria-pressed="true">Mixed</button>
+      </div></div>
+    <div class="lead-row"><span class="lbl" id="quizScopeLbl">From</span>
+      <div class="seg quiz-scope" role="group" aria-labelledby="quizScopeLbl" id="segQuizScope">
+        <button type="button" data-val="all" aria-pressed="true">All 40</button>
+        <button type="button" data-val="Beginner" aria-pressed="false">Beginner</button>
+        <button type="button" data-val="Intermediate" aria-pressed="false">Intermediate</button>
+        <button type="button" data-val="Advanced" aria-pressed="false">Advanced</button>
+        <button type="button" data-val="learned" aria-pressed="false">Learned</button>
+      </div></div>
+    <p class="hint" id="quizSetupNote" role="status"></p>
+    <div class="share-row"><button class="btn primary" id="btnQuizStart" type="button">Start quiz</button></div>
+  </div>
+  <div id="quizPlay" hidden>
+    <p class="quiz-count" id="quizCount"></p>
+    <p class="quiz-prompt" id="quizPrompt"></p>
+    <div class="quiz-media">
+      <button class="btn ghost" id="btnQuizPlay" type="button">Play it</button>
+      <div class="notation-card quiz-card" id="quizCard"></div>
+      <p class="sr-only" id="quizCardDesc"></p>
+    </div>
+    <div class="quiz-choices" id="quizChoices" role="group" aria-label="Choose the rudiment"></div>
+    <p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite"></p>
+    <div class="quiz-reveal notation-card quiz-card" id="quizReveal"></div>
+    <div class="share-row"><button class="btn primary" id="btnQuizNext" type="button" hidden>Next</button></div>
+  </div>
+  <div id="quizDone" hidden>
+    <p class="quiz-score" id="quizScore" role="status"></p>
+    <div id="quizMissed"></div>
+    <div class="share-row">
+      <button class="btn primary" id="btnQuizAgain" type="button">New quiz</button>
+      <button class="btn ghost" type="button" data-close-dialog>Close</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="workspace-about" class="workspace-dialog" aria-labelledby="workspace-about-title">
   <div class="workspace-dialog-heading"><h2 id="workspace-about-title">About Rudiment Room</h2><button type="button" data-close-dialog aria-label="Close about">Close</button></div>
   <p>Rudiment Room is a free practice app by <a class="shop-link" href="https://backwerdrhythmshop.com">Backwerd Rhythm Shop</a> for learning and practicing the 40 PAS International Drum Rudiments.</p>
@@ -1135,7 +1213,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.4";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27.5";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 

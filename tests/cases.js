@@ -1497,6 +1497,65 @@ function getCases(core) {
     assert.ok(core.progressSummary({ date: "2026-10-27", progress: core.emptyProgress() }).includes("Next on the path: " + core.RUDIMENT_MAP[core.learningPath()[0]].name));
   }},
 
+  { name: "quiz: pools follow level and the learned marks, and reject unknown scopes", fn: function (assert) {
+    assert.equal(core.quizPool("all").length, 40);
+    const lv = ["Beginner", "Intermediate", "Advanced"].map(function (l) { return core.quizPool(l); });
+    assert.equal(lv[0].length + lv[1].length + lv[2].length, 40);
+    lv.forEach(function (list, i) { list.forEach(function (id) { assert.equal(core.RUDIMENT_MAP[id].level, ["Beginner", "Intermediate", "Advanced"][i]); }); });
+    assert.deepEqual(core.quizPool("learned", core.emptyProgress()), []);
+    const p = core.setLearned(core.setLearned(core.emptyProgress(), "flam-tap", "2026-10-20"), "single-paradiddle", "2026-10-20");
+    assert.deepEqual(core.quizPool("learned", p).sort(), ["flam-tap", "single-paradiddle"]);
+    assert.throws(function () { core.quizPool("everything"); });
+    assert.throws(function () { core.quizPool("toString"); });
+  }},
+
+  { name: "quiz: every question has four distinct names, one of them right, whatever the pool", fn: function (assert) {
+    const seeded = function (seed) { let x = seed; return function () { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; }; };
+    [["all", 7], ["Beginner", 11], ["Advanced", 3]].forEach(function (c) {
+      const qs = core.buildQuiz({ pool: core.quizPool(c[0]), type: "mixed", rng: seeded(c[1]) });
+      assert.equal(qs.length, core.QUIZ_COUNT);
+      qs.forEach(function (q) {
+        assert.equal(q.choices.length, core.QUIZ_CHOICES);
+        assert.equal(new Set(q.choices).size, core.QUIZ_CHOICES, "distinct");
+        assert.ok(q.choices.indexOf(q.answer) !== -1, "answer is among the choices");
+        q.choices.forEach(function (id) { assert.ok(core.RUDIMENT_MAP[id], id); });
+        assert.ok(q.type === "ear" || q.type === "eye");
+      });
+      assert.equal(new Set(qs.map(function (q) { return q.answer; })).size, core.QUIZ_COUNT, "no repeated answer while the pool lasts");
+    });
+    const tiny = core.buildQuiz({ pool: ["flam-tap", "flam-accent"], count: 6, type: "ear", rng: seeded(5) });
+    assert.equal(tiny.length, 6);
+    tiny.forEach(function (q) { assert.equal(new Set(q.choices).size, 4, "a two-rudiment pool still gets four names"); assert.equal(q.type, "ear"); });
+    const one = core.buildQuiz({ pool: ["flam-tap"], count: 2, type: "eye", rng: seeded(1) });
+    one.forEach(function (q) { assert.equal(q.answer, "flam-tap"); assert.equal(new Set(q.choices).size, 4); });
+  }},
+
+  { name: "quiz: distractors prefer the same family, and the quiz is reproducible from its rng", fn: function (assert) {
+    const seeded = function (seed) { let x = seed; return function () { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; }; };
+    const a = core.buildQuiz({ pool: core.quizPool("all"), type: "eye", rng: seeded(42) });
+    const b = core.buildQuiz({ pool: core.quizPool("all"), type: "eye", rng: seeded(42) });
+    assert.deepEqual(a, b, "same rng, same quiz");
+    assert.notDeepEqual(a, core.buildQuiz({ pool: core.quizPool("all"), type: "eye", rng: seeded(43) }));
+    // With the whole catalog in play every wrong name comes from the answer's own family when it has enough members.
+    a.forEach(function (q) {
+      const fam = core.RUDIMENT_MAP[q.answer].family;
+      const same = core.RUDIMENTS.filter(function (r) { return r.family === fam; }).length;
+      const fromFam = q.choices.filter(function (id) { return core.RUDIMENT_MAP[id].family === fam; }).length;
+      assert.equal(fromFam, Math.min(same, core.QUIZ_CHOICES), q.answer + " draws its wrong names from its family");
+    });
+    assert.throws(function () { core.buildQuiz({ pool: [], type: "ear" }); });
+    assert.throws(function () { core.buildQuiz({ pool: ["flam-tap"], type: "psychic" }); });
+    assert.throws(function () { core.buildQuiz({ pool: ["flam-tap"], type: "constructor" }); });
+    assert.equal(core.buildQuiz({ pool: ["nope", "flam-tap"], type: "ear", count: 1 })[0].answer, "flam-tap", "unknown ids are ignored");
+  }},
+
+  { name: "quiz: scoring counts right answers and lists each missed rudiment once", fn: function (assert) {
+    const qs = [{ answer: "a" }, { answer: "b" }, { answer: "a" }, { answer: "c" }];
+    assert.deepEqual(core.scoreQuiz(qs, ["a", "x", "y", "c"]), { correct: 2, total: 4, missed: ["b", "a"] });
+    assert.deepEqual(core.scoreQuiz(qs, ["a", "b", "a", "c"]), { correct: 4, total: 4, missed: [] });
+    assert.deepEqual(core.scoreQuiz(qs, []), { correct: 0, total: 4, missed: ["a", "b", "c"] });
+  }},
+
   { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
     const pb = core.createPracticePlayback(core.buildPlan("ladder",
       { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));

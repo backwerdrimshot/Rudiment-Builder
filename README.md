@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-27.4`
+- **Build:** `2026-10-27.5`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -120,6 +120,16 @@ the app (see *Sources & educational lineage* below).
   which rises from soft to full and back across each tempo's reps (two reps
   play soft, then full). The core decides the level from the playback position;
   a change lands on the next stroke without stopping, and a share link carries it
+- **Quiz: name that rudiment** (in Settings) — ten multiple-choice questions, four
+  names each, one right: **by ear** (the written rudiment is played, right lead,
+  at its default tempo, in the chosen stroke sound) or **from the notation** (the
+  drawn card, with a description that leaves the name out), or mixed, drawn from
+  all 40, a level, or the rudiments marked learned. Wrong names come from the
+  same family first. A right or wrong answer shows its name, and an ear question
+  then shows what was heard written down; the results list what was missed with a
+  **Practice it** button. Nothing is graded against playing and the score is not
+  stored. No two rudiments are identical on the data, so every question has one
+  right answer.
 - **My progress** (in Settings) — the student's own record for the chosen
   rudiment and hand, on the device only. Each **Clean at** mark is also kept as
   a dated entry (the day's best, newest 90 kept) and drawn as a small line chart

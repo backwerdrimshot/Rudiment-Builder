@@ -33,7 +33,7 @@
 "use strict";
 
 // BUILD MANIFEST — written by build.mjs; do not edit in dist.
-var BUILD = "2026-10-27.4";
+var BUILD = "2026-10-27.5";
 var ASSETS = [
   "./",
   "apple-touch-icon.png",

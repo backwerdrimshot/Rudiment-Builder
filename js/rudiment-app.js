@@ -748,9 +748,13 @@ function renderNotation(r, mirrored) {
   notationShown = file;
   var host = $("notationCard");
   host.textContent = "";
-  var label = r.name + " written in notation, right-hand lead";
+  mountCard(host, file, r.name + " written in notation, right-hand lead", function () { return notationShown === file; });
+}
+// Draw a notation card into host. `wanted` says whether the answer is still
+// wanted when the fetch comes back (another rudiment may have been chosen).
+function mountCard(host, file, label, wanted) {
   fetchNotation(file).then(function (source) {
-    if (notationShown !== file) return; // another rudiment was chosen meanwhile
+    if (!wanted()) return;
     var card;
     if (source) {
       card = document.importNode(source, true);
@@ -1836,6 +1840,149 @@ function copyProgress() {
   else fail();
 }
 
+/* ---------------- quiz: name that rudiment ----------------
+   Core builds the questions (Core.buildQuiz) and scores them. This only shows
+   them. By ear, the rudiment is played from the written pattern at its default
+   tempo, right lead, in the chosen stroke sound; by notation, the drawn card is
+   shown with a description that leaves the name out. The score lives in memory
+   for the round and is never stored. */
+var quiz = null; // { questions, i, picks, answered, type, scope, sampleTimer }
+var quizType = "mixed", quizScope = "all";
+function quizView(which) {
+  ["quizSetup", "quizPlay", "quizDone"].forEach(function (id) { $(id).hidden = id !== which; });
+}
+function openQuiz() {
+  stopIfActive();
+  stopQuizSample();
+  quiz = null;
+  quizView("quizSetup");
+  var n = Core.quizPool("learned", progress).length;
+  $("quizSetupNote").textContent = n < Core.QUIZ_CHOICES
+    ? "The Learned scope needs at least " + Core.QUIZ_CHOICES + " rudiments marked learned (you have " + n + ")." : "";
+}
+function startQuiz() {
+  var pool = Core.quizPool(quizScope, progress);
+  if (quizScope === "learned" && pool.length < Core.QUIZ_CHOICES) {
+    $("quizSetupNote").textContent = "Mark at least " + Core.QUIZ_CHOICES + " rudiments as learned first, or pick a level.";
+    return;
+  }
+  quiz = { questions: Core.buildQuiz({ pool: pool, type: quizType }), i: 0, picks: [], answered: false, sampleTimer: null };
+  showQuestion();
+}
+function stopQuizSample() {
+  if (quiz && quiz.sampleTimer) { clearTimeout(quiz.sampleTimer); quiz.sampleTimer = null; }
+  if (audio) killPending();
+  $("btnQuizPlay").textContent = "Play it";
+}
+// The written rudiment, right lead, a few cycles at its default tempo.
+function playQuizSample(id) {
+  var msg = $("quizFeedback");
+  if (settings.muted) { msg.textContent = "Sound is muted. Turn it on with the Sound button, then play it again."; return; }
+  try { initAudio(); } catch (e) { msg.textContent = "This browser can't play audio here."; return; }
+  if (audio.state !== "running") audio.resume();
+  stopQuizSample();
+  var r = Core.RUDIMENT_MAP[id], pat = Core.withLead(r, "R"), events = Core.expandPattern(pat);
+  var bpm = r.tempo.defaultBpm, beat = Core.beatSeconds(bpm);
+  var cycles = Math.max(1, Math.min(4, Math.ceil(8 / pat.cycleBeats)));
+  var t0 = audio.currentTime + 0.15;
+  for (var c = 0; c < cycles; c++) events.forEach(function (ev) {
+    var t = t0 + (c * pat.cycleBeats + ev.beatPos) * beat;
+    if (ev.graces.length) {
+      Core.graceTimes(t, ev.graces.length, Core.graceLeadSeconds(bpm, pat.slotsPerBeat)).forEach(function (gt, i) {
+        playStroke(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, ev.graces[i].velocity, false, 0);
+      });
+    }
+    playStroke(t, ev.hand, ev.velocity, ev.accent, ev.buzz ? ev.lengthBeats * beat : 0);
+  });
+  $("btnQuizPlay").textContent = "Playing\u2026";
+  quiz.sampleTimer = setTimeout(function () { quiz.sampleTimer = null; $("btnQuizPlay").textContent = "Play it again"; },
+    (cycles * pat.cycleBeats * beat + 0.4) * 1000);
+}
+function showQuestion() {
+  var q = quiz.questions[quiz.i];
+  quiz.answered = false;
+  quizView("quizPlay");
+  $("quizCount").textContent = "Question " + (quiz.i + 1) + " of " + quiz.questions.length;
+  $("quizPrompt").textContent = q.type === "ear" ? "Listen, then name the rudiment." : "Read the notation, then name the rudiment.";
+  $("quizFeedback").textContent = "";
+  $("quizReveal").textContent = "";
+  $("btnQuizNext").hidden = true;
+  $("btnQuizPlay").textContent = "Play it";
+  var media = document.querySelector(".quiz-media");
+  media.dataset.kind = q.type;
+  $("quizCard").textContent = "";
+  $("quizCardDesc").textContent = "";
+  if (q.type === "eye") {
+    var r = Core.RUDIMENT_MAP[q.answer];
+    mountCard($("quizCard"), Core.notationCard(r), "Notation to name, right-hand lead",
+      function () { return quiz && quiz.questions[quiz.i] === q; });
+    // No name in it: describePattern speaks of strokes, never of the rudiment.
+    $("quizCardDesc").textContent = Core.describePattern(Core.withLead(r, "R"));
+    $("quizCard").setAttribute("aria-describedby", "quizCardDesc");
+  }
+  var host = $("quizChoices");
+  host.textContent = "";
+  q.choices.forEach(function (id, n) {
+    var b = el("button", "quiz-choice");
+    b.type = "button"; b.dataset.id = id;
+    var mark = el("span", "mark"); mark.setAttribute("aria-hidden", "true");
+    var name = el("span"); name.textContent = Core.RUDIMENT_MAP[id].name;
+    b.appendChild(mark); b.appendChild(name);
+    host.appendChild(b);
+  });
+  if (q.type === "ear") { playQuizSample(q.answer); }
+  var first = host.querySelector("button"); if (first) first.focus();
+}
+function answerQuiz(id) {
+  if (!quiz || quiz.answered) return;
+  var q = quiz.questions[quiz.i];
+  quiz.answered = true;
+  quiz.picks[quiz.i] = id;
+  stopQuizSample();
+  var right = id === q.answer;
+  $("quizChoices").querySelectorAll("button").forEach(function (b) {
+    b.disabled = true;
+    var mark = b.firstChild;
+    if (b.dataset.id === q.answer) { b.classList.add("right"); mark.textContent = "\u2713"; }
+    else if (b.dataset.id === id) { b.classList.add("wrong"); mark.textContent = "\u2717"; }
+  });
+  var r = Core.RUDIMENT_MAP[q.answer];
+  $("quizFeedback").textContent = right ? "Correct \u2014 " + r.name + "." : "Not quite. It was " + r.name + ".";
+  if (q.type === "ear") {
+    // Show what they heard, written down.
+    mountCard($("quizReveal"), Core.notationCard(r), r.name + " written in notation, right-hand lead",
+      function () { return quiz && quiz.questions[quiz.i] === q; });
+  }
+  var last = quiz.i === quiz.questions.length - 1;
+  var next = $("btnQuizNext");
+  next.textContent = last ? "See my score" : "Next";
+  next.hidden = false;
+  next.focus();
+}
+function nextQuizQuestion() {
+  if (!quiz || !quiz.answered) return;
+  if (quiz.i < quiz.questions.length - 1) { quiz.i++; showQuestion(); return; }
+  var res = Core.scoreQuiz(quiz.questions, quiz.picks);
+  quizView("quizDone");
+  $("quizScore").textContent = "You got " + res.correct + " of " + res.total + ".";
+  var host = $("quizMissed");
+  host.textContent = "";
+  if (!res.missed.length) {
+    var p = el("p", "hint"); p.textContent = "Every one right. Try a harder level, or by ear only."; host.appendChild(p);
+    return;
+  }
+  var h = el("p", "hint"); h.textContent = "Worth another look:"; host.appendChild(h);
+  var ul = el("ul");
+  res.missed.forEach(function (id) {
+    var li = el("li"), t = el("strong"); t.textContent = Core.RUDIMENT_MAP[id].name;
+    var b = el("button", "btn ghost mini"); b.type = "button"; b.textContent = "Practice it";
+    b.setAttribute("aria-label", "Practice " + Core.RUDIMENT_MAP[id].name);
+    b.addEventListener("click", function () { $("workspace-quiz").close(); chooseDrill(id, null); });
+    li.appendChild(t); li.appendChild(b); ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+
 /* ---------------- routines ----------------
    A routine is up to Core.ROUTINE_MAX saved drills played in order. Each item
    is run through the same path as a hand-started drill: its settings are
@@ -2075,6 +2222,15 @@ function wireEvents() {
   $("btnStart").addEventListener("click", onStartButton);
   $("btnReset").addEventListener("click", resetPractice);
   $("btnShare").addEventListener("click", copyShareLink);
+  $("btnQuiz").addEventListener("click", openQuiz);
+  $("btnQuizStart").addEventListener("click", startQuiz);
+  $("btnQuizNext").addEventListener("click", nextQuizQuestion);
+  $("btnQuizAgain").addEventListener("click", openQuiz);
+  $("btnQuizPlay").addEventListener("click", function () { if (quiz) playQuizSample(quiz.questions[quiz.i].answer); });
+  $("quizChoices").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) answerQuiz(b.dataset.id); });
+  $("workspace-quiz").addEventListener("close", function () { stopQuizSample(); });
+  wireSeg("segQuizType", function (v) { quizType = v; });
+  wireSeg("segQuizScope", function (v) { quizScope = v; $("quizSetupNote").textContent = ""; });
   $("learnedToggle").addEventListener("change", onLearnedToggle);
   $("btnSetGoal").addEventListener("click", onSetGoal);
   $("myGoal").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); onSetGoal(); } });
