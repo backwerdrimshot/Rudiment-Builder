@@ -32,6 +32,14 @@ function fail(msg, detail) { throw new Error((msg || "assertion failed") + (deta
 const assert = {
   ok(v, msg) { if (!v) fail(msg, "expected truthy, got " + JSON.stringify(v)); },
   equal(a, b, msg) { if (a !== b) fail(msg, "expected " + JSON.stringify(b) + ", got " + JSON.stringify(a)); },
+  throws(fn, msg) {
+    let threw = false;
+    try { fn(); } catch (_) { threw = true; }
+    if (!threw) fail(msg, "expected function to throw");
+  },
+  notDeepEqual(a, b, msg) {
+    if (JSON.stringify(a) === JSON.stringify(b)) fail(msg, "expected different values");
+  },
   deepEqual(a, b, msg) {
     const ja = JSON.stringify(a), jb = JSON.stringify(b);
     if (ja !== jb) fail(msg, "expected " + jb + ",\n     got " + ja);

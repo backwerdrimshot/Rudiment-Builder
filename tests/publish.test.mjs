@@ -9,6 +9,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import http from "node:http";
+import os from "node:os";
 import { extractReadmeCheck, extractWranglerPin, liveVersion, verifyLive } from "../tools/publish.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,6 +30,71 @@ test("the extracted script passes on this repository, as the workflow's step doe
   const script = extractReadmeCheck(WORKFLOW);
   const r = spawnSync("bash", ["-c", `set -euo pipefail\n${script}`], { cwd: ROOT, encoding: "utf8" });
   assert.equal(r.status, 0, `${r.stdout}\n${r.stderr}`);
+});
+
+test("README calendar validation accepts real dates and rejects normalized or malformed dates", () => {
+  const script = extractReadmeCheck(WORKFLOW);
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "rudiment-readme-"));
+  const git = (...args) => {
+    const r = spawnSync("git", args, { cwd: fixture, encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+  };
+  try {
+    git("init", "--quiet");
+    fs.writeFileSync(path.join(fixture, "index.html"), fs.readFileSync(path.join(ROOT, "index.html")));
+    git("add", "index.html");
+    for (const [date, valid] of [
+      ["2024-02-29", true], ["2026-10-27.8", true],
+      ["2026-02-29", false], ["2026-04-31", false],
+      ["2026-13-01", false], ["2026-00-01", false], ["2026-10-00", false],
+      ["2026-1-01", false], ["2026-10-27garbage", false],
+    ]) {
+      fs.writeFileSync(path.join(fixture, "README.md"), fs.readFileSync(path.join(ROOT, "README.md"), "utf8")
+        .replace(/(- \*\*Build:\*\* `)[^`]+/, "$1" + date));
+      // The other release checks still run: a valid date must also occur in app code.
+      fs.writeFileSync(path.join(fixture, "index.html"), fs.readFileSync(path.join(ROOT, "index.html"), "utf8") + "\n" + date);
+      const r = spawnSync("/bin/bash", ["-c", script], { cwd: fixture, encoding: "utf8" });
+      assert.equal(r.status === 0, valid, `${date}: ${r.stdout}\n${r.stderr}`);
+    }
+    fs.writeFileSync(path.join(fixture, "README.md"), fs.readFileSync(path.join(ROOT, "README.md"), "utf8")
+      .replace("## Support and feedback", "## Missing support"));
+    const r = spawnSync("/bin/bash", ["-c", script], { cwd: fixture, encoding: "utf8" });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stdout, /Missing ## Support and feedback/);
+  } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
+});
+
+test("README pull-request checks still require a build bump for app changes on Bash 3.2", () => {
+  const script = extractReadmeCheck(WORKFLOW).replace('[[ "push" == "pull_request" ]]', '[[ "pull_request" == "pull_request" ]]');
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "rudiment-readme-pr-"));
+  const git = (...args) => {
+    const r = spawnSync("git", args, { cwd: fixture, encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+  };
+  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
+  const app = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const build = readme.match(/^- \*\*Build:\*\* `([^`]+)`/m)[1];
+  const check = () => spawnSync("/bin/bash", ["-c", script], { cwd: fixture, encoding: "utf8" });
+  try {
+    git("init", "--quiet");
+    git("config", "user.name", "Release validation fixture");
+    git("config", "user.email", "fixture@example.invalid");
+    fs.writeFileSync(path.join(fixture, "README.md"), readme);
+    fs.writeFileSync(path.join(fixture, "index.html"), app);
+    git("add", "."); git("commit", "--quiet", "-m", "baseline");
+    git("update-ref", "refs/remotes/origin/main", "HEAD");
+    fs.writeFileSync(path.join(fixture, "test fixture.md"), "documentation only");
+    git("add", "."); git("commit", "--quiet", "-m", "docs");
+    assert.equal(check().status, 0, "documentation needs no build bump");
+    fs.writeFileSync(path.join(fixture, "app with spaces.js"), "// app change");
+    git("add", "."); git("commit", "--quiet", "-m", "app");
+    const unchanged = check();
+    assert.notEqual(unchanged.status, 0);
+    assert.match(unchanged.stdout, /App changes require a new build date/);
+    fs.writeFileSync(path.join(fixture, "README.md"), readme.replace(build, "2026-10-27.999"));
+    fs.writeFileSync(path.join(fixture, "index.html"), app.replace(build, "2026-10-27.999"));
+    assert.equal(check().status, 0, "a distinct valid build passes the same check");
+  } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
 });
 
 test("the extractor stops at the end of the step, and refuses what it cannot read", () => {
