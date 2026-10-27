@@ -510,6 +510,48 @@
   .log-row{display:flex;justify-content:center;margin:10px 0 0}
   .log-row[hidden]{display:none}
   .share-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  .share-row .btn{min-height:44px}
+  .goal-line{color:var(--accent-ink);font-weight:700}
+  .goal-line[hidden]{display:none}
+
+  /* Assignment dialog: the QR is always black on white, whatever the theme, so it scans. */
+  .assign-drill{margin:0 0 12px;font-weight:700}
+  .assign-goal{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .assign-goal label,.assign-link-lbl{font-weight:700;font-size:.9rem}
+  .assign-goal input,.assign-link{font:inherit;color:var(--ink);background:var(--warm-white);border:2px solid var(--ink);border-radius:8px;padding:8px 10px;min-height:44px;box-sizing:border-box}
+  .assign-goal input{width:7em}
+  .assign-link{display:block;width:100%;margin-top:4px;font-size:.8rem}
+  .assign-qr{display:flex;justify-content:center;margin:14px 0}
+  .assign-qr svg{width:min(260px,70vw);height:auto;border:2px solid var(--ink);border-radius:6px;background:#fff}
+
+  /* Print sheet: hidden on screen; when printing an assignment it is the whole page. */
+  #printSheet{display:none}
+  @media print{
+    body.printing-assignment .wrap,body.printing-assignment dialog{display:none !important}
+    body.printing-assignment #printSheet{display:block;color:#000;background:#fff;text-align:center;padding:24px;font-family:inherit}
+    #printSheet .ps-brand{font-size:.9rem;letter-spacing:.14em;text-transform:uppercase;margin:0}
+    #printSheet h1{font-size:2.2rem;margin:.2em 0 .4em}
+    #printSheet .ps-rud{font-size:1.6rem;font-weight:800;margin:.2em 0}
+    #printSheet .ps-line{font-size:1.15rem;margin:.1em 0}
+    #printSheet .ps-goal{font-size:1.4rem;font-weight:800;margin:.6em 0 0}
+    #printSheet .ps-qr{margin:22px auto 8px}
+    #printSheet .ps-qr svg{width:3.6in;height:auto;border:2px solid #000}
+    #printSheet .ps-scan{font-size:1.1rem;margin:0}
+    #printSheet .ps-url{font-size:.8rem;word-break:break-all;margin:10px auto;max-width:6in}
+    #printSheet .ps-note{font-size:.85rem;margin-top:24px}
+  }
+
+  /* Class view: big sticking and tempo, panels out of the way. Layout only. */
+  body.class-view .setup-row,body.class-view .settings-card,body.class-view .area-about,body.class-view footer.foot{display:none}
+  body.class-view .wrap{max-width:none}
+  body.class-view .cell .letter{font-size:clamp(2.6rem,7vw,5.5rem)}
+  body.class-view .cell .acc{height:1.4em;font-size:clamp(1.4rem,3vw,2.4rem)}
+  body.class-view .cell .grace{font-size:clamp(1.1rem,2.2vw,1.8rem)}
+  body.class-view .bpm-huge{font-size:clamp(3.5rem,9vw,8rem)}
+  body.class-view .status-grid{grid-template-columns:1fr;justify-items:start}
+  body.class-view .phase-word{font-size:clamp(1.6rem,4vw,3rem)}
+  body.class-view .area-sticking #sticking{max-height:none}
+  #btnClassView[aria-pressed="true"]{background:var(--ink);color:var(--warm-white)}
 
   footer.foot{margin-top:26px;text-align:center;color:var(--ink-soft);font-size:.76rem;line-height:1.6}
   footer.foot a{color:var(--ink-soft)}
@@ -770,6 +812,17 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
       <p class="hint" id="turnHint"></p>
 
+      <div class="lead-row dyn-row">
+        <span class="lbl" id="dynLbl">Dynamics</span>
+        <div class="seg" role="group" aria-labelledby="dynLbl" aria-describedby="dynHint" id="segDynamics">
+          <button type="button" data-val="full" aria-pressed="true">Full</button>
+          <button type="button" data-val="medium" aria-pressed="false">Medium</button>
+          <button type="button" data-val="soft" aria-pressed="false">Soft</button>
+          <button type="button" data-val="swell" aria-pressed="false">Swell</button>
+        </div>
+      </div>
+      <p class="hint" id="dynHint"></p>
+
       <div class="plan-preview" id="planPreview" aria-live="polite"></div>
       <p class="plan-meta" id="planMeta"></p>
 
@@ -793,6 +846,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
       <div class="share-row">
         <button class="btn ghost" id="btnShare" type="button" title="Copy a link that opens these exact settings">Copy link</button>
+        <button class="btn ghost" id="btnAssign" type="button" data-dialog-open="workspace-assign" title="Make a link, QR code and printable sheet for this drill, with an optional goal tempo">Assignment…</button>
         <span class="hint">Share one exact drill with a student.</span>
       </div>
     </section>
@@ -852,6 +906,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <button class="btn big primary" id="btnStart" type="button">Start</button>
         <button class="btn big ghost" id="btnReset" type="button">Reset</button>
         <button class="btn ghost" id="btnFull" type="button" title="Full screen" aria-label="Full screen"><span aria-hidden="true">⛶</span> <span class="fs-label">Full screen</span></button>
+        <button class="btn ghost" id="btnClassView" type="button" aria-pressed="false" title="Large sticking and tempo for a projector or shared screen"><span aria-hidden="true">▦ </span><span class="fs-label">Class view</span></button>
         <button class="btn ghost" id="btnMute" type="button" aria-pressed="false">Sound on</button>
         <button class="btn ghost" id="btnClean" type="button" disabled><span aria-hidden="true">✓ </span><span id="cleanLabel">Clean at —</span></button>
               <div class="tempo-step" id="tempoStep" role="group" aria-label="Tempo">
@@ -874,6 +929,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <div class="chips" id="rudChips"></div>
         <p class="teaching" id="teachingNote"></p>
         <p class="hint" id="tempoHint"></p>
+        <p class="hint goal-line" id="goalLine" hidden></p>
         <div class="best-row">
           <p class="hint" id="bestLine"></p>
           <button class="btn ghost mini" id="btnClearBest" type="button" hidden>Clear</button>
@@ -926,6 +982,24 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   </nav>
 </dialog>
 
+<dialog id="workspace-assign" class="workspace-dialog" aria-labelledby="workspace-assign-title">
+  <div class="workspace-dialog-heading"><h2 id="workspace-assign-title">Assign this drill</h2><button type="button" data-close-dialog aria-label="Close assignment">Close</button></div>
+  <p id="assignDrill" class="assign-drill"></p>
+  <div class="assign-goal">
+    <label for="goalInput">Goal tempo (optional)</label>
+    <input id="goalInput" type="number" min="30" max="300" step="1" inputmode="numeric" placeholder="BPM" />
+  </div>
+  <p class="hint" id="goalNote" role="status"></p>
+  <div class="assign-qr" id="assignQr"></div>
+  <p class="hint">Students scan the code or open the link and land on this drill, set up and ready. The goal is your target; the app does not listen, so students mark their own clean tempo.</p>
+  <label class="assign-link-lbl" for="assignLink">Link</label>
+  <input id="assignLink" class="assign-link" type="text" readonly />
+  <div class="share-row">
+    <button class="btn ghost" id="btnAssignCopy" type="button">Copy link</button>
+    <button class="btn ghost" id="btnAssignPrint" type="button">Print sheet</button>
+  </div>
+</dialog>
+
 <dialog id="workspace-about" class="workspace-dialog" aria-labelledby="workspace-about-title">
   <div class="workspace-dialog-heading"><h2 id="workspace-about-title">About Rudiment Room</h2><button type="button" data-close-dialog aria-label="Close about">Close</button></div>
   <p>Rudiment Room is a free practice app by <a class="shop-link" href="https://backwerdrhythmshop.com">Backwerd Rhythm Shop</a> for learning and practicing the 40 PAS International Drum Rudiments.</p>
@@ -937,6 +1011,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   <p class="dialog-copy">© 2026 Backwerd Rimshot, LLC. All rights reserved.</p>
 </dialog>
 
+<div id="printSheet" aria-hidden="true"></div>
+
+<script src="assets/vendor/qrcode-generator/qrcode.js"></script>
 <script src="js/rudiment-data.js"></script>
 <script src="js/rudiment-core.js"></script>
 <script src="js/rudiment-app.js"></script>
@@ -947,7 +1024,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-18.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-27";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 

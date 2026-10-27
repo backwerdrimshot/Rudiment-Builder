@@ -21,6 +21,7 @@ var DEFAULTS = {
   muted: false,
   sound: "marching",
   turn: 0,
+  dynamics: "full",
   bpm: 80,
   ladder: { startBpm: 60, endBpm: 100, stepBpm: 5, repsPerStep: 4 },
   oco: { startBpm: 60, peakBpm: 100, stepBpm: 5, repsPerStep: 2 },
@@ -470,13 +471,14 @@ function scheduleEntry(en, t, st, pb) {
       { t: t, type: "stroke", strokeIndex: en.ev.strokeIndex, beat: Math.floor(en.ev.beatPos) }, snap));
   } else {
     var ev = en.ev;
+    var scale = Core.dynamicScale(settings.dynamics, pb); // the core decides how loud this stroke is
     if (ev.graces.length) {
       var lead = Core.graceLeadSeconds(st.bpm, live.pattern.slotsPerBeat);
       Core.graceTimes(t, ev.graces.length, lead).forEach(function (gt, i) {
-        playStroke(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, ev.graces[i].velocity, false, 0);
+        playStroke(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, Core.scaleVelocity(ev.graces[i].velocity, scale), false, 0);
       });
     }
-    playStroke(t, ev.hand, ev.velocity, ev.accent,
+    playStroke(t, ev.hand, Core.scaleVelocity(ev.velocity, scale), ev.accent,
       ev.buzz ? ev.lengthBeats * Core.beatSeconds(st.bpm) : 0);
     live.visualQ.push(Object.assign(
       { t: t, type: "stroke", strokeIndex: ev.strokeIndex, beat: Math.floor(ev.beatPos) }, snap));
@@ -990,7 +992,7 @@ function finishSession() {
   var plan = live.runPlan;
   live.lastRun = plan ? { rudimentId: settings.rudimentId, lead: effectiveLead(), mode: plan.mode,
     rungs: plan.rungs.slice(), reps: plan.mode === "oco" ? settings.oco.repsPerStep : settings.ladder.repsPerStep,
-    link: shareUrl() } : null;
+    link: shareUrl(), goal: assignedGoal === null ? undefined : assignedGoal } : null;
   renderLogRow();
 }
 
@@ -1119,6 +1121,7 @@ function renderBest() {
     ? "Right lead: " + one(rec.R) + "\nLeft lead: " + one(rec.L)
     : "Best clean: not logged yet. While you are playing it cleanly, press \u201cClean at\u201d.";
   $("btnClearBest").hidden = !rec;
+  renderGoal();
   disarmClear();
   renderBestStart();
   cardIndex.forEach(function (c) {
@@ -1307,6 +1310,22 @@ function applyTurn(val) {
   syncPlanPreview();
   primeDisplay();
 }
+/* Not structural: dynamics scale each stroke as it is scheduled, so a change
+   lands on the next stroke without stopping playback. It travels in share
+   links, since how loudly a drill is practiced is part of the drill. */
+var DYNAMICS_HINT = {
+  full: "Full \u2014 the original loudness.",
+  medium: "Medium \u2014 every stroke at about three quarters of full, accents still above taps.",
+  soft: "Soft \u2014 every stroke at half of full. Keep the stick low and the accents clear.",
+  swell: "Swell \u2014 soft up to full and back to soft across each tempo\u2019s reps (across 8 reps in endless Fixed mode; two reps play soft, then full).",
+};
+function applyDynamics(val) {
+  if (Core.DYNAMICS.indexOf(val) === -1) return;
+  settings.dynamics = val;
+  persistSettings();
+  $("dynHint").textContent = DYNAMICS_HINT[val];
+  syncPlanPreview();
+}
 function applyLead(lead) {
   stopIfActive();
   settings.lead = lead;
@@ -1316,6 +1335,7 @@ function applyLead(lead) {
   primeDisplay();
   forgetHeard();
   renderBestStart();
+  renderGoal();
 }
 
 function fmtDuration(secs) {
@@ -1327,6 +1347,7 @@ function fmtDuration(secs) {
 /* The one-line summary the setup toggle shows, and the tempo chip in the
    docked bar. The tempo stepper only means something in Fixed mode: the
    other two modes walk their own tempos. */
+var DYNAMICS_NAME = { medium: "Medium", soft: "Soft", swell: "Swell" };
 var SOUND_NAME = { marching: "Marching snare", snare: "Synth snare", tones: "Tones" };
 function renderSummary() {
   var r = Core.RUDIMENT_MAP[settings.rudimentId];
@@ -1337,7 +1358,8 @@ function renderSummary() {
   else mode = "Open\u2011Close\u2011Open " + settings.oco.startBpm + "\u2192" + settings.oco.peakBpm + " BPM";
   $("summaryTop").textContent = (r ? r.name : "Rudiment") + " \u00b7 " + (settings.lead === "L" ? "Left" : "Right") + " lead";
   $("summarySub").textContent = mode + " \u00b7 " + (SOUND_NAME[settings.sound] || "") +
-    (settings.turn ? " \u00b7 Your turn x" + settings.turn : "");
+    (settings.turn ? " \u00b7 Your turn x" + settings.turn : "") +
+    (settings.dynamics !== "full" ? " \u00b7 " + DYNAMICS_NAME[settings.dynamics] : "");
   $("bpmQuick").textContent = settings.bpm;
   $("tempoStep").hidden = settings.mode !== "fixed";
 }
@@ -1406,6 +1428,7 @@ function coerceSettings(raw) {
   if (typeof raw.pulse === "boolean") settings.pulse = raw.pulse;
   if (typeof raw.muted === "boolean") settings.muted = raw.muted;
   if (raw.sound === "marching" || raw.sound === "snare" || raw.sound === "tones") settings.sound = raw.sound;
+  if (Core.DYNAMICS.indexOf(raw.dynamics) !== -1) settings.dynamics = raw.dynamics;
   var n;
   if ((n = toInt(raw.turn, 0, Core.TURN_MAX)) !== null) settings.turn = n;
   if ((n = toInt(raw.bpm, Core.BPM_MIN, Core.BPM_MAX)) !== null) settings.bpm = n;
@@ -1429,6 +1452,7 @@ function queryToRaw() {
     cue: q.get("cue") === null ? undefined : q.get("cue") === "1",
     pulse: q.get("pulse") === null ? undefined : q.get("pulse") === "1",
     turn: q.get("turn"),
+    dynamics: q.get("dyn"),
     // muted is deliberately NOT read from links — a shared drill never arrives silent.
     // Nor is sound: which voice plays the strokes is the listener's choice, not the drill's.
     bpm: q.get("bpm"),
@@ -1436,7 +1460,7 @@ function queryToRaw() {
     oco: { startBpm: q.get("os"), peakBpm: q.get("op"), stepBpm: q.get("ost"), repsPerStep: q.get("or") },
   };
 }
-function shareUrl() {
+function shareParams() {
   var p = new URLSearchParams();
   p.set("r", settings.rudimentId);
   p.set("lead", settings.lead);
@@ -1444,6 +1468,7 @@ function shareUrl() {
   p.set("cue", settings.cue ? "1" : "0");
   p.set("pulse", settings.pulse ? "1" : "0");
   p.set("turn", settings.turn);
+  p.set("dyn", settings.dynamics);
   if (settings.mode === "fixed") p.set("bpm", settings.bpm);
   if (settings.mode === "ladder") {
     p.set("ls", settings.ladder.startBpm); p.set("le", settings.ladder.endBpm);
@@ -1453,7 +1478,147 @@ function shareUrl() {
     p.set("os", settings.oco.startBpm); p.set("op", settings.oco.peakBpm);
     p.set("ost", settings.oco.stepBpm); p.set("or", settings.oco.repsPerStep);
   }
-  return location.origin + location.pathname + "?" + p.toString();
+  return p;
+}
+function shareUrl() {
+  return location.origin + location.pathname + "?" + shareParams().toString();
+}
+
+/* ---------------- assignment: goal tempo, QR code, printable sheet ----------------
+   A teacher sets a drill, optionally a goal tempo, and hands students a link, a
+   QR code or a printed sheet. The goal travels as ?goal=N and is the teacher's
+   target, shown to the student; the app never listens, so reaching it is still
+   the student's own mark (Clean at N), exactly like the best-tempo log.
+
+   The QR encodes the shop's short link, not this host: a printed sheet cannot
+   be corrected, and ADR 0271 (praxis-platform) has every printed code name an
+   address the company controls. backwerdrhythmshop.com/rudiment-room redirects
+   to wherever the app lives and keeps the query string, so the drill's
+   settings ride along. The on-screen link and "Copy link" stay on this host. */
+var PRINT_LINK = "https://backwerdrhythmshop.com/rudiment-room";
+var assignedGoal = null;   // set by ?goal= on arrival; session only, never stored
+function parseGoal(v) {
+  if (v === null || v === undefined || String(v).trim() === "") return null;
+  var n = Math.round(+v);
+  return isFinite(n) && n >= Core.BPM_MIN && n <= Core.BPM_MAX ? n : null;
+}
+function assignmentQuery(goal) {
+  var p = shareParams();
+  if (goal !== null) p.set("goal", goal);
+  return p.toString();
+}
+function assignmentLink(goal) { return location.origin + location.pathname + "?" + assignmentQuery(goal); }
+function printLink(goal) { return PRINT_LINK + "?" + assignmentQuery(goal); }
+
+var SVG_NS = "http://www.w3.org/2000/svg";
+// Black modules on a white ground with the 4-module quiet zone, whatever the
+// theme: a code on a dark page would not scan. Returns null if it cannot be made.
+function qrSvg(text, label) {
+  if (typeof qrcode !== "function") return null;
+  var qr;
+  try { qr = qrcode(0, "M"); qr.addData(text); qr.make(); } catch (e) { return null; }
+  var n = qr.getModuleCount(), quiet = 4, d = "";
+  for (var r = 0; r < n; r++)
+    for (var c = 0; c < n; c++)
+      if (qr.isDark(r, c)) d += "M" + (c + quiet) + " " + (r + quiet) + "h1v1h-1z";
+  var svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + (n + quiet * 2) + " " + (n + quiet * 2));
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", label);
+  svg.setAttribute("shape-rendering", "crispEdges");
+  var bg = document.createElementNS(SVG_NS, "rect");
+  bg.setAttribute("width", n + quiet * 2); bg.setAttribute("height", n + quiet * 2); bg.setAttribute("fill", "#fff");
+  var path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute("d", d); path.setAttribute("fill", "#000");
+  svg.appendChild(bg); svg.appendChild(path);
+  return svg;
+}
+function describeDrill() {
+  var r = Core.RUDIMENT_MAP[settings.rudimentId];
+  var reps = function (n) { return n + (n === 1 ? " rep" : " reps") + " at each tempo"; };
+  var mode = settings.mode === "fixed" ? "Fixed tempo, " + settings.bpm + " BPM"
+    : settings.mode === "ladder" ? "Steps, " + settings.ladder.startBpm + " to " + settings.ladder.endBpm +
+        " BPM by " + settings.ladder.stepBpm + ", " + reps(settings.ladder.repsPerStep)
+    : "Open\u2013close\u2013open, " + settings.oco.startBpm + " up to " + settings.oco.peakBpm +
+        " BPM by " + settings.oco.stepBpm + ", " + reps(settings.oco.repsPerStep);
+  var extra = [];
+  if (settings.turn) extra.push("Your turn x" + settings.turn);
+  if (settings.dynamics !== "full") extra.push(DYNAMICS_NAME[settings.dynamics] + " dynamics");
+  return {
+    title: r.name + " (PAS #" + r.pas + ")",
+    lines: [(settings.lead === "L" ? "Left" : "Right") + " hand leads", mode].concat(extra),
+  };
+}
+function currentGoalInput() { return parseGoal($("goalInput").value); }
+function renderAssignment() {
+  var goal = currentGoalInput();
+  var raw = $("goalInput").value.trim();
+  $("goalNote").textContent = raw && goal === null
+    ? "Goal tempo must be a whole number from " + Core.BPM_MIN + " to " + Core.BPM_MAX + ". The link has no goal until it is."
+    : "";
+  var d = describeDrill();
+  $("assignDrill").textContent = d.title + " \u2014 " + d.lines.join(" \u00b7 ") + (goal !== null ? " \u00b7 Goal " + goal + " BPM" : "");
+  var link = assignmentLink(goal);
+  $("assignLink").value = link;
+  var box = $("assignQr");
+  box.textContent = "";
+  var svg = qrSvg(printLink(goal), "QR code that opens this drill in Rudiment Room");
+  if (svg) box.appendChild(svg);
+  else box.textContent = "The QR code could not be made for this drill. Copy the link instead.";
+  $("btnAssignPrint").disabled = !svg;
+}
+function copyAssignmentLink() {
+  var url = assignmentLink(currentGoalInput());
+  var b = $("btnAssignCopy"), was = b.textContent;
+  var done = function (msg) { b.textContent = msg; setTimeout(function () { b.textContent = was; }, 1600); };
+  var fail = function () { done(fallbackCopy(url) ? "Copied \u2713" : "Copy failed"); };
+  if (navigator.clipboard && navigator.clipboard.writeText)
+    navigator.clipboard.writeText(url).then(function () { done("Copied \u2713"); }).catch(fail);
+  else fail();
+}
+// The sheet is built into #printSheet, which only prints; the page and dialogs are hidden then.
+function printAssignment() {
+  var goal = currentGoalInput(), d = describeDrill();
+  var sheet = $("printSheet");
+  sheet.textContent = "";
+  var add = function (tag, cls, text) { var e = el(tag, cls); e.textContent = text; sheet.appendChild(e); return e; };
+  add("p", "ps-brand", "Backwerd Rhythm Shop \u00b7 Rudiment Room");
+  add("h1", "", "Practice assignment");
+  add("p", "ps-rud", d.title);
+  d.lines.forEach(function (t) { add("p", "ps-line", t); });
+  if (goal !== null) add("p", "ps-goal", "Goal tempo: " + goal + " BPM");
+  var qr = el("div", "ps-qr");
+  qr.appendChild(qrSvg(printLink(goal), "QR code that opens this drill in Rudiment Room"));
+  sheet.appendChild(qr);
+  add("p", "ps-scan", "Scan to open the drill, set up and ready.");
+  add("p", "ps-url", printLink(goal));
+  add("p", "ps-note", "Rudiment Room is free and needs no account. It does not listen or grade: \u201cclean\u201d is your own call.");
+  document.body.classList.add("printing-assignment");
+  var clear = function () {
+    document.body.classList.remove("printing-assignment");
+    window.removeEventListener("afterprint", clear);
+  };
+  window.addEventListener("afterprint", clear);
+  window.print();
+}
+function renderGoal() {
+  var line = $("goalLine");
+  if (assignedGoal === null) { line.hidden = true; return; }
+  var mine = bestLog[settings.rudimentId] && bestLog[settings.rudimentId][effectiveLead()];
+  line.hidden = false;
+  line.textContent = "Assigned goal: " + assignedGoal + " BPM" +
+    (mine ? (mine.bpm >= assignedGoal ? " \u2014 you have marked " + mine.bpm + " BPM clean for this hand."
+                                        : " \u2014 your best clean mark is " + mine.bpm + " BPM.")
+          : ". Mark a tempo clean when you play it cleanly.");
+}
+
+/* Class view: the sticking and tempo large for a projector or a shared screen,
+   with the setup panels out of the way. It changes layout only; the drill and
+   the transport are untouched, so it can be switched on and off mid-run. */
+function setClassView(on) {
+  document.body.classList.toggle("class-view", on);
+  $("btnClassView").setAttribute("aria-pressed", on ? "true" : "false");
+  $("btnClassView").lastElementChild.textContent = on ? "Exit class view" : "Class view";
 }
 function copyShareLink() {
   var url = shareUrl();
@@ -1501,6 +1666,8 @@ function hydrateControls() {
   setSeg("segSound", settings.sound);
   setSeg("segTurn", String(settings.turn));
   $("turnHint").textContent = TURN_HINT[settings.turn];
+  setSeg("segDynamics", settings.dynamics);
+  $("dynHint").textContent = DYNAMICS_HINT[settings.dynamics];
   if (settings.sound === "marching") loadMarching();
   $("soundHint").textContent = soundHint(settings.sound);
   $("settingsFixed").hidden = settings.mode !== "fixed";
@@ -1546,6 +1713,14 @@ function wireEvents() {
   $("btnStart").addEventListener("click", onStartButton);
   $("btnReset").addEventListener("click", resetPractice);
   $("btnShare").addEventListener("click", copyShareLink);
+  $("btnAssign").addEventListener("click", function () {
+    $("goalInput").value = assignedGoal === null ? "" : assignedGoal;
+    renderAssignment();
+  });
+  $("goalInput").addEventListener("input", renderAssignment);
+  $("btnAssignCopy").addEventListener("click", copyAssignmentLink);
+  $("btnAssignPrint").addEventListener("click", printAssignment);
+  $("btnClassView").addEventListener("click", function () { setClassView(!document.body.classList.contains("class-view")); });
   $("btnFull").addEventListener("click", function () {
     if (document.fullscreenElement) document.exitFullscreen();
     else (document.documentElement.requestFullscreen ||
@@ -1556,6 +1731,7 @@ function wireEvents() {
   wireSeg("segMode", applyMode);
   wireSeg("segSound", applySound);
   wireSeg("segTurn", applyTurn);
+  wireSeg("segDynamics", applyDynamics);
 
   document.querySelectorAll("button.step").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -1669,6 +1845,7 @@ function initOffline() {
   }
   coerceSettings(loadSaved());
   coerceSettings(queryToRaw());
+  assignedGoal = parseGoal(new URLSearchParams(location.search).get("goal"));
   loadBest();
   buildCards();
   applyFilters();

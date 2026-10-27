@@ -1132,6 +1132,14 @@ function getCases(core) {
     assert.ok(!/name:|student id/i.test(text), "no identity field");
   }},
 
+  { name: "practice log: names an assigned goal tempo only when it is a valid tempo", fn: function (assert) {
+    const base = { date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "ladder", rungs: [80], reps: 2, best: null, link: "" };
+    assert.ok(core.practiceLog(Object.assign({ goal: 120 }, base)).split("\n").includes("Assigned goal tempo: 120 BPM"));
+    [undefined, 5, 400, 99.5, "120"].forEach(function (g) {
+      assert.ok(!/Assigned goal/.test(core.practiceLog(Object.assign({ goal: g }, base))), String(g));
+    });
+  }},
+
   { name: "practice log: open-close-open, and a best that was never marked", fn: function (assert) {
     const text = core.practiceLog({ date: "2026-10-17", rudimentId: "flam-tap", lead: "R",
       mode: "oco", rungs: [60, 70, 60], reps: 1, best: null, link: "" });
@@ -1140,6 +1148,82 @@ function getCases(core) {
     assert.ok(text.includes("Best clean tempo: not marked yet"));
     assert.ok(!/Drill link/.test(text), "no link line without a link");
     assert.throws(function () { core.practiceLog({ rudimentId: "nope", rungs: [] }); });
+  }},
+
+  { name: "dynamics: full is the original loudness, soft and medium are quieter", fn: function (assert) {
+    const pb = core.createPracticePlayback(core.buildPlan("fixed", { bpm: 80 }, core.withLead(MAP["single-paradiddle"], "R")));
+    assert.deepEqual(core.DYNAMICS, ["full", "medium", "soft", "swell"]);
+    assert.equal(core.dynamicScale("full", pb), 1);
+    assert.equal(core.dynamicScale("medium", pb), 0.75);
+    assert.equal(core.dynamicScale("soft", pb), 0.5);
+    assert.equal(core.dynamicScale("nonsense", pb), 1, "unknown plays at full");
+    assert.equal(core.dynamicScale(undefined, pb), 1);
+    assert.equal(core.dynamicScale("toString", pb), 1, "inherited keys are not dynamics");
+    const v = core.RUDIMENTS.map(function (r) { return core.expandPattern(core.withLead(r, "R")); })
+      .reduce(function (a, ev) { return a.concat(ev.map(function (e) { return e.velocity; })); }, []);
+    assert.ok(v.length > 0 && v.every(function (x) { return x * 0.5 > 0 && core.scaleVelocity(x, 0.5) <= 1; }), "scaled velocity stays valid");
+  }},
+
+  { name: "dynamics: swell rises to full mid-stage and falls back, per stage", fn: function (assert) {
+    const pat = core.withLead(MAP["single-paradiddle"], "R");
+    const pb = core.createPracticePlayback(core.buildPlan("ladder",
+      { startBpm: 60, endBpm: 70, stepBpm: 10, repsPerStep: 5 }, pat));
+    pb.advanceBlock(); // leave the count-in: first play stage
+    const seen = [];
+    for (let i = 0; i < 5; i++) { seen.push(core.dynamicScale("swell", pb)); pb.advanceBlock(); }
+    assert.equal(seen[0], 0.45, "starts soft");
+    assert.equal(seen[2], 1, "full in the middle");
+    assert.equal(seen[4], 0.45, "ends soft");
+    assert.ok(seen[1] > seen[0] && seen[1] < seen[2], "rising");
+    assert.equal(seen[1], seen[3], "symmetric");
+  }},
+
+  { name: "dynamics: swell counts trades with Your turn on, and survives pause/resume", fn: function (assert) {
+    const pat = core.withLead(MAP["flam-tap"], "R");
+    const plan = core.buildPlan("fixed", { bpm: 80, turn: 2 }, pat);
+    const pb = core.createPracticePlayback(plan);
+    pb.advanceBlock(); // play stage, first trade
+    const first = core.dynamicScale("swell", pb);
+    pb.advanceBlock(); pb.advanceBlock(); // the student's two cycles: same trade, same level
+    assert.equal(core.dynamicScale("swell", pb), first);
+    pb.advanceBlock(); // second trade
+    const second = core.dynamicScale("swell", pb);
+    assert.ok(second > first, "next trade is louder in the crescendo");
+    const snap = pb.snapshot();
+    const pb2 = core.createPracticePlayback(plan);
+    pb2.restore(snap);
+    assert.equal(core.dynamicScale("swell", pb2), second, "restore reproduces the level");
+  }},
+
+  { name: "dynamics: a two-rep stage swells soft then full, so it still reaches full", fn: function (assert) {
+    const pb = core.createPracticePlayback(core.buildPlan("ladder",
+      { startBpm: 60, endBpm: 70, stepBpm: 10, repsPerStep: 2 }, core.withLead(MAP["single-paradiddle"], "R")));
+    pb.advanceBlock();
+    assert.equal(core.dynamicScale("swell", pb), 0.45);
+    pb.advanceBlock();
+    assert.equal(core.dynamicScale("swell", pb), 1);
+  }},
+
+  { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
+    const pb = core.createPracticePlayback(core.buildPlan("ladder",
+      { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));
+    pb.advanceBlock();
+    assert.equal(core.dynamicScale("swell", pb), 1);
+  }},
+
+  { name: "Praxis ids: 38 match, two are aliased, and every id maps to a skill id", fn: function (assert) {
+    assert.deepEqual(Object.keys(core.PRAXIS_ALIAS).sort(), ["double-stroke-open-roll", "single-paradiddle-diddle"]);
+    assert.equal(core.praxisSkillId("double-stroke-open-roll"), "rudiment.double-stroke-roll.core");
+    assert.equal(core.praxisSkillId("single-paradiddle-diddle"), "rudiment.paradiddle-diddle.core");
+    assert.equal(core.praxisSkillId("single-paradiddle"), "rudiment.single-paradiddle.core");
+    core.RUDIMENTS.forEach(function (r) {
+      assert.ok(/^rudiment\.[a-z0-9-]+\.core$/.test(core.praxisSkillId(r.id)), r.id);
+    });
+    assert.throws(function () { core.praxisSkillId("nope"); });
+    Object.keys(core.PRAXIS_ALIAS).forEach(function (k) {
+      assert.ok(MAP[k], "alias key " + k + " is one of this app's ids");
+      assert.ok(!MAP[core.PRAXIS_ALIAS[k]], "alias value " + core.PRAXIS_ALIAS[k] + " is not");
+    });
   }},
 
   ];

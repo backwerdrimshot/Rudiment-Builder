@@ -31,6 +31,15 @@ const MODES = { fixed: true, ladder: true, oco: true };
 // Playback loudness tiers; a stroke's optional `velocity` field overrides.
 const VELOCITY = { accent: 1.0, normal: 0.62, grace: 0.2 };
 
+/* Dynamics: how loud the student's practice is, as a multiplier on every
+   stroke's velocity. "full" is the app's original loudness and changes nothing.
+   "swell" rises from soft to full and back across a stage's reps (or across 8
+   reps in endless Fixed mode), so a stage reads as a crescendo then a
+   decrescendo; a two-rep stage plays soft then full, and one rep plays full. A scale is always in (0, 1], which keeps velocity valid. */
+const DYNAMICS = { full: 1, medium: 0.75, soft: 0.5, swell: null };
+const SWELL_MIN = 0.45;
+const SWELL_ENDLESS_REPS = 8;
+
 const BPM_MIN = 30, BPM_MAX = 300;
 const STEP_MIN = 1, STEP_MAX = 60;
 const REPS_MIN = 1, REPS_MAX = 64;
@@ -580,6 +589,38 @@ function createPracticePlayback(plan) {
   return pb;
 }
 
+/* ---------------- dynamics ----------------
+   dynamicScale picks the multiplier for the stroke about to sound. It reads
+   only the playback's position (rep within the stage), so pause, resume and
+   restore need to remember nothing, and a mid-play change of dynamics takes
+   effect on the next stroke scheduled. Anything unrecognized plays at full. */
+function dynamicScale(dynamics, pb) {
+  if (!Object.prototype.hasOwnProperty.call(DYNAMICS, dynamics)) return 1;
+  if (dynamics !== "swell") return DYNAMICS[dynamics];
+  const reps = pb.repsInStage();
+  const n = reps === null ? SWELL_ENDLESS_REPS : reps;
+  if (n < 2) return 1;
+  const r = (pb.repNumber() - 1) % n;
+  if (n === 2) return r === 0 ? SWELL_MIN : 1; // too short to fall back: soft, then full
+  const peak = 1 - Math.abs((2 * r) / (n - 1) - 1); // 0 at both ends, 1 in the middle
+  return SWELL_MIN + (1 - SWELL_MIN) * peak;
+}
+function scaleVelocity(velocity, scale) { return velocity * scale; }
+
+/* ---------------- Praxis skill ids ----------------
+   Praxis publishes all 40 rudiments as permanent skill ids,
+   rudiment.<name>.core (praxis-platform data/rudiments/pas-40.json). 38 of
+   this app's ids already match. These two differ, both ids are frozen on their
+   side, and neither project renames anything, so this map is the whole bridge. */
+const PRAXIS_ALIAS = {
+  "double-stroke-open-roll": "double-stroke-roll",
+  "single-paradiddle-diddle": "paradiddle-diddle",
+};
+function praxisSkillId(rudimentId) {
+  if (!Data.RUDIMENT_MAP[rudimentId]) throw new Error('unknown rudiment "' + rudimentId + '"');
+  return "rudiment." + (PRAXIS_ALIAS[rudimentId] || rudimentId) + ".core";
+}
+
 /* ---------------- best clean tempo (the student's own log) ----------------
    The fastest tempo a student says they played a rudiment cleanly, kept per
    leading hand. "Clean" is theirs to judge: the app never listens, so a mark
@@ -656,6 +697,8 @@ function practiceLog(run) {
       ? run.best.bpm + " BPM (marked " + run.best.date + ")"
       : "not marked yet"),
   ];
+  if (Number.isInteger(run.goal) && run.goal >= BPM_MIN && run.goal <= BPM_MAX)
+    lines.push("Assigned goal tempo: " + run.goal + " BPM");
   if (run.link) lines.push("Drill link: " + run.link);
   lines.push("", "Rudiment Room does not listen or grade. The best clean tempo is the student's own mark.");
   return lines.join("\n");
@@ -672,6 +715,11 @@ const RudimentCore = {
   REPS_MIN: REPS_MIN, REPS_MAX: REPS_MAX,
   COUNT_IN_BEATS: COUNT_IN_BEATS, TRANSITION_BEATS: TRANSITION_BEATS,
   TURN_MAX: TURN_MAX,
+  DYNAMICS: Object.keys(DYNAMICS),
+  PRAXIS_ALIAS: PRAXIS_ALIAS,
+  dynamicScale: dynamicScale,
+  scaleVelocity: scaleVelocity,
+  praxisSkillId: praxisSkillId,
   validateRudiment: validateRudiment,
   assertValidRegistry: assertValidRegistry,
   withLead: withLead,
