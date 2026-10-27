@@ -23,10 +23,16 @@ const Data = (typeof module !== "undefined" && module.exports)
 if (!Data) throw new Error("rudiment-core.js needs rudiment-data.js loaded first");
 
 /* ---------------- constants ---------------- */
-const HANDS = { R: true, L: true };
-const FAMILIES = { Roll: true, Diddle: true, Flam: true, Drag: true };
-const LEAD_BEHAVIORS = { mirror: true, fixed: true };
-const MODES = { fixed: true, ladder: true, oco: true, build: true };
+/* Lookup tables have no prototype. Every one of them is read as TABLE[key] with
+   a key that may come from storage or a link, and on an ordinary object a key
+   like "toString" or "constructor" finds an inherited function and passes a
+   truthiness check. A table built here simply does not have those keys. */
+function table(o) { return Object.assign(Object.create(null), o); }
+
+const HANDS = table({ R: true, L: true });
+const FAMILIES = table({ Roll: true, Diddle: true, Flam: true, Drag: true });
+const LEAD_BEHAVIORS = table({ mirror: true, fixed: true });
+const MODES = table({ fixed: true, ladder: true, oco: true, build: true });
 
 // Playback loudness tiers; a stroke's optional `velocity` field overrides.
 const VELOCITY = { accent: 1.0, normal: 0.62, grace: 0.2 };
@@ -36,7 +42,7 @@ const VELOCITY = { accent: 1.0, normal: 0.62, grace: 0.2 };
    "swell" rises from soft to full and back across a stage's reps (or across 8
    reps in endless Fixed mode), so a stage reads as a crescendo then a
    decrescendo; a two-rep stage plays soft then full, and one rep plays full. A scale is always in (0, 1], which keeps velocity valid. */
-const DYNAMICS = { full: 1, medium: 0.75, soft: 0.5, swell: null };
+const DYNAMICS = table({ full: 1, medium: 0.75, soft: 0.5, swell: null });
 const SWELL_MIN = 0.45;
 const SWELL_ENDLESS_REPS = 8;
 
@@ -248,7 +254,7 @@ function notationCard(rudiment) {
    last layer is always the rudiment exactly as written. Layers are derived from
    the record; nothing is stored per rudiment, and nothing is invented: a layer
    only ever removes what the data already says. */
-const LAYER_IDS = { sticking: true, accents: true, ornaments: true };
+const LAYER_IDS = table({ sticking: true, accents: true, ornaments: true });
 function hasAccent(r) { return r.strokes.some(function (s) { return !!s.accent; }); }
 function ornamentWord(r) {
   let flam = false, drag = false, buzz = false;
@@ -754,7 +760,7 @@ function clearBest(log, rudimentId) {
    theirs. No name, and nothing is sent.
      run: { date, rudimentId, lead, mode ("ladder"|"oco"), rungs, reps, best, link }
    `best` is { bpm, date } from the best log, or null. */
-const LOG_MODE = { fixed: "Fixed tempo", ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" };
+const LOG_MODE = table({ fixed: "Fixed tempo", ladder: "Tempo steps", oco: "Open\u2013close\u2013open", build: "Build-up" });
 /* ---------------- progress ----------------
    Everything a student keeps about their own practice, on the device only:
      history  dated "clean at" marks, one per day per rudiment per hand (the
@@ -863,7 +869,7 @@ function goalStatus(progress, bestLogIn, id, lead) {
 /* The learning path. Order comes from the data alone — level, then PAS number
    — so it invents no pedagogy: a curated order is the owner's call, and would
    replace this one function. */
-const LEVEL_RANK = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+const LEVEL_RANK = table({ Beginner: 0, Intermediate: 1, Advanced: 2 });
 function learningPath() {
   return Data.RUDIMENTS.slice().sort(function (a, b) {
     const ra = LEVEL_RANK[a.level] === undefined ? 9 : LEVEL_RANK[a.level];
@@ -924,8 +930,8 @@ function progressSummary(info) {
    question is always four distinct names however small the scope. */
 const QUIZ_CHOICES = 4;
 const QUIZ_COUNT = 10;
-const QUIZ_SCOPES = { all: true, Beginner: true, Intermediate: true, Advanced: true, learned: true };
-const QUIZ_TYPES = { ear: true, eye: true, mixed: true };
+const QUIZ_SCOPES = table({ all: true, Beginner: true, Intermediate: true, Advanced: true, learned: true });
+const QUIZ_TYPES = table({ ear: true, eye: true, mixed: true });
 function quizPool(scope, progress) {
   if (!Object.prototype.hasOwnProperty.call(QUIZ_SCOPES, scope)) throw new Error('unknown quiz scope "' + scope + '"');
   return Data.RUDIMENTS.filter(function (r) {
@@ -1000,6 +1006,7 @@ function logLines(run) {
       (run.reps === 1 ? " rep" : " reps") + (run.mode === "build" ? " at each layer" : " at each tempo"),
     run.mode === "build" && Array.isArray(run.layers)
       ? "Layers completed: " + run.layers.length + " (" + run.layers.join(", ") + ") at " + rungs[0] + " BPM"
+      : run.mode === "fixed" ? "Tempo: " + rungs[0] + " BPM"
       : "Tempo steps completed: " + rungs.length + " (" + rungs.join(", ") + " BPM)",
     "Best clean tempo: " + (run.best
       ? run.best.bpm + " BPM (marked " + run.best.date + ")"
@@ -1029,12 +1036,12 @@ function practiceLog(run) {
    link goes through sanitizeRoutine, which drops an item rather than guess. */
 const ROUTINE_MAX = 8;
 const ROUTINE_FIXED_REPS = 8;
-const ROUTINE_FIELDS = {
+const ROUTINE_FIELDS = table({
   fixed: [["bpm", BPM_MIN, BPM_MAX], ["reps", REPS_MIN, REPS_MAX]],
   ladder: [["startBpm", BPM_MIN, BPM_MAX], ["endBpm", BPM_MIN, BPM_MAX], ["stepBpm", STEP_MIN, STEP_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
   oco: [["startBpm", BPM_MIN, BPM_MAX], ["peakBpm", BPM_MIN, BPM_MAX], ["stepBpm", STEP_MIN, STEP_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
   build: [["bpm", BPM_MIN, BPM_MAX], ["repsPerStep", REPS_MIN, REPS_MAX]],
-};
+});
 function cleanRoutineItem(raw) {
   if (!raw || typeof raw !== "object") throw new Error("item is not an object");
   if (!Data.RUDIMENT_MAP[raw.rudimentId]) throw new Error("unknown rudiment");
@@ -1073,8 +1080,8 @@ function planForItem(item) {
 function routineSeconds(items) {
   return items.reduce(function (sum, it) { return sum + totalSeconds(planForItem(it)); }, 0);
 }
-const ROUTINE_MODE_WORD = { fixed: "Fixed", ladder: "Steps", oco: "Open\u2013close\u2013open", build: "Build up" };
-const DYNAMICS_WORD = { medium: "medium", soft: "soft", swell: "swell" };
+const ROUTINE_MODE_WORD = table({ fixed: "Fixed", ladder: "Steps", oco: "Open\u2013close\u2013open", build: "Build up" });
+const DYNAMICS_WORD = table({ medium: "medium", soft: "soft", swell: "swell" });
 function describeRoutineItem(item) {
   const r = Data.RUDIMENT_MAP[item.rudimentId], p = item.p;
   const lead = r.leadingHand === "mirror" ? (item.lead === "L" ? ", left lead" : ", right lead") : "";
@@ -1089,7 +1096,7 @@ function describeRoutineItem(item) {
 /* A routine in a link: items joined by "~", fields by ".", e.g.
    single-paradiddle.R.f.0.full.80.8 — rudiment, lead, mode, turn, dynamics,
    then the mode's numbers in ROUTINE_FIELDS order. decodeRoutine trusts nothing. */
-const MODE_CODE = { fixed: "f", ladder: "s", oco: "o", build: "b" };
+const MODE_CODE = table({ fixed: "f", ladder: "s", oco: "o", build: "b" });
 function encodeRoutine(items) {
   return items.map(function (it) {
     return [it.rudimentId, it.lead, MODE_CODE[it.mode], it.turn, it.dynamics]
@@ -1098,7 +1105,7 @@ function encodeRoutine(items) {
 }
 function decodeRoutine(text) {
   if (typeof text !== "string" || !text) return [];
-  const byCode = {};
+  const byCode = table({});
   Object.keys(MODE_CODE).forEach(function (m) { byCode[MODE_CODE[m]] = m; });
   const raw = text.split("~").slice(0, ROUTINE_MAX).map(function (chunk) {
     const f = chunk.split("."), mode = byCode[f[2]];

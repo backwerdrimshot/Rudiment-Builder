@@ -1556,6 +1556,41 @@ function getCases(core) {
     assert.deepEqual(core.scoreQuiz(qs, []), { correct: 0, total: 4, missed: ["a", "b", "c"] });
   }},
 
+  { name: "inherited keys: no lookup table treats toString, constructor or __proto__ as a real entry", fn: function (assert) {
+    const hostile = ["toString", "constructor", "__proto__", "hasOwnProperty", "valueOf"];
+    const pat = core.withLead(MAP["flam-tap"], "R");
+    hostile.forEach(function (k) {
+      assert.equal(MAP[k], undefined, k + " is not a rudiment");
+      assert.throws(function () { core.buildPlan(k, { bpm: 80, startBpm: 60, endBpm: 80, peakBpm: 80, stepBpm: 5, repsPerStep: 2 }, pat); }, k + " as a practice mode");
+      assert.throws(function () { core.withLayer(pat, k); }, k + " as a layer");
+      assert.throws(function () { core.quizPool(k); }, k + " as a quiz scope");
+      assert.throws(function () { core.buildQuiz({ pool: ["flam-tap"], type: k }); }, k + " as a quiz type");
+      assert.throws(function () { core.markClean({}, k, "R", 80, "2026-10-20"); }, k + " as a rudiment id");
+      assert.throws(function () { core.praxisSkillId(k); }, k + " as a Praxis id");
+      assert.throws(function () { core.recordClean(core.emptyProgress(), k, "R", 80, "2026-10-20"); });
+      assert.throws(function () { core.routineItem({ rudimentId: k, lead: "R", mode: "fixed", turn: 0, dynamics: "full", bpm: 80 }); });
+      assert.throws(function () { core.routineItem({ rudimentId: "flam-tap", lead: "R", mode: k, turn: 0, dynamics: "full", bpm: 80 }); });
+      assert.throws(function () { core.routineItem({ rudimentId: "flam-tap", lead: "R", mode: "fixed", turn: 0, dynamics: k, bpm: 80 }); });
+      assert.deepEqual(core.decodeRoutine("flam-tap.R." + k + ".0.full.80.8"), [], k + " as a mode code");
+      assert.deepEqual(core.decodeRoutine(k + ".R.f.0.full.80.8"), [], k + " as a rudiment in a link");
+      assert.deepEqual(core.decodeRoutine("flam-tap.R.f.0." + k + ".80.8"), [], k + " as dynamics in a link");
+      assert.deepEqual(core.sanitizeBestLog(JSON.parse('{"' + k + '":{"R":{"bpm":80,"date":"2026-10-20"}}}')), {});
+      const p = core.sanitizeProgress(JSON.parse('{"history":{"' + k + '":{"R":[{"date":"2026-10-20","bpm":80}]}},"goals":{"' + k + '":{"R":100}},"learned":{"' + k + '":"2026-10-20"}}'));
+      assert.deepEqual(core.emptyProgress(), p, k + " in stored progress");
+      const rec = Object.assign({}, MAP["flam-tap"], { family: k, leadingHand: k });
+      assert.ok(core.validateRudiment(rec).some(function (e) { return /family/.test(e); }), k + " as a family");
+      assert.ok(core.validateRudiment(rec).some(function (e) { return /leadingHand/.test(e); }), k + " as a leading hand");
+    });
+    const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "toString", rungs: [80], reps: 2, best: null });
+    assert.ok(!/function|native code/.test(text), "a bad mode never prints a function into the log");
+  }},
+
+  { name: "practice log: a Fixed drill reports its tempo, not tempo steps", fn: function (assert) {
+    const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "fixed", rungs: [96], reps: 8, best: null });
+    assert.ok(text.split("\n").includes("Tempo: 96 BPM"), text);
+    assert.ok(!/Tempo steps completed/.test(text));
+  }},
+
   { name: "dynamics: a one-rep stage cannot swell and plays at full", fn: function (assert) {
     const pb = core.createPracticePlayback(core.buildPlan("ladder",
       { startBpm: 60, endBpm: 80, stepBpm: 10, repsPerStep: 1 }, core.withLead(MAP["single-paradiddle"], "R")));

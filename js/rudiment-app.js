@@ -2054,9 +2054,13 @@ function onRoutineListClick(e) {
   else if (act === "down" && i < routine.length - 1) routine.splice(i + 1, 0, routine.splice(i, 1)[0]);
   saveRoutine();
   renderRoutine();
-  // The list rebuilds, so put focus on the same control or the nearest one.
-  var again = $("rtList").querySelector('button[data-act="' + act + '"][data-i="' + (act === "up" ? i - 1 : act === "down" ? i + 1 : Math.min(i, routine.length - 1)) + '"]:not(:disabled)')
-           || $("rtList").querySelector("button:not(:disabled)") || $("rtAdd");
+  // The list rebuilds, so put focus back on the control that was used: the same
+  // button on the item that moved, the other direction if it has reached an end,
+  // or the neighbour after a removal.
+  var at = act === "up" ? i - 1 : act === "down" ? i + 1 : Math.min(i, routine.length - 1);
+  var sel = function (a, n) { return $("rtList").querySelector('button[data-act="' + a + '"][data-i="' + n + '"]:not(:disabled)'); };
+  var again = act === "remove" ? (sel("remove", at) || $("rtAdd"))
+    : (sel(act, at) || sel(act === "up" ? "down" : "up", at) || sel("remove", at));
   if (again) again.focus();
 }
 function clearRoutine() {

@@ -597,7 +597,9 @@ var RUDIMENTS = [
 
 ];
 
-var RUDIMENT_MAP = {};
+// No prototype, so RUDIMENT_MAP["toString"] or ["constructor"] is a miss like any
+// other unknown id, not an inherited function that passes a truthiness check.
+var RUDIMENT_MAP = Object.create(null);
 for (var i = 0; i < RUDIMENTS.length; i++) RUDIMENT_MAP[RUDIMENTS[i].id] = RUDIMENTS[i];
 
 // The registry is the single source of truth — freeze it so no transform or UI
