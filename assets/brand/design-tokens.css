@@ -41,7 +41,7 @@
      not symmetric: a dark hue already carries type on light and needs a TINT for type on
      itself, while a light hue is the reverse. Ratios are against the named surface. ---- */
   --brick-ground:  #833737;  /* brick as a full-bleed ground — one shade down, so warm-white
-                                body type clears 4.5:1 even under red-green colour blindness
+                                body type clears 4.5:1 even under red-green color blindness
                                 (4.82 simulated, against 4.37 at full --brick) */
   --brick-tint:    #ddc8c7;  /* type on a brick ground, 4.76:1 on --brick, 5.13:1 on the above */
   --forest-ground: #405d34;  /* forest as a full-bleed ground — at full --forest, warm-white is
@@ -72,6 +72,16 @@
    */
   --sky:      #87ceeb;
   --sky-line: #71adc6;
+
+  /* ---- print — the second ink, for paper ----
+   * The Print & Resource Format Standard's two-ink rule: text is --ink, and
+   * every line a student writes on, every box, cut line and all notation is
+   * pure black. A hairline has far less to lose on a photocopier than a letter
+   * does — brand silver measured 188 gray and 214 after one copy, which is
+   * blank paper. Printed artwork, so like the hue ramps it does not follow the
+   * reader's theme and has no dark value. First used by the Melody Scavenger
+   * Hunt printables. */
+  --print-rule: #000000;
 
   /* ---- category accents — one per taxonomy group on the live site ---- */
   --accent-keep-time:              var(--brick);
