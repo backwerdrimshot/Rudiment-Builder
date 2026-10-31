@@ -11,11 +11,14 @@ Static app, **classic scripts** (no ES modules, no bundler, no framework) —
 the family convention; the app itself runs over `file://`. Publishing is
 Cloudflare Workers static assets: `node build.mjs` copies the `SITE_ASSETS`
 allowlist into the **tracked** `dist/`. GitHub Actions does not run for this
-account (minutes ran out 2026-09-30), so **a merge does not publish**; deploys
-are by hand with `node tools/publish.mjs --deploy` (guard: clean checkout of
-exactly `origin/main`; gate: both test suites, the README standard script, and
-a fresh build that must match the committed `dist/`; then `npx wrangler@4.131.0
-deploy`; then a live check that `capabilities.json` reports the new build).
+account (minutes ran out 2026-09-30), so no workflow or check runs on GitHub.
+**A merge to `main` publishes through Cloudflare Workers Builds** (connected
+2026-10-31), and only if its test gate passes. The by-hand path is the fallback,
+for a failed build or when the owner asks: `node tools/publish.mjs --deploy`
+(guard: clean checkout of exactly `origin/main`; gate: both test suites, the
+README standard script, and a fresh build that must match the committed `dist/`;
+then `npx wrangler@4.131.0 deploy`; then a live check that `capabilities.json`
+reports the new build).
 README "Deployment" has the detail. A commit whose `dist/` was not rebuilt
 fails that diff — run `node build.mjs` and commit `dist/` before committing.
 The wrangler pin lives in `tools/publish.mjs` (`WRANGLER_VERSION`); the old
@@ -46,8 +49,9 @@ August 2026.
   browser — `window.__TEST_RESULTS__` carries the summary. The case count is
   whatever `tests/cases.js` exports; do not restate it here.
 - Do **not** configure domains, DNS, or Cloudflare routes without Taylor.
-  Pushing to a branch is fine; a merge to `main` publishes nothing, and
-  `--deploy` is the owner's call.
+  Pushing to a branch is fine; a merge to `main` publishes through Workers
+  Builds, so keep repair PRs in draft until review, and `--deploy` is the
+  owner's call.
 
 ## Architecture (keep these layers separate)
 
