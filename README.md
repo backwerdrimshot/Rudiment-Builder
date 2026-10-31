@@ -327,11 +327,11 @@ What `tools/publish.mjs` does, in order:
 3. **Deploy** (`--deploy` only). It needs `CLOUDFLARE_API_TOKEN` in the
    environment (never printed; the script header also names
    `CLOUDFLARE_ACCOUNT_ID`, which it does not check itself). It runs `npx --yes wrangler@4.131.0 deploy`.
-   The pinned version is read from `.github/workflows/workers.yml`, which is why
-   that file stays even though it cannot run: `tools/publish.mjs` and
-   `tests/publish.test.mjs` both read it. Change the pin there. If GitHub Actions
-   ever runs again, a merge could deploy from both that workflow and Workers
-   Builds, so turn one of them off first.
+   The pinned version is the `WRANGLER_VERSION` constant in
+   `tools/publish.mjs`, the one place the repository holds it;
+   `tests/publish.test.mjs` checks that the deploy uses it and that this README
+   and `CLAUDE.md` name the same version. To change the pin, change that
+   constant and the deploy command in the Workers Builds settings together.
 4. **Live check.** It fetches the live `capabilities.json` (cache-busted, up to
    six tries five seconds apart) and fails unless its `version` equals the
    build it just deployed.
@@ -354,6 +354,10 @@ branch alias a Workers Builds preview leaves. The shop site's
 `docs/HOW-EACH-APP-DEPLOYS.md` table had this app recorded as shipping on merge,
 which it did not — the same row it warns about, a copy carried forward without
 evidence.
+
+*Removed 2026-10-31:* `.github/workflows/workers.yml`, a deploy workflow that
+could never run once the Actions minutes ran out, was deleted by the owner's
+decision; the wrangler pin it carried now lives in `tools/publish.mjs`.
 
 **`dist/` is tracked here, unlike every sibling**, so what deploys is a
 committed artifact rather than one built at deploy time. That makes it a

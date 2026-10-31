@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /* Publish Rudiment Room without GitHub Actions.
 
-   `.github/workflows/workers.yml` is the automatic path: it waits for the
-   README standard check, re-runs the tests, proves the committed dist/ matches a
-   fresh build, then deploys. When Actions cannot run (the hosted runner never
-   starts a step), this does the same four checks on this machine and then,
-   only if asked, the same deploy:
+   GitHub Actions cannot run for this account, so this script is the hand path.
+   It runs four checks on this machine (a clean checkout of origin/main, the
+   test suites, the README standard script, and a fresh build that must match
+   the committed dist/) and then, only if asked, the deploy:
 
      node tools/publish.mjs             check only; nothing is published
      node tools/publish.mjs --deploy    check, then wrangler deploy, then verify live
@@ -57,16 +56,13 @@ export function extractReadmeCheck(workflowText) {
   return script;
 }
 
-/* The wrangler version the deploy workflow pins. This repository has no
-   lockfile, so an unpinned `wrangler@latest` would change the deploy tool, even
-   across a major version, with no change to the repository. The fallback uses
-   the same pin as workers.yml, read from it rather than copied. */
-export const DEPLOY_WORKFLOW = ".github/workflows/workers.yml";
-export function extractWranglerPin(workflowText) {
-  const m = /npx\s+(?:--yes\s+)?wrangler@(\d+\.\d+\.\d+)\s+deploy\b/.exec(workflowText);
-  if (!m) throw new Error(`no pinned "wrangler@x.y.z deploy" command in ${DEPLOY_WORKFLOW}`);
-  return m[1];
-}
+/* The wrangler version every deploy uses. This repository has no lockfile, so
+   an unpinned `wrangler@latest` would change the deploy tool, even across a
+   major version, with no change to the repository. This constant is the one
+   place the pin lives in the repository: change it here, and change the deploy
+   command in the Cloudflare Workers Builds settings to match (README
+   "Deployment"). */
+export const WRANGLER_VERSION = "4.131.0";
 
 function run(cmd, args, opts = {}) {
   return spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", ...opts });
@@ -153,7 +149,7 @@ async function main() {
   }
 
   if (!process.env.CLOUDFLARE_API_TOKEN) throw new Error("CLOUDFLARE_API_TOKEN is not set; cannot deploy.");
-  const pin = extractWranglerPin(fs.readFileSync(path.join(ROOT, DEPLOY_WORKFLOW), "utf8"));
+  const pin = WRANGLER_VERSION;
   step(`wrangler@${pin} deploy (build ${caps.version})`, () => {
     const r = run("npx", ["--yes", `wrangler@${pin}`, "deploy"], { stdio: "inherit", env: { ...process.env, CI: "1" } });
     if (r.status !== 0) throw new Error(`wrangler deploy failed (exit ${r.status}).`);
