@@ -10,10 +10,20 @@ No accounts, no backend, no microphone/camera grading, ever.
 Static app, **classic scripts** (no ES modules, no bundler, no framework) —
 the family convention; the app itself runs over `file://`. Publishing is
 Cloudflare Workers static assets: `node build.mjs` copies the `SITE_ASSETS`
-allowlist into the **tracked** `dist/`, and `.github/workflows/workers.yml`
-deploys a green merge to `main` after rebuilding `dist/` and proving the
-committed copy matches. A commit whose `dist/` was not rebuilt fails that
-diff — run the build before committing. README "Deployment" has the route
+allowlist into the **tracked** `dist/`. GitHub Actions does not run for this
+account (minutes ran out 2026-09-30), so no workflow or check runs on GitHub.
+**A merge to `main` publishes through Cloudflare Workers Builds** (connected
+2026-10-31), and only if its test gate passes. The by-hand path is the fallback,
+for a failed build or when the owner asks: `node tools/publish.mjs --deploy`
+(guard: clean checkout of exactly `origin/main`; gate: both test suites, the
+README standard script, and a fresh build that must match the committed `dist/`;
+then `npx wrangler@4.131.0 deploy`; then a live check that `capabilities.json`
+reports the new build).
+README "Deployment" has the detail. A commit whose `dist/` was not rebuilt
+fails that diff — run `node build.mjs` and commit `dist/` before committing.
+The wrangler pin lives in `tools/publish.mjs` (`WRANGLER_VERSION`); the old
+`.github/workflows/workers.yml` deploy workflow was removed 2026-10-31 because it
+could never run. README "Deployment" has the route
 caveat (the public hostname is a Workers route over a stale GitHub Pages DNS
 record; do not remove the route). The app has been off GitHub Pages since
 August 2026.
@@ -39,7 +49,9 @@ August 2026.
   browser — `window.__TEST_RESULTS__` carries the summary. The case count is
   whatever `tests/cases.js` exports; do not restate it here.
 - Do **not** configure domains, DNS, or Cloudflare routes without Taylor.
-  Pushing to a branch is fine; a merge to `main` publishes.
+  Pushing to a branch is fine; a merge to `main` publishes through Workers
+  Builds, so keep repair PRs in draft until review, and `--deploy` is the
+  owner's call.
 
 ## Architecture (keep these layers separate)
 

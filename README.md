@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-31`
+- **Build:** `2026-10-31.3`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -229,9 +229,16 @@ Runner-agnostic cases live in `tests/cases.js`:
 
 - **The build and privacy tests:** `node --test tests/*.test.mjs` — cases
   over what `dist/` publishes and what the shipped page carries. **This is what
-  CI's `validate` job runs, and it does not run the core cases**, so running
-  only `core.test.cjs` before a push proves nothing about the checks that gate
-  the merge. Run both.
+  `tools/publish.mjs` runs first, and it does not run the core cases**, so
+  running only `core.test.cjs` proves nothing about those checks. Run both.
+
+- **The scheduler stall check:** `PREVIEW_URL=http://127.0.0.1:8812 node tests/scheduler-stall.browser.mjs`
+  after serving the repository root (or `dist/`), with Playwright supplied through
+  `PLAYWRIGHT_MODULE` and, if needed, `PLAYWRIGHT_EXECUTABLE_PATH` (and `PLAYWRIGHT_ARGS`
+  when Chromium must run without its sandbox). It starts a practice run, blocks the
+  page for five seconds while the audio clock keeps running, and fails if any stroke is
+  then scheduled in the past, which would play the missed strokes at once. It is not
+  part of `node --test tests/*.test.mjs`, so it needs running by hand.
 
 ## Architecture
 
@@ -279,30 +286,69 @@ and screen wake lock support individual and classroom use.
 ## Deployment
 
 Static site published as Cloudflare Workers static assets. `node build.mjs`
-copies the `SITE_ASSETS` allowlist into `dist/`, and `npx wrangler deploy` ships
-it. That still works by hand, and is still the fastest way to publish an urgent
-fix.
+copies the `SITE_ASSETS` allowlist into the tracked `dist/`, and the Worker
+serves `dist/`.
 
-**A merge now ships, once CI is green.** `.github/workflows/workers.yml` runs on
-a successful **README standard** run against `main`, re-runs both test suites,
-rebuilds `dist/` and proves the committed copy matches what `build.mjs` produces
-from that commit, then deploys the exact commit CI validated.
+**A merge to `main` publishes automatically through Cloudflare Workers Builds,
+and only if the test gate passes.** GitHub Actions does not run for this account
+(the minutes ran out on 2026-09-30 and are not coming back), so no workflow runs
+on a merge or a pull request and none shows a check; the Cloudflare build is the
+only automatic step. Keep repair PRs in draft until review, because merging
+deploys them.
 
-**Publishing when Actions cannot run.** The workflow depends on GitHub's hosted
-runners, and a hold on the account (a failed payment, or an Actions spending
-limit) stops them before any step starts: the run fails in a second or two with
-0 billable milliseconds and an empty log, which is how it looked on 2026-10-27.
-`node tools/publish.mjs` does the workflow's checks on your own machine: a clean
-checkout of exactly `origin/main`, both test suites, the README standard script
-(read out of `readme-standard.yml` and run as written, so the two cannot
-drift), and a fresh build that must match the committed `dist/`. It publishes
-nothing on its own. `node tools/publish.mjs --deploy` then runs
-`wrangler deploy` with the exact version `workers.yml` pins (it needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`)
-and confirms the live site's `capabilities.json` reports the new build. It
-touches no domain, DNS or route. When Actions works again, the workflow is the
-normal path and this is the fallback.
+**How a merge publishes.** The `rudiment-builder` Worker is connected to this
+repository in **Workers Builds** (set up 2026-10-31): production branch
+**`main`**, non-production branch builds **off**, root `/`, build command
+`node --test tests/*.test.mjs && node --test tests/core.test.cjs && node build.mjs && git diff --exit-code -- dist`
+(the gate, so a red suite, or a committed `dist/` that differs from a fresh
+build, fails the build and publishes nothing) and deploy command
+`npx wrangler@4.131.0 deploy`. Those settings live in the Cloudflare dashboard,
+not in this repository, so this paragraph is their record: change both
+together. Builds and deployments are listed under the Worker in the dashboard.
+They touch no domain, DNS or route.
 
-This section previously read *"There is no deploy workflow, and none is
+**Hand release** is the fallback, for example when a Cloudflare build is failing
+and the owner approves a release. The command is:
+
+```
+node tools/publish.mjs            # checks only; publishes nothing
+node tools/publish.mjs --deploy   # checks, then deploys, then verifies live
+```
+
+If Workers Builds has already published the merge, a hand release is a second
+deploy of the same commit, so run one only when the build failed or the owner
+asks for it.
+
+**Run the gate yourself before merging**, with `node tools/publish.mjs` (checks
+only). The build runs the gate again after the merge, and a red suite publishes
+nothing, but a failed build after a merge is too late to be a review.
+
+What `tools/publish.mjs` does, in order:
+
+1. **Guard.** It refuses unless the working tree is clean and `HEAD` is exactly
+   `origin/main`, because what is published must be what the repository says it
+   is. Merge first, then check out `main`.
+2. **Gate.** It runs `tests/*.test.mjs` and `tests/core.test.cjs`, then the
+   README standard script (read out of `.github/workflows/readme-standard.yml`
+   and run as written, so the two cannot drift), then `node build.mjs`, and the
+   committed `dist/` must match that fresh build.
+3. **Deploy** (`--deploy` only). It needs `CLOUDFLARE_API_TOKEN` in the
+   environment (never printed; the script header also names
+   `CLOUDFLARE_ACCOUNT_ID`, which it does not check itself). It runs `npx --yes wrangler@4.131.0 deploy`.
+   The pinned version is the `WRANGLER_VERSION` constant in
+   `tools/publish.mjs`, the one place the repository holds it;
+   `tests/publish.test.mjs` checks that the deploy uses it and that this README
+   and `CLAUDE.md` name the same version. To change the pin, change that
+   constant and the deploy command in the Workers Builds settings together.
+4. **Live check.** It fetches the live `capabilities.json` (cache-busted, up to
+   six tries five seconds apart) and fails unless its `version` equals the
+   build it just deployed.
+
+It touches no domain, DNS or route. Nothing runs it for you: it is the fallback
+described above, not the normal path.
+
+*History, as of 2026-09-05; Workers Builds was connected on 2026-10-31, see
+above.* This section previously read *"There is no deploy workflow, and none is
 wanted."* That was a deliberate choice and it had a cost nobody could see from
 here: **a merge to this repository published nothing at all.** GitHub Pages was
 retired, no Cloudflare Workers Builds connection was ever made, and the only
@@ -317,12 +363,16 @@ branch alias a Workers Builds preview leaves. The shop site's
 which it did not — the same row it warns about, a copy carried forward without
 evidence.
 
+*Removed 2026-10-31:* `.github/workflows/workers.yml`, a deploy workflow that
+could never run once the Actions minutes ran out, was deleted by the owner's
+decision; the wrangler pin it carried now lives in `tools/publish.mjs`.
+
 **`dist/` is tracked here, unlike every sibling**, so what deploys is a
 committed artifact rather than one built at deploy time. That makes it a
 hand-kept copy of something generated, and the failure mode is a commit whose
 `dist/` was never rebuilt: the deploy succeeds and ships the previous build's
-assets. The workflow rebuilds and diffs before deploying, so that fails loudly
-at the one moment it matters.
+assets. `tools/publish.mjs` rebuilds and diffs before deploying, so that fails
+loudly at the one moment it matters. Run `node build.mjs` and commit `dist/`.
 
 It used to publish through GitHub Pages via `actions/deploy-pages`, and that
 stopped working on 15 August when Actions stopped running on this account. Every
