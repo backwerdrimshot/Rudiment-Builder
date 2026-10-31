@@ -18,8 +18,9 @@ a fresh build that must match the committed `dist/`; then `npx wrangler@4.131.0
 deploy`; then a live check that `capabilities.json` reports the new build).
 README "Deployment" has the detail. A commit whose `dist/` was not rebuilt
 fails that diff — run `node build.mjs` and commit `dist/` before committing.
-`.github/workflows/workers.yml` cannot run, but `tools/publish.mjs` reads the
-wrangler pin from it and `tests/publish.test.mjs` reads it: leave it in place. README "Deployment" has the route
+The wrangler pin lives in `tools/publish.mjs` (`WRANGLER_VERSION`); the old
+`.github/workflows/workers.yml` deploy workflow was removed 2026-10-31 because it
+could never run. README "Deployment" has the route
 caveat (the public hostname is a Workers route over a stale GitHub Pages DNS
 record; do not remove the route). The app has been off GitHub Pages since
 August 2026.
