@@ -107,6 +107,9 @@ test("the page's feedback links start at the forms the module names, and the mod
   const footerBlock = html.slice(html.indexOf('<footer class="foot">'), html.indexOf("</footer>"));
   const feedbackBlock = html.slice(html.indexOf('<dialog id="workspace-feedback"'), html.indexOf("</dialog>", html.indexOf('<dialog id="workspace-feedback"')));
   assert.ok(!footerBlock.includes("mailto:"), "the footer has no email link");
+  // The forms are for adults only (privacy policy): say so wherever the form links appear.
+  assert.ok(footerBlock.includes("The problem and feature forms are for teachers and adults. Students, please tell your teacher instead."), "the footer says the forms are for teachers and adults");
+  assert.ok(feedbackBlock.includes("The forms are for teachers and adults. Students, please tell your teacher instead."), "the Feedback dialog says the forms are for teachers and adults");
   const emails = [
     ["Email support", emailHref("support", APP)],
     ["Email feedback", emailHref("feedback", APP)],
