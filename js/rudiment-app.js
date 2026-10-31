@@ -441,6 +441,16 @@ function scheduler() {
     }
     var en = live.entries[live.entryIndex];
     var t = live.blockStart + en.tBeats * beatSec;
+    // A stalled page (a hidden tab, a long task) leaves the timeline far behind the audio clock,
+    // and scheduling from there would play every missed stroke at once. Begin this block again
+    // at the clock instead. Pause suspends the clock, so a paused run never lands here.
+    if (t < audio.currentTime - AHEAD) {
+      live.blockStart = audio.currentTime + 0.06;
+      live.entryIndex = 0;
+      live.visualQ = [];
+      buildEntries();
+      continue;
+    }
     if (t >= audio.currentTime + AHEAD) return;
     scheduleEntry(en, t, st, pb);
     live.entryIndex++;
