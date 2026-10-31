@@ -229,9 +229,8 @@ Runner-agnostic cases live in `tests/cases.js`:
 
 - **The build and privacy tests:** `node --test tests/*.test.mjs` — cases
   over what `dist/` publishes and what the shipped page carries. **This is what
-  CI's `validate` job runs, and it does not run the core cases**, so running
-  only `core.test.cjs` before a push proves nothing about the checks that gate
-  the merge. Run both.
+  `tools/publish.mjs` runs first, and it does not run the core cases**, so
+  running only `core.test.cjs` proves nothing about those checks. Run both.
 
 ## Architecture
 
@@ -279,28 +278,40 @@ and screen wake lock support individual and classroom use.
 ## Deployment
 
 Static site published as Cloudflare Workers static assets. `node build.mjs`
-copies the `SITE_ASSETS` allowlist into `dist/`, and `npx wrangler deploy` ships
-it. That still works by hand, and is still the fastest way to publish an urgent
-fix.
+copies the `SITE_ASSETS` allowlist into the tracked `dist/`, and the Worker
+serves `dist/`.
 
-**A merge now ships, once CI is green.** `.github/workflows/workers.yml` runs on
-a successful **README standard** run against `main`, re-runs both test suites,
-rebuilds `dist/` and proves the committed copy matches what `build.mjs` produces
-from that commit, then deploys the exact commit CI validated.
+**Deploys are by hand, and a merge alone publishes nothing.** GitHub Actions
+does not run for this account (the minutes ran out on 2026-09-30 and are not
+coming back), so no workflow runs on a merge and nothing deploys itself. The
+owner decided apps keep deploying by hand. The one command is:
 
-**Publishing when Actions cannot run.** The workflow depends on GitHub's hosted
-runners, and a hold on the account (a failed payment, or an Actions spending
-limit) stops them before any step starts: the run fails in a second or two with
-0 billable milliseconds and an empty log, which is how it looked on 2026-10-27.
-`node tools/publish.mjs` does the workflow's checks on your own machine: a clean
-checkout of exactly `origin/main`, both test suites, the README standard script
-(read out of `readme-standard.yml` and run as written, so the two cannot
-drift), and a fresh build that must match the committed `dist/`. It publishes
-nothing on its own. `node tools/publish.mjs --deploy` then runs
-`wrangler deploy` with the exact version `workers.yml` pins (it needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`)
-and confirms the live site's `capabilities.json` reports the new build. It
-touches no domain, DNS or route. When Actions works again, the workflow is the
-normal path and this is the fallback.
+```
+node tools/publish.mjs            # checks only; publishes nothing
+node tools/publish.mjs --deploy   # checks, then deploys, then verifies live
+```
+
+What `tools/publish.mjs` does, in order:
+
+1. **Guard.** It refuses unless the working tree is clean and `HEAD` is exactly
+   `origin/main`, because what is published must be what the repository says it
+   is. Merge first, then check out `main`.
+2. **Gate.** It runs `tests/*.test.mjs` and `tests/core.test.cjs`, then the
+   README standard script (read out of `.github/workflows/readme-standard.yml`
+   and run as written, so the two cannot drift), then `node build.mjs`, and the
+   committed `dist/` must match that fresh build.
+3. **Deploy** (`--deploy` only). It needs `CLOUDFLARE_API_TOKEN` in the
+   environment (never printed; the script header also names
+   `CLOUDFLARE_ACCOUNT_ID`, which it does not check itself). It runs `npx --yes wrangler@4.131.0 deploy`.
+   The pinned version is read from `.github/workflows/workers.yml`, which is why
+   that file stays even though it cannot run: `tools/publish.mjs` and
+   `tests/publish.test.mjs` both read it. Change the pin there.
+4. **Live check.** It fetches the live `capabilities.json` (cache-busted, up to
+   six tries five seconds apart) and fails unless its `version` equals the
+   build it just deployed.
+
+It touches no domain, DNS or route. Nothing runs it for you: a merge to `main`
+that nobody then deploys leaves the public site on the previous build.
 
 This section previously read *"There is no deploy workflow, and none is
 wanted."* That was a deliberate choice and it had a cost nobody could see from
@@ -321,8 +332,8 @@ evidence.
 committed artifact rather than one built at deploy time. That makes it a
 hand-kept copy of something generated, and the failure mode is a commit whose
 `dist/` was never rebuilt: the deploy succeeds and ships the previous build's
-assets. The workflow rebuilds and diffs before deploying, so that fails loudly
-at the one moment it matters.
+assets. `tools/publish.mjs` rebuilds and diffs before deploying, so that fails
+loudly at the one moment it matters. Run `node build.mjs` and commit `dist/`.
 
 It used to publish through GitHub Pages via `actions/deploy-pages`, and that
 stopped working on 15 August when Actions stopped running on this account. Every
