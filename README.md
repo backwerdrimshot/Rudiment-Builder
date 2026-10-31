@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-27.8`
+- **Build:** `2026-10-31`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -232,6 +232,14 @@ Runner-agnostic cases live in `tests/cases.js`:
   CI's `validate` job runs, and it does not run the core cases**, so running
   only `core.test.cjs` before a push proves nothing about the checks that gate
   the merge. Run both.
+
+- **The scheduler stall check:** `PREVIEW_URL=http://127.0.0.1:8812 node tests/scheduler-stall.browser.mjs`
+  after serving the repository root (or `dist/`), with Playwright supplied through
+  `PLAYWRIGHT_MODULE` and, if needed, `PLAYWRIGHT_EXECUTABLE_PATH` (and `PLAYWRIGHT_ARGS`
+  when Chromium must run without its sandbox). It starts a practice run, blocks the
+  page for five seconds while the audio clock keeps running, and fails if any stroke is
+  then scheduled in the past, which would play the missed strokes at once. It is not
+  part of `node --test tests/*.test.mjs`, so it needs running by hand.
 
 ## Architecture
 
