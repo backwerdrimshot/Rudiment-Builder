@@ -281,15 +281,39 @@ Static site published as Cloudflare Workers static assets. `node build.mjs`
 copies the `SITE_ASSETS` allowlist into the tracked `dist/`, and the Worker
 serves `dist/`.
 
-**Deploys are by hand, and a merge alone publishes nothing.** GitHub Actions
-does not run for this account (the minutes ran out on 2026-09-30 and are not
-coming back), so no workflow runs on a merge and nothing deploys itself. The
-owner decided apps keep deploying by hand. The one command is:
+**A merge to `main` publishes automatically through Cloudflare Workers Builds,
+and only if the test gate passes.** GitHub Actions does not run for this account
+(the minutes ran out on 2026-09-30 and are not coming back), so no workflow runs
+on a merge or a pull request and none shows a check; the Cloudflare build is the
+only automatic step. Keep repair PRs in draft until review, because merging
+deploys them.
+
+**How a merge publishes.** The `rudiment-builder` Worker is connected to this
+repository in **Workers Builds** (set up 2026-10-31): production branch
+**`main`**, non-production branch builds **off**, root `/`, build command
+`node --test tests/*.test.mjs && node --test tests/core.test.cjs && node build.mjs && git diff --exit-code -- dist`
+(the gate, so a red suite, or a committed `dist/` that differs from a fresh
+build, fails the build and publishes nothing) and deploy command
+`npx wrangler@4.131.0 deploy`. Those settings live in the Cloudflare dashboard,
+not in this repository, so this paragraph is their record: change both
+together. Builds and deployments are listed under the Worker in the dashboard.
+They touch no domain, DNS or route.
+
+**Hand release** is the fallback, for example when a Cloudflare build is failing
+and the owner approves a release. The command is:
 
 ```
 node tools/publish.mjs            # checks only; publishes nothing
 node tools/publish.mjs --deploy   # checks, then deploys, then verifies live
 ```
+
+If Workers Builds has already published the merge, a hand release is a second
+deploy of the same commit, so run one only when the build failed or the owner
+asks for it.
+
+**Run the gate yourself before merging**, with `node tools/publish.mjs` (checks
+only). The build runs the gate again after the merge, and a red suite publishes
+nothing, but a failed build after a merge is too late to be a review.
 
 What `tools/publish.mjs` does, in order:
 
@@ -305,15 +329,18 @@ What `tools/publish.mjs` does, in order:
    `CLOUDFLARE_ACCOUNT_ID`, which it does not check itself). It runs `npx --yes wrangler@4.131.0 deploy`.
    The pinned version is read from `.github/workflows/workers.yml`, which is why
    that file stays even though it cannot run: `tools/publish.mjs` and
-   `tests/publish.test.mjs` both read it. Change the pin there.
+   `tests/publish.test.mjs` both read it. Change the pin there. If GitHub Actions
+   ever runs again, a merge could deploy from both that workflow and Workers
+   Builds, so turn one of them off first.
 4. **Live check.** It fetches the live `capabilities.json` (cache-busted, up to
    six tries five seconds apart) and fails unless its `version` equals the
    build it just deployed.
 
-It touches no domain, DNS or route. Nothing runs it for you: a merge to `main`
-that nobody then deploys leaves the public site on the previous build.
+It touches no domain, DNS or route. Nothing runs it for you: it is the fallback
+described above, not the normal path.
 
-This section previously read *"There is no deploy workflow, and none is
+*History, as of 2026-09-05; Workers Builds was connected on 2026-10-31, see
+above.* This section previously read *"There is no deploy workflow, and none is
 wanted."* That was a deliberate choice and it had a cost nobody could see from
 here: **a merge to this repository published nothing at all.** GitHub Pages was
 retired, no Cloudflare Workers Builds connection was ever made, and the only
