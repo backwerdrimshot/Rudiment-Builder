@@ -17,7 +17,7 @@ account (minutes ran out 2026-09-30), so no workflow or check runs on GitHub.
 for a failed build or when the owner asks: `node tools/publish.mjs --deploy`
 (guard: clean checkout of exactly `origin/main`; gate: both test suites, the
 README standard script, and a fresh build that must match the committed `dist/`;
-then `npx wrangler@4.131.0 deploy`; then a live check that `capabilities.json`
+then `npx wrangler@4.131.2 deploy`; then a live check that `capabilities.json`
 reports the new build).
 README "Deployment" has the detail. A commit whose `dist/` was not rebuilt
 fails that diff — run `node build.mjs` and commit `dist/` before committing.

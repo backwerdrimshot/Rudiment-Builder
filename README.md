@@ -302,7 +302,7 @@ repository in **Workers Builds** (set up 2026-10-31): production branch
 `node --test tests/*.test.mjs && node --test tests/core.test.cjs && node build.mjs && git diff --exit-code -- dist`
 (the gate, so a red suite, or a committed `dist/` that differs from a fresh
 build, fails the build and publishes nothing) and deploy command
-`npx wrangler@4.131.0 deploy`. Those settings live in the Cloudflare dashboard,
+`npx wrangler@4.131.2 deploy`. Those settings live in the Cloudflare dashboard,
 not in this repository, so this paragraph is their record: change both
 together. Builds and deployments are listed under the Worker in the dashboard.
 They touch no domain, DNS or route.
@@ -334,7 +334,7 @@ What `tools/publish.mjs` does, in order:
    committed `dist/` must match that fresh build.
 3. **Deploy** (`--deploy` only). It needs `CLOUDFLARE_API_TOKEN` in the
    environment (never printed; the script header also names
-   `CLOUDFLARE_ACCOUNT_ID`, which it does not check itself). It runs `npx --yes wrangler@4.131.0 deploy`.
+   `CLOUDFLARE_ACCOUNT_ID`, which it does not check itself). It runs `npx --yes wrangler@4.131.2 deploy`.
    The pinned version is the `WRANGLER_VERSION` constant in
    `tools/publish.mjs`, the one place the repository holds it;
    `tests/publish.test.mjs` checks that the deploy uses it and that this README
