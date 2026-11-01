@@ -62,7 +62,7 @@ export function extractReadmeCheck(workflowText) {
    place the pin lives in the repository: change it here, and change the deploy
    command in the Cloudflare Workers Builds settings to match (README
    "Deployment"). */
-export const WRANGLER_VERSION = "4.131.0";
+export const WRANGLER_VERSION = "4.131.2";
 
 function run(cmd, args, opts = {}) {
   return spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", ...opts });
