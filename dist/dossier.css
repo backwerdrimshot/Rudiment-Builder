@@ -1,0 +1,102 @@
+#rudimentDossier[hidden]{display:none}
+body.dossier-active .layout{display:flex;flex-direction:column;height:auto;gap:16px}
+body.dossier-active .setup-row{display:flex;gap:8px;align-items:start;position:relative}
+body.dossier-active .setup-card,body.dossier-active .settings-card{flex:1;min-width:0;display:block}
+body.dossier-active .settings-toggle{display:flex}
+body.dossier-active .settings-body{position:absolute;left:0;right:0;top:100%;max-height:70dvh;overflow:auto;z-index:30}
+body.dossier-active .settings-body[data-open="false"]{display:none!important}
+body.dossier-active #btnFavorite{order:1;min-width:85px}
+body.dossier-active .settings-card{order:2}
+body.dossier-active .setup-toggle{min-height:44px;padding:8px}
+body.dossier-active .setup-toggle .settings-summary span,body.dossier-active #summaryTop{display:none}
+body.dossier-active .setup-card,body.dossier-active .settings-card,body.dossier-active .panel{box-shadow:none}
+#rudimentDossier{color:var(--ink);min-width:0;order:1}
+body.dossier-active .area-status{order:2;margin-top:16px}
+.dossier-heading{margin-bottom:16px}.dossier-heading .stick-head{margin:0}
+.dossier-heading .stick-title{font-size:32px;margin:0;line-height:1.2}
+.dossier-heading #btnRudimentHelp{display:none}
+.dossier-membership{font-weight:700;font-size:15px;margin:4px 0;color:var(--ink-soft)}
+.dossier-heading .stick-sub{font-size:14px}
+.dossier-scroll{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.dossier-practice{grid-column:1;grid-row:1 / span 2;min-width:0}
+.dossier-learning{display:grid;gap:12px;min-width:0}
+.dossier-section{border:1px solid var(--line);border-radius:10px;background:var(--white);min-width:0}
+.dossier-section summary{cursor:pointer;min-height:48px;padding:12px;font:800 26px/1.2 var(--head);list-style-position:inside}
+.dossier-section summary:focus-visible{outline:3px solid var(--accent-ink);outline-offset:2px}
+.dossier-content{padding:0 16px 16px;font-size:19px;line-height:1.35}
+.dossier-content h3{font-size:22px;line-height:1.25;margin:8px 0}
+.dossier-content p{margin:8px 0}.dossier-content .hint{font-size:16px}
+.dossier-content a{color:inherit;text-decoration:underline;display:inline-block;min-height:44px;padding-top:10px}
+.dossier-content article+article{border-top:1px solid var(--line);margin-top:16px;padding-top:8px}
+#rudimentDossier .area-sticking{border:0;padding:0;background:transparent;display:block}
+#rudimentDossier #hSticking,#rudimentDossier .legend{display:none}
+#rudimentDossier .notation{margin:0 0 12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--white)}
+#rudimentDossier .notation-card svg{width:100%;height:auto;max-width:100%}
+.dossier-sticking{padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--tan);margin-bottom:12px}
+.dossier-sticking h3{font:700 14px var(--body);text-transform:uppercase;margin:0 0 4px}
+#rudimentDossier #sticking{margin:0;overflow:visible}
+#rudimentDossier .stick-row{gap:6px}
+#rudimentDossier .beat-group{gap:4px;min-width:0}
+#rudimentDossier .cell{padding:4px 1px;min-width:0;box-shadow:none;border-width:1px;border-radius:4px}
+#rudimentDossier .cell .letter{font-size:28px}
+#rudimentDossier .cell .acc{height:10px;font-size:12px}
+#rudimentDossier #handListening{margin:0 0 12px}
+#rudimentDossier #handListening .lead-row{display:block}
+#rudimentDossier #handListeningLbl{display:none}
+#rudimentDossier #segListeningHand{display:flex;width:100%}
+#rudimentDossier #segListeningHand button{flex:1;min-height:44px}
+#rudimentDossier .dock{position:static;box-shadow:none;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--white);margin:0}
+#rudimentDossier .transport{display:flex;gap:8px;flex-wrap:wrap}
+#rudimentDossier .tempo-step{margin:0;flex:1;gap:4px;justify-content:space-between}
+#rudimentDossier #btnStart{flex:1;min-height:48px;padding:8px}
+#rudimentDossier .tempo-step button{min-height:48px;min-width:44px}
+#rudimentDossier .dock-tools{margin-bottom:8px}
+.dossier-extra-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dossier-extra-controls button{min-height:44px}
+@media(min-width:1200px){.dossier-scroll{grid-template-columns:repeat(3,minmax(0,1fr))}.dossier-practice{grid-row:1}.dossier-exercises{grid-column:3;grid-row:1}}
+@media(max-width:759px){
+body.dossier-active .wrap{padding:0}
+body.dossier-active #rudimentDossier{display:flex;flex-direction:column;height:calc(100svh - 160px);min-height:480px;gap:10px}
+.dossier-heading{margin:0;flex:none}
+.dossier-scroll{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0;flex:1;padding:3px}
+.dossier-practice,.dossier-learning,.dossier-exercises{width:100%;flex:none}.dossier-learning{gap:8px}
+.dossier-section summary{font:700 18px/1.2 var(--body);padding:14px 12px}
+#rudimentDossier>.dock{flex:none;max-height:45svh;overflow:auto}
+#rudimentDossier .notation{padding:8px;margin-bottom:8px}
+#rudimentDossier .notation-cap{font-size:13px;margin-top:4px}
+#rudimentDossier .cell .letter{font-size:clamp(21px,6vw,28px)}
+#rudimentDossier .stick-row{gap:4px}
+#rudimentDossier .enlarge-label{font-size:13px;margin-top:4px}
+}
+body.dossier-active .setup-row{flex-direction:row;align-items:stretch}
+body.dossier-active .setup-toggle,body.dossier-active #btnFavorite{border:1px solid var(--line);border-radius:8px;box-shadow:none;font:700 16px var(--body);height:44px;min-width:0}
+body.dossier-active .setup-toggle .settings-caret{display:none}
+body.dossier-active #btnFavorite{padding:6px;min-width:76px}
+.dossier-heading .stick-title{font:800 32px/1.2 var(--display)}
+.dossier-section summary{font-family:var(--display)}
+#rudimentDossier #segListeningHand{max-width:none;gap:8px;border:0;box-shadow:none;border-radius:0}
+#rudimentDossier #segListeningHand button{border:1px solid var(--line);border-radius:8px;background:var(--white);color:var(--ink)}
+#rudimentDossier #segListeningHand button[aria-pressed="true"]{background:var(--ink);color:var(--white)}
+#rudimentDossier #btnStart{background:var(--ink);color:var(--white);border:1px solid var(--line);box-shadow:none;border-radius:8px}
+#rudimentDossier .tempo-step button{box-shadow:none;border:1px solid var(--line);border-radius:8px}
+#rudimentDossier .dock-tools summary{min-height:44px}
+#rudimentDossier .notation-cap{font-family:var(--body);font-style:normal}
+@media(max-width:759px){body.dossier-active #rudimentDossier{height:calc(100svh - 160px)}}
+
+#rudimentDossier .cell{min-height:40px}
+#rudimentDossier .dock-controls{max-height:none;overflow:visible}
+body.dossier-active .setup-toggle .settings-summary{flex:0}
+body.dossier-active .setup-toggle{justify-content:center}
+body.dossier-active .setup-toggle b{font:700 16px var(--body)}
+@media(max-width:759px){
+ #rudimentDossier .notation-card svg{max-height:140px}
+ #rudimentDossier .dossier-sticking .count{display:none}
+ #rudimentDossier .dossier-sticking .cell{min-height:36px}
+ #rudimentDossier .dossier-sticking .cell .acc{height:8px}
+ #rudimentDossier .notation{margin-top:0}
+}
+
+@media(max-width:759px){body.dossier-active #rudimentDossier{min-height:0;height:calc(100svh - 165px)}}
+
+@media(max-width:759px){body.dossier-active #rudimentDossier{height:calc(100svh - var(--dossier-top,165px) - 16px)}}
+
+.dossier-scroll{overscroll-behavior:contain}.dossier-scroll:focus-visible{outline:3px solid var(--accent-ink);outline-offset:2px}

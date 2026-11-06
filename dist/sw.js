@@ -85,6 +85,7 @@ var ASSETS = [
   "assets/notation/rudiments/rudiment-40-triple-ratamacue.svg",
   "assets/vendor/qrcode-generator/qrcode.js",
   "brs-monogram.svg",
+  "dossier.css",
   "favicon.ico",
   "favicon.svg",
   "icon-192.png",
@@ -93,6 +94,7 @@ var ASSETS = [
   "js/rudiment-app.js",
   "js/rudiment-core.js",
   "js/rudiment-data.js",
+  "js/rudiment-dossier.js",
   "manifest.webmanifest",
   "workspace-info.js",
   "workspace-layout.css"

@@ -643,6 +643,7 @@ function renderSticking() {
   $("stickSub").textContent = (p.lead === "R" ? "Right" : "Left") + "-hand lead · " + r.subdivision +
     " · " + p.cycleBeats + "-beat cycle";
   renderNotation(r, p.mirrored);
+  document.dispatchEvent(new CustomEvent("rudiment-rendered"));
 }
 // Draw one build-up layer (or the written rudiment, for null). The strokes are
 // the same strokes in the same cells, so the highlight indices still line up.
@@ -2248,6 +2249,7 @@ function setClassView(on) {
   document.body.classList.toggle("class-view", on);
   $("btnClassView").setAttribute("aria-pressed", on ? "true" : "false");
   $("btnClassView").lastElementChild.textContent = on ? "Exit class view" : "Class view";
+  document.dispatchEvent(new CustomEvent("practice-view-changed"));
 }
 function copyShareLink() {
   var url = shareUrl();
