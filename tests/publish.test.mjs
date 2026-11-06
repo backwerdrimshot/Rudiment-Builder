@@ -13,7 +13,7 @@ import os from "node:os";
 import { WRANGLER_VERSION, extractReadmeCheck, liveVersion, verifyLive } from "../tools/publish.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const WORKFLOW = fs.readFileSync(path.join(ROOT, ".github/workflows/readme-standard.yml"), "utf8");
+const WORKFLOW = fs.readFileSync(path.join(ROOT, "tools/local-checks/readme-standard.yml"), "utf8");
 
 test("the README standard script is read out of the workflow, expressions filled in", () => {
   const script = extractReadmeCheck(WORKFLOW);

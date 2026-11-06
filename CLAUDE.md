@@ -10,10 +10,11 @@ No accounts, no backend, no microphone/camera grading, ever.
 Static app, **classic scripts** (no ES modules, no bundler, no framework) —
 the family convention; the app itself runs over `file://`. Publishing is
 Cloudflare Workers static assets: `node build.mjs` copies the `SITE_ASSETS`
-allowlist into the **tracked** `dist/`. GitHub Actions does not run for this
-account (minutes ran out 2026-09-30), so no workflow or check runs on GitHub.
-**A merge to `main` publishes through Cloudflare Workers Builds** (connected
-2026-10-31), and only if its test gate passes. The by-hand path is the fallback,
+allowlist into the **tracked** `dist/`. Testing is local-only by owner direction.
+The README validation recipe lives at `tools/local-checks/readme-standard.yml`,
+outside GitHub's workflow directory. **A merge to `main` publishes through
+Cloudflare Workers Builds**, which only builds and checks committed `dist/`
+integrity; run all tests locally before merging. The by-hand path is the fallback,
 for a failed build or when the owner asks: `node tools/publish.mjs --deploy`
 (guard: clean checkout of exactly `origin/main`; gate: both test suites, the
 README standard script, and a fresh build that must match the committed `dist/`;

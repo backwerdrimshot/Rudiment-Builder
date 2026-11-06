@@ -1,3 +1,5 @@
+# Local-only validation recipe. This is deliberately outside .github/workflows.
+# tools/publish.mjs extracts the README standard step; nothing here runs on GitHub.
 name: README standard
 
 on:

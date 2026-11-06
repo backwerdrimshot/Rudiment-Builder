@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Publish Rudiment Room without GitHub Actions.
 
-   GitHub Actions cannot run for this account, so this script is the hand path.
+   Testing is local-only by owner direction; this script is the hand path.
    It runs four checks on this machine (a clean checkout of origin/main, the
    test suites, the README standard script, and a fresh build that must match
    the committed dist/) and then, only if asked, the deploy:
@@ -23,7 +23,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const WORKFLOW = ".github/workflows/readme-standard.yml";
+const WORKFLOW = "tools/local-checks/readme-standard.yml";
 const STEP_NAME = "Validate README standard";
 
 /* The shell script of the named step, taken from the workflow file by

@@ -292,23 +292,19 @@ Static site published as Cloudflare Workers static assets. `node build.mjs`
 copies the `SITE_ASSETS` allowlist into the tracked `dist/`, and the Worker
 serves `dist/`.
 
-**A merge to `main` publishes automatically through Cloudflare Workers Builds,
-and only if the test gate passes.** GitHub Actions does not run for this account
-(the minutes ran out on 2026-09-30 and are not coming back), so no workflow runs
-on a merge or a pull request and none shows a check; the Cloudflare build is the
-only automatic step. Keep repair PRs in draft until review, because merging
-deploys them.
+**Testing is local-only.** Run the full Node suites and browser checks on the
+local computer before merging. The former GitHub README workflow is retained
+as a local validation recipe at `tools/local-checks/readme-standard.yml`, outside
+GitHub's workflow directory. No repository workflow runs tests on push or PR.
+The local publish tool still executes all its validation steps.
 
-**How a merge publishes.** The `rudiment-builder` Worker is connected to this
-repository in **Workers Builds** (set up 2026-10-31): production branch
-**`main`**, non-production branch builds **off**, root `/`, build command
-`node --test tests/*.test.mjs && node --test tests/core.test.cjs && node build.mjs && git diff --exit-code -- dist`
-(the gate, so a red suite, or a committed `dist/` that differs from a fresh
-build, fails the build and publishes nothing) and deploy command
-`npx wrangler@4.131.2 deploy`. Those settings live in the Cloudflare dashboard,
-not in this repository, so this paragraph is their record: change both
-together. Builds and deployments are listed under the Worker in the dashboard.
-They touch no domain, DNS or route.
+**A merge to `main` publishes through Cloudflare Workers Builds.** Production
+branch remains `main`, non-production builds remain off, root `/`. The build
+command is `node build.mjs && git diff --exit-code -- dist`: build the assets
+and prove the committed copy matches, without running tests remotely. The
+deploy command remains `npx wrangler@4.131.2 deploy`. Settings live in the
+Cloudflare dashboard; no domain, DNS, route, token or permission changes are
+part of this testing-policy change.
 
 **Hand release** is the fallback, for example when a Cloudflare build is failing
 and the owner approves a release. The command is:
@@ -322,9 +318,10 @@ If Workers Builds has already published the merge, a hand release is a second
 deploy of the same commit, so run one only when the build failed or the owner
 asks for it.
 
-**Run the gate yourself before merging**, with `node tools/publish.mjs` (checks
-only). The build runs the gate again after the merge, and a red suite publishes
-nothing, but a failed build after a merge is too late to be a review.
+**Before merging**, run the local test commands in Testing and rebuild `dist/`.
+`node tools/publish.mjs` is the additional clean-main verification after merge
+(checks only; it deliberately rejects a feature branch). Cloudflare rebuilds and checks artifact integrity after the merge; it does
+not rerun tests. Local test success is required before publishing.
 
 What `tools/publish.mjs` does, in order:
 
@@ -332,7 +329,7 @@ What `tools/publish.mjs` does, in order:
    `origin/main`, because what is published must be what the repository says it
    is. Merge first, then check out `main`.
 2. **Gate.** It runs `tests/*.test.mjs` and `tests/core.test.cjs`, then the
-   README standard script (read out of `.github/workflows/readme-standard.yml`
+   README standard script (read out of `tools/local-checks/readme-standard.yml`
    and run as written, so the two cannot drift), then `node build.mjs`, and the
    committed `dist/` must match that fresh build.
 3. **Deploy** (`--deploy` only). It needs `CLOUDFLARE_API_TOKEN` in the
