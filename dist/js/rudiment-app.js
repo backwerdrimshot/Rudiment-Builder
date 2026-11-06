@@ -755,6 +755,7 @@ function renderNotation(r, mirrored) {
   $("notationCap").textContent = mirrored
     ? "As written, right-hand lead — your left lead swaps every R and L."
     : "As written, right-hand lead.";
+  if ($("workspace-notation").open) renderZoomScore(r);
   var file = Core.notationCard(r);
   if (file === notationShown) return;
   notationShown = file;
@@ -831,7 +832,7 @@ function renderShortcuts() {
     });
   });
 }
-var notationZoom = 1;
+var notationZoom = 1, notationZoomRequest = 0;
 function setNotationZoom(value) {
   notationZoom = Math.max(1, Math.min(3, value));
   $("notationZoomCard").style.setProperty("--zoom", notationZoom);
@@ -839,13 +840,17 @@ function setNotationZoom(value) {
   $("notationZoomOut").disabled = notationZoom === 1;
   $("notationZoomIn").disabled = notationZoom === 3;
 }
-function openNotationZoom() {
-  var r = Core.RUDIMENT_MAP[settings.rudimentId], dialog = $("workspace-notation");
+function renderZoomScore(r) {
+  var request = ++notationZoomRequest, dialog = $("workspace-notation");
   $("notationZoomTitle").textContent = r.name + " notation";
   $("notationZoomCaption").textContent = $("notationCap").textContent;
-  $("notationZoomCard").textContent = ""; setNotationZoom(1);
-  dialog.showModal();
-  mountCard($("notationZoomCard"), Core.notationCard(r), r.name + " written in notation, right-hand lead", function () { return dialog.open && settings.rudimentId === r.id; });
+  $("notationZoomCard").textContent = "";
+  mountCard($("notationZoomCard"), Core.notationCard(r), r.name + " written in notation, right-hand lead", function () { return dialog.open && request === notationZoomRequest; });
+}
+function openNotationZoom() {
+  var dialog = $("workspace-notation");
+  setNotationZoom(1); dialog.showModal();
+  renderZoomScore(Core.RUDIMENT_MAP[settings.rudimentId]);
   $("notationZoomScroll").scrollLeft = 0;
 }
 

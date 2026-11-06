@@ -16,13 +16,13 @@ for(const engine of [chromium,webkit]){
   await page.locator('#notationZoomFit').click();assert.equal(await page.locator('#notationZoomLevel').textContent(),'100%');
   await page.keyboard.press('Escape');assert.equal(await page.locator('#btnEnlargeNotation').evaluate(e=>e===document.activeElement),true);
  }
- await page.setViewportSize({width:390,height:664});await page.locator('#btnFavorite').click();assert.equal(await page.locator('#btnFavorite').getAttribute('aria-pressed'),'true');
+ await page.setViewportSize({width:390,height:664});await page.locator('#btnFavorite').click();assert.equal(await page.locator('#btnFavorite').getAttribute('aria-pressed'),'true');assert.ok((await page.locator('#btnFavorite').boundingBox()).height>=44);
  await page.evaluate(()=>{selectRudiment('flam');selectRudiment('single-paradiddle');});await page.reload();await page.waitForFunction(()=>window.live?.pattern);
  assert.equal(await page.locator('#btnFavorite').getAttribute('aria-pressed'),'true');assert.deepEqual(await page.evaluate(()=>shortcuts.recent.slice(0,2)),['single-paradiddle','flam']);
  await page.locator('#setupToggle').click();await page.locator('#personalShortcuts>summary').click();await page.locator('#recentShortcuts button').filter({hasText:'Flam'}).click();
  assert.equal(await page.evaluate(()=>settings.rudimentId),'flam');assert.equal(await page.locator('#setupPanel').evaluate(e=>e.open),false);assert.equal(await page.locator('#setupToggle').evaluate(e=>e===document.activeElement),true);
  await page.locator('#btnStart').click();const status=await page.evaluate(()=>live.status);await page.locator('#btnFavorite').click();assert.equal(await page.evaluate(()=>live.status),status);
- await page.locator('#btnEnlargeNotation').click();assert.equal(await page.evaluate(()=>live.status),status);await page.keyboard.press('Escape');await page.locator('#btnReset').click();
+ await page.locator('#btnEnlargeNotation').click();assert.equal(await page.evaluate(()=>live.status),status);await page.evaluate(()=>selectRudiment('flam-accent'));await page.waitForFunction(()=>document.querySelector('#notationZoomCard svg')?.getAttribute('data-rudiment')==='flam-accent');assert.match(await page.locator('#notationZoomTitle').textContent(),/Flam Accent/);await page.keyboard.press('Escape');await page.locator('#btnReset').click();
  await page.evaluate(()=>localStorage.setItem(SHORTCUTS_KEY,'{broken'));await page.reload();await page.waitForFunction(()=>window.live?.pattern);assert.deepEqual(await page.evaluate(()=>shortcuts.favorites),[]);
  await page.evaluate(()=>{Storage.prototype.setItem=function(){throw new Error('quota');};});await page.locator('#btnFavorite').click();assert.match(await page.locator('#shortcutStorageNote').textContent(),/this visit only/);assert.equal(await page.locator('#btnFavorite').getAttribute('aria-pressed'),'true');
  assert.deepEqual(errors,[]);console.log(engine.name(),'PASS zoom/dialog/lead/focus/responsive/favorites/recent/persistence/corruption/storage failure/playback');
