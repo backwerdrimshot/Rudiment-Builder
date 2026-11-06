@@ -226,6 +226,14 @@
   .tempo-quick b{font-size:1.25rem}
   .tempo-quick small{color:var(--ink-soft);font-weight:800}
 
+  /* Phone/tablet controls follow the notation in normal flow: no sticky panel covers it. */
+  @media(max-width:979px){
+    .dock{position:static;margin-top:0;padding:10px 12px}
+    .dock-controls{max-height:none;overflow:visible}
+    .dock .btn{min-height:44px}
+    .dock .btn.big,.dock .btn.ghost{padding:8px 12px}
+    .dock .transport{gap:8px}
+  }
   /* Below the fold */
   .about-grid{display:grid;gap:18px}
   .area-about .notation{margin:0;padding-top:0;border-top:0}
@@ -339,6 +347,7 @@
   .practice-tools>summary{cursor:pointer;font-weight:700;min-height:44px;padding:12px 4px}
   .practice-tools .panel{margin:0;padding:12px 0}
   .dock-controls{max-height:34vh;overflow:auto;padding:4px 6px 12px}
+  @media(max-width:979px){.dock-controls{max-height:none;overflow:visible}}
   .listening-status{font-weight:800;color:var(--accent-ink);margin:0 0 8px}
   #btnRudimentHelp{display:block;margin-top:10px;min-height:44px}
   .self-assessment{margin:12px 0 0}
@@ -1053,33 +1062,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     </section>
 
     <!-- ============ STATUS + TRANSPORT ============ -->
-    <section class="panel area-status" aria-labelledby="hPractice">
-      <h2 id="hPractice">Practice</h2>
-      <div class="status-grid">
-        <div>
-          <div class="bpm-huge" id="curBpm" aria-live="off">80<small>BPM</small></div>
-          <div class="phase-word" id="phaseWord">Ready</div>
-        </div>
-        <div class="next-chip">
-          <div class="lbl">Next tempo</div>
-          <div class="val" id="nextBpm">—</div>
-        </div>
-      </div>
-
-      <div class="beats" id="beats" aria-hidden="true"></div>
-
-      <div class="banner hidden" id="banner" aria-live="assertive"></div>
-      <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
-      <div class="log-row" id="logRow" hidden>
-        <button class="btn ghost" id="btnCopyLog" type="button" title="Copy this run as text to paste into your class's assignment">Copy practice log</button>
-      </div>
-      <p class="hint clean-note" id="logStatus" role="status" aria-live="polite"></p>
-
-      <p class="hint clean-note" id="cleanNote" aria-live="polite"></p>
-      <p class="hint goal-line" id="goalLine" aria-live="polite" hidden></p>
-      <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
-    </section>
-
     <!-- ============ DOCKED ACTION BAR ============ -->
     <section class="panel dock" aria-label="Transport">
       <p class="listening-status" id="listeningStatus" role="status" hidden></p>
@@ -1130,6 +1112,34 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       </div>
       <p class="hint self-assessment">You decide what counts as clean. This logs your own assessment; the app does not listen or grade.</p>
     </section>
+
+    <section class="panel area-status" aria-labelledby="hPractice">
+      <h2 id="hPractice">Practice</h2>
+      <div class="status-grid">
+        <div>
+          <div class="bpm-huge" id="curBpm" aria-live="off">80<small>BPM</small></div>
+          <div class="phase-word" id="phaseWord">Ready</div>
+        </div>
+        <div class="next-chip">
+          <div class="lbl">Next tempo</div>
+          <div class="val" id="nextBpm">—</div>
+        </div>
+      </div>
+
+      <div class="beats" id="beats" aria-hidden="true"></div>
+
+      <div class="banner hidden" id="banner" aria-live="assertive"></div>
+      <div class="status-line" id="statusLine" aria-live="polite">Press Start — a four-beat count-in leads you in.</div>
+      <div class="log-row" id="logRow" hidden>
+        <button class="btn ghost" id="btnCopyLog" type="button" title="Copy this run as text to paste into your class's assignment">Copy practice log</button>
+      </div>
+      <p class="hint clean-note" id="logStatus" role="status" aria-live="polite"></p>
+
+      <p class="hint clean-note" id="cleanNote" aria-live="polite"></p>
+      <p class="hint goal-line" id="goalLine" aria-live="polite" hidden></p>
+      <p class="err" id="err" role="alert" style="text-align:center;margin:10px 0 0"></p>
+    </section>
+
 
   </main>
 

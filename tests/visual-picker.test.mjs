@@ -72,3 +72,9 @@ test('nonmodal sidebar does not trap the player away from practice controls', ()
 test('full-height modal removes the native dialog width cap', () => {
   assert.ok(html.includes('.setup-panel{inset:0;width:100%;max-width:none;height:100dvh;'));
 });
+
+test('phone transport follows notation without covering it', () => {
+  assert.ok(html.indexOf('class="panel dock"') > html.indexOf('class="panel area-sticking"'));
+  assert.ok(html.indexOf('class="panel dock"') < html.indexOf('class="panel area-status"'));
+  assert.match(html, /max-width:979px\)\{\s*\.dock\{position:static/);
+});
