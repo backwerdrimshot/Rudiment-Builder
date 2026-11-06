@@ -261,25 +261,26 @@ var RUDIMENTS = [
     aliases: ["9 stroke roll"],
     strokes: measuredRoll(4) },
 
-  /* 11 — Ten Stroke Roll */ // corrected against PAS #11 and Taylor's packet 2026-11-06
+  /* 11 — Ten Stroke Roll */ // Taylor's accented bookend sticking; local rhythm proposal, 2026-11-06
   { id: "ten-stroke-roll", name: "Ten Stroke Roll", pas: 11, family: "Roll",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 8, subdivision: "Thirty-seconds, then sixteenths",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 8, subdivision: "Sixteenth accents, thirty-second doubles",
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "Four thirty-second-note doubles on beat one, then two accented sixteenth-note taps (R L) on beat two. Rest for the final eighth note; the closing taps are twice as long as each roll stroke.",
+    teachingNote: "Begin with an accented right, play four quiet doubles L L R R L L R R, then finish with an accented left. Repeat the same lead, or choose left lead to mirror the whole figure.",
     breakdown: [
-      "Fit four even doubles into beat one: R R L L R R L L. Count 1 ta e ta & ta a ta.",
-      "Play accented R then L on 2 and e. Each tap lasts a sixteenth note, twice the length of a roll stroke.",
-      "Rest on & a of beat two: an eighth rest before the two-beat pattern repeats.",
-      "Repeat with left lead: L L R R L L R R, then accented L R. Keep the same rhythm.",
+      "Play the accented bookends first: R, then L. Keep them distinct from the quiet doubles.",
+      "Insert four doubles between the accents: L L, R R, L L, R R.",
+      "In this practice rhythm, count the opening accent on 1, start the doubles on e, and finish with the accented L on e of beat two. Rest on & a.",
+      "Repeat R ll rr ll rr L. With left lead, repeat L rr ll rr ll R.",
     ],
     aliases: ["10 stroke roll"],
     strokes: [
-      { slot: 0, hand: R, diddle: 1 }, { slot: 1, hand: R, diddle: 1 },
-      { slot: 2, hand: L, diddle: 2 }, { slot: 3, hand: L, diddle: 2 },
-      { slot: 4, hand: R, diddle: 3 }, { slot: 5, hand: R, diddle: 3 },
-      { slot: 6, hand: L, diddle: 4 }, { slot: 7, hand: L, diddle: 4 },
-      { slot: 8, hand: R, accent: true, duration: 2 }, { slot: 10, hand: L, accent: true, duration: 2 },
+      { slot: 0, hand: R, accent: true, duration: 2 },
+      { slot: 2, hand: L, diddle: 1 }, { slot: 3, hand: L, diddle: 1 },
+      { slot: 4, hand: R, diddle: 2 }, { slot: 5, hand: R, diddle: 2 },
+      { slot: 6, hand: L, diddle: 3 }, { slot: 7, hand: L, diddle: 3 },
+      { slot: 8, hand: R, diddle: 4 }, { slot: 9, hand: R, diddle: 4 },
+      { slot: 10, hand: L, accent: true, duration: 2 },
     ] },
 
   /* 12 — Eleven Stroke Roll */

@@ -14,7 +14,7 @@ selectRudiment('ten-stroke-roll');applyLead('R');
 const events=live.events.map(e=>[e.beatPos,e.lengthBeats,e.hand,e.accent]);
 return {events,cycle:live.pattern.cycleBeats,counting:live.pattern.counting};
 });
-assert.deepEqual(result.events.map(e=>e[0]),[0,.125,.25,.375,.5,.625,.75,.875,1,1.25]);assert.equal(result.cycle,2);
+assert.deepEqual(result.events.map(e=>e[0]),[0,.25,.375,.5,.625,.75,.875,1,1.125,1.25]);assert.equal(result.cycle,2);
 await page.evaluate(()=>{applyMode('fixed');startPlayback();});await page.waitForTimeout(4000);
 assert.equal(await page.evaluate(()=>live.status),'playing');
 await page.evaluate(()=>pausePlayback());assert.equal(await page.evaluate(()=>live.status),'paused');
