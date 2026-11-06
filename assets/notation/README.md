@@ -27,3 +27,10 @@ Contents:
   keep in step. Any further data correction here is re-rendered upstream and
   re-copied; editing a card in place would put the drawing and the app out of
   step with no way to tell which is right.
+
+
+2026-11-06: PAS #11 was regenerated upstream from Rudiment Builder source
+commit `5492787` (two-beat thirty-second/sixteenth reading), using
+praxis-platform notation commit `1f03f0d7`. The ten-stroke
+SVG and manifest are copied byte-for-byte from that composer output; the
+other 39 cards are unchanged. See `REVIEW.md` for the musical correction.

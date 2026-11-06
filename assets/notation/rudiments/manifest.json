@@ -192,10 +192,10 @@
       "name": "Ten Stroke Roll",
       "family": "Roll",
       "level": "Intermediate",
-      "subdivision": "Sixteenth notes",
+      "subdivision": "Thirty-seconds, then sixteenths",
       "heritage": "NARD Standard 26",
-      "cycleBeats": 3,
-      "slotsPerBeat": 4,
+      "cycleBeats": 2,
+      "slotsPerBeat": 8,
       "altSticking": true,
       "halved": false,
       "devices": [

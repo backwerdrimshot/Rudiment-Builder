@@ -1,5 +1,23 @@
 # REVIEW.md — hybrid rudiment proofing worksheet
 
+
+### Ten Stroke Roll correction (2026-11-06)
+
+Taylor approved replacing the former three-beat reading with the rhythm in
+[PAS #11](https://pas.org/wp-content/uploads/2026/05/PAS-rud-11.svg) and Taylor's
+reference packet: eight thirty-seconds (`RRLLRRLL`) on beat one, accented
+sixteenths `R L` on `2 e`, then an eighth rest on `& a`. The complete loop is
+two quarter-note beats. The old encoding incorrectly gave all ten strokes
+sixteenth-note durations. It is not retained as an unnamed PAS variant.
+Left lead remains available with exactly the same rhythm and mirrored hands.
+
+Data, playback event lengths/onsets, generated counting, original teaching prose,
+and exact regression cases are updated together. The card is regenerated with
+praxis-platform's canonical composer and the refreshed source snapshot, then
+copied back here. No PAS artwork or packet text is copied or traced: the
+engraving uses the existing licensed Bravura outlines and original layout.
+This correction supersedes the earlier all-clear for #11 below.
+
 **2026-08-25 update:** Taylor supplied the official 1984 PAS International Drum
 Rudiments chart and every encoded rudiment was proofed against it. Thirteen
 hybrids were corrected in [`js/rudiment-data.js`](js/rudiment-data.js) (each
