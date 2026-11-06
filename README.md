@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-11-06.3`
+- **Build:** `2026-11-06.4`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -501,3 +501,6 @@ The visual chooser uses the existing original notation cards. Notation / How to 
 
 ### Responsive rudiment browser
 At wide desktop widths, the collapsible right browser stays available alongside practice. Smaller screens use a full-height modal chooser. Settings returns to its top control while the wide browser is open. The ten-stroke roll now uses the reviewed two-beat rhythm and regenerated original notation.
+
+### Phone practice controls
+Below 980 CSS pixels, playback and sound controls follow the sticking in normal page flow, before the practice readout. This prevents the expanded controls covering notation on short screens; desktop controls retain their grid position.
