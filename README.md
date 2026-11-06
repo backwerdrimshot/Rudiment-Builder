@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-11-06.4`
+- **Build:** `2026-11-06.5`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -93,7 +93,7 @@ the app (see *Sources & educational lineage* below).
 - Large R/L sticking cells with accent marks (`>`), grace-note chips (flams),
   diddle underlines, counting-row subdivision guides, and beat grouping
 - Current-stroke highlight synchronized to the audio clock
-- The rudiment **written in notation** under the live sticking — one drawn card
+- The rudiment **written in notation** above the live sticking — one drawn card
   per rudiment, always with a right-hand lead; on a left lead the caption says
   to swap every R and L rather than letting the two displays quietly disagree
 - Leading-hand control — left lead is a hand-swapped copy of the pattern

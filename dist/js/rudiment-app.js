@@ -728,7 +728,7 @@ function drawCells(p) {
 }
 
 /* ---------------- notation card ----------------
-   The rudiment written out, under the live sticking. Every card is drawn with
+   The rudiment written out, above the live sticking. Every card is drawn with
    a right-hand lead, so on a left lead the caption says so rather than letting
    the two displays quietly disagree. The card is inlined when it can be
    fetched, so its currentColor fill takes --ink in both schemes; over file://
