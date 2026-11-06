@@ -720,6 +720,15 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     .setup-panel{inset:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
   }
   .setup-panel .filter-chips button,.setup-panel .seg button{min-height:44px}
+  /* Keep the full reference score on the practice surface without squeezing the live cells. */
+  .area-sticking .notation{margin:12px 0;padding:10px 0;border-bottom:1px solid var(--line)}
+  #handListening{margin-bottom:12px}
+  #segListeningHand button{min-height:44px;min-width:44px}
+  @media(min-width:980px){
+    body .layout{height:auto;grid-template-rows:auto auto auto}
+    .dock{position:static}
+    .area-sticking #sticking{overflow:visible;flex:none}
+  }
   /* Small screens: the shop line goes below 700px; the app's own tile and name stay, and the name
      shrinks to fit one row beside the nav and the monogram at 320px. The monogram is never hidden. */
   @media(max-width:699px){.brand p{display:none}}
@@ -1048,9 +1057,25 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <div>
           <p class="stick-title" id="stickName"></p>
           <span class="stick-sub" id="stickSub"></span>
-          <button class="btn ghost mini" id="btnRudimentHelp" type="button" data-dialog-open="workspace-help">Notation / How to play</button>
+          <button class="btn ghost mini" id="btnRudimentHelp" type="button" data-dialog-open="workspace-help">How to play</button>
         </div>
       </div>
+      <figure class="notation" id="notation">
+        <div class="notation-card" id="notationCard"></div>
+        <figcaption class="notation-cap" id="notationCap"></figcaption>
+      </figure>
+      <div id="handListening" hidden>
+        <div class="lead-row">
+          <span class="lbl" id="handListeningLbl">Listen</span>
+          <div class="seg" role="group" aria-labelledby="handListeningLbl" aria-describedby="handListeningHint" id="segListeningHand">
+            <button type="button" data-val="both" aria-pressed="true">Both</button>
+            <button type="button" data-val="R" aria-pressed="false">Right</button>
+            <button type="button" data-val="L" aria-pressed="false">Left</button>
+          </div>
+        </div>
+        <p class="hint" id="handListeningHint" aria-live="polite"></p>
+      </div>
+      <p class="hint" id="handListeningAvailability" hidden>Both hands play for this rudiment. Hand isolation is available for selected paradiddle and flam rudiments.</p>
       <p class="sr-only" id="stickingDesc"></p>
       <div id="sticking" role="img" aria-describedby="stickingDesc" aria-label="Sticking pattern"></div>
       <div class="legend" aria-hidden="true">
@@ -1065,7 +1090,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <!-- ============ DOCKED ACTION BAR ============ -->
     <section class="panel dock" aria-label="Transport">
       <p class="listening-status" id="listeningStatus" role="status" hidden></p>
-      <details class="practice-tools dock-tools"><summary>Sound and listening controls</summary>
+      <details class="practice-tools dock-tools"><summary>Sound and pulse controls</summary>
       <div class="dock-controls">
       <div class="cue-row">
         <input type="checkbox" id="pulseToggle" />
@@ -1074,17 +1099,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <div class="cue-row">
         <input type="checkbox" id="cueToggle" checked />
         <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle (covered while the pulse is on)</label>
-      </div>
-      <div id="handListening" hidden>
-        <div class="lead-row">
-          <span class="lbl" id="handListeningLbl">Hear the hand part</span>
-          <div class="seg" role="group" aria-labelledby="handListeningLbl" aria-describedby="handListeningHint" id="segListeningHand">
-            <button type="button" data-val="both" aria-pressed="true">Both</button>
-            <button type="button" data-val="R" aria-pressed="false">Right only</button>
-            <button type="button" data-val="L" aria-pressed="false">Left only</button>
-          </div>
-        </div>
-        <p class="hint" id="handListeningHint" aria-live="polite"></p>
       </div>
       <div class="lead-row sound-row">
         <span class="lbl" id="soundLbl">Stroke sound</span>
@@ -1161,10 +1175,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         </div>
       </div>
         </div>
-      <figure class="notation" id="notation">
-        <div class="notation-card" id="notationCard"></div>
-        <figcaption class="notation-cap" id="notationCap"></figcaption>
-      </figure>
+
       </div>
     </section>
 
@@ -1192,7 +1203,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 <dialog id="workspace-help" class="workspace-dialog" aria-labelledby="workspace-help-title">
   <div class="workspace-dialog-heading"><h2 id="workspace-help-title">How to use Rudiment Room</h2><button type="button" data-close-dialog aria-label="Close help">Close</button></div>
-  <p>Choose a rudiment under Rudiments, and its practice format under Settings. Start the count-in, then play along. Use Log clean rep when the repetition meets your standard. Open Notation / How to play beside the rudiment name to see its notation and practice steps.</p>
+  <p>Choose a rudiment under Rudiments, and its practice format under Settings. Start the count-in, then play along. Use Log clean rep when the repetition meets your standard. Open How to play beside the rudiment name to see its practice steps. The full notation stays on the practice screen.</p>
   <div data-help-slot></div>
   <p><a class="text-action" href="https://guides.backwerdrhythmshop.com/rudiment-builder/">Read the full guide <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg></a></p>
 </dialog>

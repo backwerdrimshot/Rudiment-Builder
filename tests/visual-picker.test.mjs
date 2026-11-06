@@ -78,3 +78,14 @@ test('phone transport follows notation without covering it', () => {
   assert.ok(html.indexOf('class="panel dock"') < html.indexOf('class="panel area-status"'));
   assert.match(html, /max-width:979px\)\{\s*\.dock\{position:static/);
 });
+
+test('full notation and supported hand controls stay on the practice surface', () => {
+  const start=html.indexOf('<section class="panel area-sticking"');
+  const end=html.indexOf('</section>',start);
+  const practice=html.slice(start,end);
+  assert.match(practice,/id="notation"/);assert.match(practice,/id="handListening"/);
+  assert.ok(practice.indexOf('id="notation"')<practice.indexOf('id="handListening"'));
+  assert.ok(practice.indexOf('id="handListening"')<practice.indexOf('id="sticking"'));
+  assert.equal(coreContext.RudimentCore.RUDIMENTS.filter(coreContext.RudimentCore.supportsHandListening).length,18);
+  assert.match(practice,/Both hands play for this rudiment/);
+});

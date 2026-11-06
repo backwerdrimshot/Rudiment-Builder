@@ -1427,6 +1427,7 @@ function syncHandListening() {
   var enabled = Core.supportsHandListening(Core.RUDIMENT_MAP[settings.rudimentId]);
   if (!enabled) settings.listeningHand = "both";
   $("handListening").hidden = !enabled;
+  $("handListeningAvailability").hidden = enabled;
   setSeg("segListeningHand", settings.listeningHand);
   $("listeningStatus").hidden = settings.listeningHand === "both";
   $("listeningStatus").textContent = settings.listeningHand === "both" ? "" :

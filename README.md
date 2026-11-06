@@ -497,10 +497,13 @@ Completed practice logs identify single-hand listening. This is not a new
 re-sticking or a reproduction of a packet's progressive breakdown exercises.
 
 ### Local practice usability update
-The visual chooser uses the existing original notation cards. Notation / How to play opens the selected rudiment’s existing teaching. Sound and listening controls sit above Start; other settings are grouped. Log clean rep is explicitly student self-assessment, not automatic grading.
+The visual chooser uses the existing original notation cards. The full notation stays on the practice screen; How to play opens the selected rudiment’s teaching. Sound and pulse controls sit above Start; other settings are grouped. Log clean rep is explicitly student self-assessment, not automatic grading.
 
 ### Responsive rudiment browser
 At wide desktop widths, the collapsible right browser stays available alongside practice. Smaller screens use a full-height modal chooser. Settings returns to its top control while the wide browser is open. The ten-stroke roll now uses the reviewed two-beat rhythm and regenerated original notation.
 
 ### Phone practice controls
 Below 980 CSS pixels, playback and sound controls follow the sticking in normal page flow, before the practice readout. This prevents the expanded controls covering notation on short screens; desktop controls retain their grid position.
+
+### Notation and hand listening
+The original full notation appears above the animated sticking. Listen Both / Right / Left is beside it for the existing 18 supported rudiments; other rudiments explain that both hands play. Isolation affects audio only, not the reference drawing or timing. Right-lead artwork retains an explicit caveat when left lead is selected.
