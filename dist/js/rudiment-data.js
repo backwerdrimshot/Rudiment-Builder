@@ -261,18 +261,19 @@ var RUDIMENTS = [
     aliases: ["9 stroke roll"],
     strokes: measuredRoll(4) },
 
-  /* 11 — Ten Stroke Roll */ // Taylor's accented bookend sticking; local rhythm proposal, 2026-11-06
+  /* 11 — Ten Stroke Roll */ // Taylor's triplet version; verified against Vic Firth notation 2026-11-06
   { id: "ten-stroke-roll", name: "Ten Stroke Roll", pas: 11, family: "Roll",
-    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 8, subdivision: "Sixteenth accents, thirty-second doubles",
+    level: "Intermediate", cycleBeats: 2, slotsPerBeat: 6, subdivision: "Triplets with doubled middle notes",
     tempo: { defaultBpm: 72, suggestedLo: 54, suggestedHi: 126 }, leadingHand: "mirror",
     heritage: "NARD Standard 26",
-    teachingNote: "Begin with an accented right, play four quiet doubles L L R R L L R R, then finish with an accented left. Repeat the same lead, or choose left lead to mirror the whole figure.",
+    teachingNote: "Two beats of triplets: accented R, ll, rr / ll, rr, accented L. Double the four middle triplet positions and repeat without a rest. Choose left lead to mirror the whole figure.",
     breakdown: [
       "Play the accented bookends first: R, then L. Keep them distinct from the quiet doubles.",
       "Insert four doubles between the accents: L L, R R, L L, R R.",
-      "In this practice rhythm, count the opening accent on 1, start the doubles on e, and finish with the accented L on e of beat two. Rest on & a.",
+      "Count 1 trip let, 2 trip let. Accent 1 and the last let; fit each double evenly inside one of the four middle triplet positions.",
       "Repeat R ll rr ll rr L. With left lead, repeat L rr ll rr ll R.",
     ],
+    counting: ["1", "", "trip", "", "let", "", "2", "", "trip", "", "let", ""],
     aliases: ["10 stroke roll"],
     strokes: [
       { slot: 0, hand: R, accent: true, duration: 2 },

@@ -192,14 +192,15 @@
       "name": "Ten Stroke Roll",
       "family": "Roll",
       "level": "Intermediate",
-      "subdivision": "Sixteenth accents, thirty-second doubles",
+      "subdivision": "Triplets with doubled middle notes",
       "heritage": "NARD Standard 26",
       "cycleBeats": 2,
-      "slotsPerBeat": 8,
+      "slotsPerBeat": 6,
       "altSticking": true,
       "halved": false,
       "devices": [
         "accent",
+        "tuplet",
         "sticking"
       ],
       "review": false

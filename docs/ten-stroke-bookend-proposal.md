@@ -1,27 +1,27 @@
-# Local ten-stroke proposal, not approved for release
+# Ten-stroke triplet correction
 
-Taylor's exact sticking is RllrrllrrL RllrrllrrL. The approved facts are an
-accented right, four quiet doubles LL RR LL RR, then accented left; repeat the
-same lead. Left lead mirrors that as LrrllrrllR.
+Taylor specified RllrrllrrL, repeated, and clarified "Triplets." This supersedes
+the earlier local sixteenth/32nd/rest proposal; that proposal was never published.
 
-The previous live reading starts RRLLRRLL and ends with two accented singles.
-It matches PAS #11's displayed ending-accent version but not Taylor's requested
-bookend version. PAS is a comparison source, not permission to override Taylor.
+Primary notation verified visually:
+https://ae.vicfirth.com/wp-content/uploads/11_ten-stroke-roll-1024x256.webp
+Lesson and demonstration links:
+https://ae.vicfirth.com/education/40-essential-rudiments/40-essential-rudiments-ten-stroke-roll/
 
-Timing remains an assumption: this local proposal preserves the previous note
-value inventory (two accented sixteenths, eight thirty-seconds, an eighth rest)
-and moves the first accent to the beginning. Onsets in quarter-note beats are
-0, .25, .375, .5, .625, .75, .875, 1, 1.125, 1.25; silence starts at 1.5 and
-ends at 2. Taylor has not confirmed those durations or the rest.
+The figure is R | ll | rr / ll | rr | L, two quarter-note beats, no rest.
+There are six eighth-note-triplet positions. Each of the four middle positions
+is doubled into two sixteenth-triplet strokes. Singles last 1/3 beat; doubles'
+individual strokes last 1/6 beat. Accents start at 0 and 5/3 beats. Left lead
+mirrors all hands. Looping preserves the same lead; it does not self-alternate.
 
-Do not merge or deploy until note values/rest are settled. The card was generated
-by canonical praxis-platform compose-rudiments.mjs renderCard(record), using the
-local proposed record. No reference artwork is copied. Full upstream snapshot
-persistence and provenance documentation must follow confirmed rhythm.
+The Vic Firth application exercise includes both duple and triple interpretations.
+Todd Bishop also describes the beginning/end-accent triplet form in Three Camps:
+https://cruiseshipdrummer.com/2021/12/31/10-and-11-stroke-rolls-in-wilcoxons-rolling-in-rhythm/
 
-Source check: the supplied Castleberry HS 2022 Snare Packet (Drive file
-1IlGRF-AN3pGHxxritm_wK0hVwHkLAzAg), PDF pages 2 and 11, visually shows PAS's
-ending-accent version, not Taylor's requested opening/closing-accent version.
-Neither that chart nor PAS-rud-11.svg confirms the proposed bookend timing.
-Another possible interpretation is eighth-note accents around eight 32nds,
-with no rest (also two beats). Do not select between these from letters alone.
+The supplied Castleberry packet PDF pages 2 and 11 and PAS #11 show the
+ending-accent version. They are comparison sources, not this version's timing
+source. No third-party notation artwork or lesson text is copied into the app.
+
+Local verification and review precede publication. Upstream composer supports
+an explicit triplet numeral for this mixed-duration figure; all other cards
+must remain unchanged. No build bump or publication is included in this branch.
