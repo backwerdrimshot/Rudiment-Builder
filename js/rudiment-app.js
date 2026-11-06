@@ -828,7 +828,7 @@ function buildCards() {
     b.addEventListener("click", function () {
       selectRudiment(r.id);
       // One choice returns to practice, including reselecting the current card.
-      $("setupPanel").close();
+      if ($("setupPanel").getAttribute("data-presentation") !== "sidebar") $("setupPanel").close();
     });
     g.cards.appendChild(b);
     var hay = (r.name + " " + r.family + " " + r.level + " pas " + r.pas + " #" + r.pas +
@@ -2246,12 +2246,18 @@ function hydrateControls() {
 function wireSetupPanel() {
   var toggle = $("setupToggle"), panel = $("setupPanel");
   var sToggle = $("settingsToggle"), sBody = $("settingsBody");
+  var wideBrowser = window.matchMedia("(min-width:1400px)");
   function isOpen(el) { return el.getAttribute("data-open") === "true"; }
   function setOpen(open) {
     if (!open) { if (panel.open) panel.close(); return; }
     panel.setAttribute("data-open", "true");
     toggle.setAttribute("aria-expanded", "true");
-    panel.showModal();
+    var wide = wideBrowser.matches;
+    panel.setAttribute("data-presentation", wide ? "sidebar" : "modal");
+    panel.setAttribute("aria-modal", wide ? "false" : "true");
+    document.body.classList.toggle("browser-open", wide);
+    $("closePicker").textContent = wide ? "Collapse" : "Close";
+    if (wide) panel.show(); else panel.showModal();
   }
   function setSettingsOpen(open) {
     sBody.setAttribute("data-open", open ? "true" : "false");
@@ -2263,6 +2269,8 @@ function wireSetupPanel() {
     if (open) $("closePicker").focus();
   });
   panel.addEventListener("close", function () {
+    if (panel.open) return; // A viewport transition has reopened it.
+    document.body.classList.remove("browser-open");
     panel.setAttribute("data-open", "false");
     toggle.setAttribute("aria-expanded", "false");
     toggle.focus();
@@ -2274,7 +2282,7 @@ function wireSetupPanel() {
     if (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom) setOpen(false);
   });
   panel.addEventListener("keydown", function (e) {
-    if (e.key !== "Tab") return;
+    if (e.key !== "Tab" || panel.getAttribute("data-presentation") === "sidebar") return;
     var controls = Array.prototype.filter.call(panel.querySelectorAll("button,input,select,textarea,a[href],summary,[tabindex]"), function (node) {
       return !node.disabled && node.tabIndex >= 0 && node.getClientRects().length;
     });
@@ -2285,7 +2293,7 @@ function wireSetupPanel() {
   $("closePicker").addEventListener("click", function () { setOpen(false); });
   sToggle.addEventListener("click", function () { setSettingsOpen(!isOpen(sBody)); });
   document.addEventListener("click", function (e) {
-    if (isOpen(panel) && !(panel.contains(e.target) || toggle.contains(e.target))) setOpen(false);
+    if (isOpen(panel) && !wideBrowser.matches && !(panel.contains(e.target) || toggle.contains(e.target))) setOpen(false);
     // A control in the settings can redraw itself; a detached target is not a tap outside.
     if (isOpen(sBody) && e.target.isConnected && !(sBody.contains(e.target) || sToggle.contains(e.target))) setSettingsOpen(false);
   });
@@ -2296,6 +2304,12 @@ function wireSetupPanel() {
   });
   document.addEventListener("fullscreenchange", function () {
     if (document.fullscreenElement) { setOpen(false); setSettingsOpen(false); }
+  });
+  wideBrowser.addEventListener("change", function () {
+    if (!panel.open) return;
+    panel.close();
+    setOpen(true);
+    $("closePicker").focus();
   });
 }
 

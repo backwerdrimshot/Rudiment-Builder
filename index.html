@@ -694,6 +694,23 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     .settings-body{position:static;display:block !important;margin:0;max-height:none;min-height:0;flex:1 1 auto;padding:14px;box-shadow:none}
     .settings-body .panel{border:0;box-shadow:none;padding:0;background:transparent}
   }
+  /* Prototype: browse alongside practice, rather than covering it, on roomy screens. */
+  @media(min-width:1400px){
+    body.browser-open .wrap{max-width:none;margin-right:410px}
+    body.browser-open .layout{grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);grid-template-areas:"setup setup" "sticking status" "dock dock"}
+    body.browser-open .setup-row{display:flex;grid-area:setup}
+    body.browser-open .setup-card{flex:1}
+    body.browser-open .settings-card{display:block;position:relative;flex:1}
+    body.browser-open .settings-toggle{display:flex}
+    body.browser-open .settings-body{position:absolute;top:100%;left:0;right:0;max-height:70vh;margin-top:6px;box-shadow:var(--shadow);display:block}
+    body.browser-open .settings-body[data-open="false"]{display:none !important}
+    .setup-panel[data-presentation="sidebar"]{inset:12px 12px 12px auto;width:390px;height:calc(100dvh - 24px);max-height:none;margin:0;padding:14px;box-shadow:var(--shadow)}
+    .setup-panel[data-presentation="sidebar"] .rud-group-cards{grid-template-columns:1fr}
+  }
+  @media(max-width:1399px){
+    .setup-panel{inset:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+  }
+  .setup-panel .filter-chips button,.setup-panel .seg button{min-height:44px}
   /* Small screens: the shop line goes below 700px; the app's own tile and name stay, and the name
      shrinks to fit one row beside the nav and the monogram at 320px. The monogram is never hidden. */
   @media(max-width:699px){.brand p{display:none}}

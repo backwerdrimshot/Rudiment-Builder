@@ -24,7 +24,7 @@ test('picker uses lazy decorative previews and preserves selected button semanti
 test('choosing even the current card closes the chooser and restores focus', () => {
   const handler = app.match(/b\.addEventListener\("click", function \(\) \{([\s\S]*?)\n    \}\);/)[1];
   const calls = [];
-  vm.runInNewContext(handler, { r: { id: 'single-paradiddle' }, selectRudiment(id) { calls.push(id); }, $(id) { assert.equal(id, 'setupPanel'); return { close() { calls.push('close'); } }; } });
+  vm.runInNewContext(handler, { r: { id: 'single-paradiddle' }, selectRudiment(id) { calls.push(id); }, $(id) { assert.equal(id, 'setupPanel'); return { getAttribute() { return "modal"; }, close() { calls.push('close'); } }; } });
   assert.deepEqual(calls, ['single-paradiddle', 'close']);
   assert.match(app, /panel.addEventListener\("close", function \(\) \{[\s\S]*?toggle.focus\(\)/);
   assert.match(html, /<dialog class="setup-panel"[^>]*aria-labelledby="hRudiment"[^>]*aria-modal="true"/);
@@ -44,7 +44,7 @@ test('picker keyboard boundaries wrap visible controls, excluding hidden and dis
   const focused = [];
   const make = (id, visible = true, disabled = false) => ({ disabled, tabIndex: 0, getClientRects: () => visible ? [{}] : [], focus: () => focused.push(id) });
   const first = make('close'), last = make('left'), hidden = make('hidden', false), disabled = make('disabled', true, true);
-  const context = { panel: { querySelectorAll: () => [first, hidden, disabled, last] }, document: { activeElement: first }, e: { key: 'Tab', shiftKey: true, preventDefault() { focused.push('prevent'); } } };
+  const context = { panel: { getAttribute: () => "modal", querySelectorAll: () => [first, hidden, disabled, last] }, document: { activeElement: first }, e: { key: 'Tab', shiftKey: true, preventDefault() { focused.push('prevent'); } } };
   vm.runInNewContext('(function(){' + handler + '})()', context);
   assert.deepEqual(focused, ['prevent', 'left']);
   focused.length = 0;
@@ -52,4 +52,23 @@ test('picker keyboard boundaries wrap visible controls, excluding hidden and dis
   context.e.shiftKey = false;
   vm.runInNewContext('(function(){' + handler + '})()', context);
   assert.deepEqual(focused, ['prevent', 'close']);
+});
+
+test('sidebar selection stays open so the player can compare another rudiment', () => {
+  const handler = app.match(/b\.addEventListener\("click", function \(\) \{([\s\S]*?)\n    \}\);/)[1];
+  const calls = [];
+  vm.runInNewContext(handler, { r: { id: 'single-paradiddle' }, selectRudiment(id) { calls.push(id); }, $() { return { getAttribute() { return 'sidebar'; }, close() { calls.push('close'); } }; } });
+  assert.deepEqual(calls, ['single-paradiddle']);
+});
+
+test('nonmodal sidebar does not trap the player away from practice controls', () => {
+  const handler = app.match(/panel\.addEventListener\("keydown", function \(e\) \{([\s\S]*?)\n  \}\);/)[1];
+  vm.runInNewContext('(function(){' + handler + '})()', { panel: { getAttribute: () => 'sidebar' }, e: { key: 'Tab', preventDefault() { assert.fail('sidebar must not trap Tab'); } } });
+  assert.match(app, /if \(wide\) panel.show\(\); else panel.showModal\(\)/);
+  assert.match(html, /max-width:1399px/);
+  assert.match(html, /height:100dvh/);
+});
+
+test('full-height modal removes the native dialog width cap', () => {
+  assert.ok(html.includes('.setup-panel{inset:0;width:100%;max-width:none;height:100dvh;'));
 });
