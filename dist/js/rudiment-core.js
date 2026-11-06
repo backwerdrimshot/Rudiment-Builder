@@ -273,8 +273,8 @@ function ornamentWord(r) {
   return flam ? "flams" : drag ? "drags" : "buzz strokes";
 }
 function buildLayers(rudiment) {
-  const layers = [{ id: "sticking", label: "Hands only",
-    hint: "Just the sticking, every stroke the same." }];
+  const layers = [{ id: "sticking", label: "Sticking without accents",
+    hint: "The main sticking at an even volume, without accents, grace notes or buzz." }];
   if (hasAccent(rudiment))
     layers.push({ id: "accents", label: "Add the accents",
       hint: "The same sticking, now with the accents." });

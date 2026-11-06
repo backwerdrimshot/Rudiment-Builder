@@ -188,7 +188,8 @@
   .settings-summary b{font-family:var(--serif);font-size:1.08rem}
   .settings-summary span{font-size:.82rem;color:var(--ink-soft);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .settings-chevron{flex:none;font-size:.82rem;font-weight:800;text-decoration:underline}
-  .setup-panel{position:absolute;left:0;right:0;top:100%;z-index:30;margin-top:6px;padding:18px;background:var(--white);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:0 18px 50px rgba(0,0,0,.35);max-height:min(74vh,700px);overflow:auto;overscroll-behavior:contain}
+  .setup-panel{position:fixed;inset:0;width:min(1100px,calc(100% - 48px));box-sizing:border-box;color:var(--ink);z-index:30;margin:auto;padding:18px;background:var(--white);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:0 18px 50px rgba(0,0,0,.35);max-height:min(74vh,700px);overflow:auto;overscroll-behavior:contain}
+  .setup-panel::backdrop{background:rgba(0,0,0,.48)}
   .setup-panel[data-open="false"]{display:none}
   .setup-panel .panel{border:0;box-shadow:none;padding:0;background:transparent}
   .setup-panel .rud-cards{max-height:min(30vh,300px)}
@@ -329,7 +330,30 @@
     border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--white);z-index:1;
   }
   .rud-group-head .gcount{color:var(--ink-soft);letter-spacing:.04em}
-  .rud-group-cards{display:flex;flex-direction:column;gap:10px}
+  .rud-group-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
+  .picker-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .picker-heading h2{margin:0;border:0;padding:0}
+  #closePicker{min-height:44px}
+  @media(max-width:599px){.setup-panel{position:fixed;inset:12px;width:calc(100% - 24px);margin:0;max-height:none;max-height:calc(100dvh - 24px)}.picker-intro{font-size:.9rem}}
+  .practice-tools{margin:10px 0;border-top:1px solid var(--line)}
+  .practice-tools>summary{cursor:pointer;font-weight:700;min-height:44px;padding:12px 4px}
+  .practice-tools .panel{margin:0;padding:12px 0}
+  .dock-controls{max-height:34vh;overflow:auto;padding:4px 6px 12px}
+  .listening-status{font-weight:800;color:var(--accent-ink);margin:0 0 8px}
+  #btnRudimentHelp{display:block;margin-top:10px;min-height:44px}
+  .self-assessment{margin:12px 0 0}
+  .picker-intro{margin:0 0 14px;color:var(--ink-soft)}
+  .picker-more summary{cursor:pointer;min-height:44px;display:list-item;padding:12px 0;font-weight:700}
+  .picker-more .filter-chips{margin:0 0 10px}
+  .filter-chips button{min-height:44px}
+  /* One scrolling surface: a full card must not fight an inner scrolling list. */
+  .setup-panel .rud-cards{max-height:none;overflow:visible}
+  .rud-card{min-width:0;color:var(--ink);position:relative}
+  .rpreview{display:flex;align-items:center;justify-content:center;height:112px;margin:12px 0 4px;padding:8px;border-top:1px solid var(--line)}
+  .rpreview img{display:block;width:100%;height:100%;object-fit:contain}
+  .rselected{display:none;font-size:.78rem;font-weight:800;margin-top:6px}
+  .rud-card[aria-pressed="true"] .rselected{display:block}
+  @media(prefers-color-scheme:dark){.rpreview img{filter:invert(1)}}
   .rud-card{
     text-align:left;font-family:inherit;cursor:pointer;padding:12px 14px;
     border:2px solid var(--ink);border-radius:10px;background:var(--warm-white);
@@ -549,6 +573,7 @@
   .path-line .hint{margin:0;flex:1;min-width:12em}
   .path-line .btn{min-height:44px}
   .rud-card .rlearn{display:block;color:var(--accent-ink);font-size:.78rem;margin-top:3px;font-weight:800}
+  .rud-card[aria-pressed="true"] .rlearn,.rud-card:hover .rlearn{color:var(--ink)}
   .rud-card .rlearn[hidden]{display:none}
   .area-progress .cue-row{margin-top:12px}
   .area-progress .cue-row label{display:inline-flex;align-items:center;gap:6px;min-height:44px;cursor:pointer}
@@ -711,13 +736,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <section class="setup-card">
       <button type="button" class="setup-toggle" id="setupToggle" aria-expanded="false" aria-controls="setupPanel">
         <span class="settings-summary"><b id="summaryTop"></b></span>
-        <span class="settings-chevron" id="setupChevron">Rudiments</span>
+        <span class="settings-chevron" id="setupChevron">Choose rudiment</span>
         <svg class="settings-caret" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
       </button>
-      <div class="setup-panel" id="setupPanel" data-open="false">
+      <dialog class="setup-panel" id="setupPanel" data-open="false" aria-labelledby="hRudiment" aria-modal="true">
     <!-- ============ RUDIMENT ============ -->
     <section class="panel area-rudiment" aria-labelledby="hRudiment">
-      <h2 id="hRudiment">Choose the rudiment</h2>
+      <div class="picker-heading"><h2 id="hRudiment">Choose the rudiment</h2><button type="button" class="btn ghost mini" id="closePicker">Close</button></div>
+      <p class="picker-intro">Tap a card to practice. Notation previews show right-hand lead.</p>
       <div class="rud-filters">
         <input id="rudSearch" type="search" placeholder="Search all 40 rudiments…" aria-label="Search rudiments" autocomplete="off" />
         <div class="filter-chips" id="familyFilter" role="group" aria-label="Filter by family">
@@ -727,6 +753,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
           <button type="button" data-fam="Flam">Flams</button>
           <button type="button" data-fam="Drag">Drags</button>
         </div>
+        <details class="picker-more"><summary>Level and learning filters</summary>
         <div class="filter-chips" id="levelFilter" role="group" aria-label="Filter by level">
           <button type="button" data-lvl="all" aria-pressed="true">All levels</button>
           <button type="button" data-lvl="Beginner">Beginner</button>
@@ -746,6 +773,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
           <p class="hint" id="nudgeLine"></p>
           <button class="btn ghost mini" id="btnNudge" type="button">Practice it</button>
         </div>
+        </details>
         <p class="filter-count" id="filterCount" aria-live="polite"></p>
       </div>
       <div class="rud-cards" role="group" aria-label="Rudiment" id="rudCards"></div>
@@ -760,7 +788,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     </section>
 
 
-      </div>
+      </dialog>
     </section>
     <!-- ============ SETTINGS: a bar below 1700px, a 340px column from 1700px ============ -->
     <section class="settings-card" aria-label="Settings">
@@ -920,43 +948,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <div class="plan-preview" id="planPreview" aria-live="polite"></div>
       <p class="plan-meta" id="planMeta"></p>
 
-      <div class="cue-row">
-        <input type="checkbox" id="pulseToggle" />
-        <label for="pulseToggle">Pulse under the sticking — a soft click on every beat</label>
-      </div>
-      <div class="cue-row">
-        <input type="checkbox" id="cueToggle" checked />
-        <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle (covered while the pulse is on)</label>
-      </div>
-      <div id="handListening" hidden>
-        <div class="lead-row">
-          <span class="lbl" id="handListeningLbl">Hear the hand part</span>
-          <div class="seg" role="group" aria-labelledby="handListeningLbl" aria-describedby="handListeningHint" id="segListeningHand">
-            <button type="button" data-val="both" aria-pressed="true">Both</button>
-            <button type="button" data-val="R" aria-pressed="false">Right only</button>
-            <button type="button" data-val="L" aria-pressed="false">Left only</button>
-          </div>
-        </div>
-        <p class="hint" id="handListeningHint" aria-live="polite"></p>
-      </div>
-      <div class="lead-row sound-row">
-        <span class="lbl" id="soundLbl">Stroke sound</span>
-        <div class="seg" role="group" aria-labelledby="soundLbl" aria-describedby="soundHint" id="segSound">
-          <button type="button" data-val="marching" aria-pressed="true">Marching</button>
-          <button type="button" data-val="snare" aria-pressed="false">Synth</button>
-          <button type="button" data-val="tones" aria-pressed="false">Tones</button>
-        </div>
-      </div>
-      <p class="hint" id="soundHint"></p>
 
+      <details class="practice-tools"><summary>Share and assignments</summary>
       <div class="share-row">
         <button class="btn ghost" id="btnShare" type="button" title="Copy a link that opens these exact settings">Copy link</button>
         <button class="btn ghost" id="btnAssign" type="button" data-dialog-open="workspace-assign" title="Make a link, QR code and printable sheet for this drill, with an optional goal tempo">Assignment…</button>
         <span class="hint">Share one exact drill with a student.</span>
       </div>
+      </details>
     </section>
 
     <!-- ============ ROUTINE ============ -->
+    <details class="practice-tools"><summary>Routines</summary>
     <section class="panel area-routine" aria-labelledby="hRoutine">
       <h2 id="hRoutine">Routine</h2>
       <p class="hint">Save drills and play them one after another, each with its own count-in. Set up a drill above, then add it.</p>
@@ -972,8 +975,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <button class="btn ghost" id="rtClear" type="button">Clear routine</button>
       </div>
     </section>
+    </details>
 
     <!-- ============ QUIZ ============ -->
+    <details class="practice-tools"><summary>Quiz</summary>
     <section class="panel area-quiz" aria-labelledby="hQuiz">
       <h2 id="hQuiz">Quiz</h2>
       <p class="hint">Name that rudiment, by ear or from the notation. Ten questions. The score is not saved anywhere.</p>
@@ -981,8 +986,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <button class="btn ghost" id="btnQuiz" type="button" data-dialog-open="workspace-quiz">Start a quiz…</button>
       </div>
     </section>
+    </details>
 
     <!-- ============ MY PROGRESS ============ -->
+    <details class="practice-tools"><summary>My progress</summary>
     <section class="panel area-progress" aria-labelledby="hProgress">
       <h2 id="hProgress">My progress</h2>
       <p class="hint">Your own record for the chosen rudiment, kept on this device. Nothing here is graded or sent anywhere.</p>
@@ -1003,6 +1010,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <p class="hint" id="progressStatus" role="status" aria-live="polite"></p>
       </div>
     </section>
+    </details>
       </div>
     </section>
     </div>
@@ -1014,6 +1022,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <div>
           <p class="stick-title" id="stickName"></p>
           <span class="stick-sub" id="stickSub"></span>
+          <button class="btn ghost mini" id="btnRudimentHelp" type="button" data-dialog-open="workspace-help">Notation / How to play</button>
         </div>
       </div>
       <p class="sr-only" id="stickingDesc"></p>
@@ -1056,19 +1065,53 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
     <!-- ============ DOCKED ACTION BAR ============ -->
     <section class="panel dock" aria-label="Transport">
+      <p class="listening-status" id="listeningStatus" role="status" hidden></p>
+      <details class="practice-tools dock-tools"><summary>Sound and listening controls</summary>
+      <div class="dock-controls">
+      <div class="cue-row">
+        <input type="checkbox" id="pulseToggle" />
+        <label for="pulseToggle">Pulse under the sticking — a soft click on every beat</label>
+      </div>
+      <div class="cue-row">
+        <input type="checkbox" id="cueToggle" checked />
+        <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle (covered while the pulse is on)</label>
+      </div>
+      <div id="handListening" hidden>
+        <div class="lead-row">
+          <span class="lbl" id="handListeningLbl">Hear the hand part</span>
+          <div class="seg" role="group" aria-labelledby="handListeningLbl" aria-describedby="handListeningHint" id="segListeningHand">
+            <button type="button" data-val="both" aria-pressed="true">Both</button>
+            <button type="button" data-val="R" aria-pressed="false">Right only</button>
+            <button type="button" data-val="L" aria-pressed="false">Left only</button>
+          </div>
+        </div>
+        <p class="hint" id="handListeningHint" aria-live="polite"></p>
+      </div>
+      <div class="lead-row sound-row">
+        <span class="lbl" id="soundLbl">Stroke sound</span>
+        <div class="seg" role="group" aria-labelledby="soundLbl" aria-describedby="soundHint" id="segSound">
+          <button type="button" data-val="marching" aria-pressed="true">Marching</button>
+          <button type="button" data-val="snare" aria-pressed="false">Synth</button>
+          <button type="button" data-val="tones" aria-pressed="false">Tones</button>
+        </div>
+      </div>
+      <p class="hint" id="soundHint"></p>
+
+      </div></details>
       <div class="transport">
         <button class="btn big primary" id="btnStart" type="button">Start</button>
         <button class="btn big ghost" id="btnReset" type="button">Reset</button>
         <button class="btn ghost" id="btnFull" type="button" title="Full screen" aria-label="Full screen"><span aria-hidden="true">⛶</span> <span class="fs-label">Full screen</span></button>
         <button class="btn ghost" id="btnClassView" type="button" aria-pressed="false" title="Large sticking and tempo for a projector or shared screen"><span aria-hidden="true">▦ </span><span class="fs-label">Class view</span></button>
         <button class="btn ghost" id="btnMute" type="button" aria-pressed="false">Sound on</button>
-        <button class="btn ghost" id="btnClean" type="button" disabled><span aria-hidden="true">✓ </span><span id="cleanLabel">Clean at —</span></button>
+        <button class="btn ghost" id="btnClean" type="button" disabled><span aria-hidden="true">✓ </span><span id="cleanLabel">Log clean rep</span></button>
               <div class="tempo-step" id="tempoStep" role="group" aria-label="Tempo">
           <button type="button" class="btn ghost" id="bpmDown" aria-label="Slower, 5 BPM">&minus;5</button>
           <span class="tempo-quick" aria-live="off"><b id="bpmQuick">80</b> <small>BPM</small></span>
           <button type="button" class="btn ghost" id="bpmUp" aria-label="Faster, 5 BPM">+5</button>
         </div>
       </div>
+      <p class="hint self-assessment">You decide what counts as clean. This logs your own assessment; the app does not listen or grade.</p>
     </section>
 
   </main>
@@ -1122,7 +1165,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 <dialog id="workspace-help" class="workspace-dialog" aria-labelledby="workspace-help-title">
   <div class="workspace-dialog-heading"><h2 id="workspace-help-title">How to use Rudiment Room</h2><button type="button" data-close-dialog aria-label="Close help">Close</button></div>
-  <p>Choose a rudiment under Rudiments, and its practice format under Settings. Start the count-in, then play along. Mark Clean when the repetition meets your standard.</p>
+  <p>Choose a rudiment under Rudiments, and its practice format under Settings. Start the count-in, then play along. Use Log clean rep when the repetition meets your standard. Open Notation / How to play beside the rudiment name to see its notation and practice steps.</p>
   <div data-help-slot></div>
   <p><a class="text-action" href="https://guides.backwerdrhythmshop.com/rudiment-builder/">Read the full guide <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg></a></p>
 </dialog>
@@ -1229,7 +1272,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-11-06.1";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-11-06.2";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 

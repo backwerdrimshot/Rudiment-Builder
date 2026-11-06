@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-11-06.1`
+- **Build:** `2026-11-06.2`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -69,9 +69,12 @@ All **40 PAS International Drum Rudiments** are encoded, grouped by family:
 | Drags | 10 | 31–40 |
 
 The chooser opens with a **search box** (matches names and aliases across all
-40), **family** chips (Rolls / Diddles / Flams / Drags), and **level** chips
-(Beginner / Intermediate / Advanced) that combine; cards are grouped by family
-under sticky headers with live counts.
+40), **family** chips (Rolls / Diddles / Flams / Drags), and optional **level** chips
+(Beginner / Intermediate / Advanced) that combine. Visual cards reuse the
+app's original notation SVGs, including sticking, in a responsive grid grouped
+by family. Previews remain right-hand lead; selecting a card returns to practice.
+Level, learning-state filters, and path progress sit in an expandable section.
+On phones the chooser uses the available screen with an explicit Close button.
 
 Every rudiment is structured data in `js/rudiment-data.js` — nothing is
 hard-coded into the page, and there are no per-rudiment audio files. Each
@@ -495,3 +498,6 @@ from the previous choice. It is a session-only listening aid: reloads and
 shared links open with both hands, and quizzes keep their complete audio.
 Completed practice logs identify single-hand listening. This is not a new
 re-sticking or a reproduction of a packet's progressive breakdown exercises.
+
+### Local practice usability update
+The visual chooser uses the existing original notation cards. Notation / How to play opens the selected rudiment’s existing teaching. Sound and listening controls sit above Start; other settings are grouped. Log clean rep is explicitly student self-assessment, not automatic grading.

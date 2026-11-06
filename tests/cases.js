@@ -1286,7 +1286,7 @@ function getCases(core) {
     const ev = core.expandPattern(h);
     assert.ok(ev.every(function (e) { return e.velocity === core.VELOCITY.normal && e.graces.length === 0; }), "plays flat");
     assert.equal(core.buildLayers(MAP["single-stroke-roll"]).length, 1, "nothing to add");
-    assert.deepEqual(core.buildLayers(MAP["multiple-bounce-roll"]).map(function (l) { return l.label; }), ["Hands only", "Add the buzz strokes"]);
+    assert.deepEqual(core.buildLayers(MAP["multiple-bounce-roll"]).map(function (l) { return l.label; }), ["Sticking without accents", "Add the buzz strokes"]);
   }},
 
   { name: "build plan: one stage per layer at one tempo, count-in opens on the first layer", fn: function (assert) {
@@ -1327,9 +1327,9 @@ function getCases(core) {
     const plan = core.buildPlan("build", { bpm: 90, repsPerStep: 4 }, core.withLead(MAP["single-stroke-roll"], "R"));
     assert.equal(plan.stages.length, 2);
     const text = core.practiceLog({ date: "2026-10-27", rudimentId: "flam-tap", lead: "R", mode: "build",
-      rungs: [70], reps: 3, layers: ["Hands only", "Add the accents", "Add the flams"], best: null, link: "" });
+      rungs: [70], reps: 3, layers: ["Sticking without accents", "Add the accents", "Add the flams"], best: null, link: "" });
     assert.ok(text.includes("Practice: Build-up, 3 reps at each layer"));
-    assert.ok(text.includes("Layers completed: 3 (Hands only, Add the accents, Add the flams) at 70 BPM"));
+    assert.ok(text.includes("Layers completed: 3 (Sticking without accents, Add the accents, Add the flams) at 70 BPM"));
   }},
 
   { name: "routine: an item keeps only its own mode's numbers, and fixed gets a length", fn: function (assert) {
@@ -1409,13 +1409,13 @@ function getCases(core) {
     assert.ok(d.includes("Flam Tap") && d.includes("left lead") && d.includes("Steps 60\u2192100 BPM \u00d7 3") &&
       d.includes("Your turn \u00d71") && d.includes("soft"), d);
     const run = function (id, mode, extra) { return Object.assign({ rudimentId: id, lead: "R", mode: mode, rungs: [80], reps: 4, best: null, link: "" }, extra); };
-    const text = core.routineLog({ date: "2026-10-27", total: 3, runs: [run("flam-tap", "fixed"), run("single-paradiddle", "build", { layers: ["Hands only", "Add the accents"] })] });
+    const text = core.routineLog({ date: "2026-10-27", total: 3, runs: [run("flam-tap", "fixed"), run("single-paradiddle", "build", { layers: ["Sticking without accents", "Add the accents"] })] });
     const lines = text.split("\n");
     assert.equal(lines[0], "Rudiment Room routine log");
     assert.ok(lines.includes("Drills completed: 2 of 3"));
     assert.ok(lines.includes("Drill 1") && lines.includes("Drill 2") && !lines.includes("Drill 3"));
     assert.ok(text.includes("Rudiment: Flam Tap") && text.includes("Practice: Fixed tempo, 4 reps at each tempo"));
-    assert.ok(text.includes("Layers completed: 2 (Hands only, Add the accents) at 80 BPM"));
+    assert.ok(text.includes("Layers completed: 2 (Sticking without accents, Add the accents) at 80 BPM"));
     assert.equal((text.match(/does not listen or grade/g) || []).length, 1, "one trailer for the whole log");
     assert.ok(core.practiceLog(run("flam-tap", "ladder", { date: "2026-10-27" })).startsWith("Rudiment Room practice log"), "single log unchanged");
   }},

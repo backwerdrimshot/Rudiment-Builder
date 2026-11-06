@@ -822,8 +822,14 @@ function buildCards() {
     b.innerHTML = '<span class="rname">' + r.name + '</span>' +
       '<span class="rmeta">' + r.family + '<span class="dot">·</span>PAS #' + r.pas +
       '<span class="dot">·</span>' + r.level + "</span>" +
+      '<span class="rpreview" aria-hidden="true"><img src="' + Core.notationCard(r) + '" alt="" loading="lazy" decoding="async" /></span>' +
+      '<span class="rselected" aria-hidden="true">Selected</span>' +
       '<span class="rbest" hidden></span><span class="rlearn" hidden></span>';
-    b.addEventListener("click", function () { selectRudiment(r.id); });
+    b.addEventListener("click", function () {
+      selectRudiment(r.id);
+      // One choice returns to practice, including reselecting the current card.
+      $("setupPanel").close();
+    });
     g.cards.appendChild(b);
     var hay = (r.name + " " + r.family + " " + r.level + " pas " + r.pas + " #" + r.pas +
       " " + (r.aliases ? r.aliases.join(" ") : "")).toLowerCase();
@@ -1163,7 +1169,9 @@ function claimableBpm() {
 function updateCleanBtn() {
   var bpm = claimableBpm();
   $("btnClean").disabled = bpm == null;
-  $("cleanLabel").textContent = "Clean at " + (bpm == null ? "—" : bpm);
+  $("cleanLabel").textContent = "Log clean rep" + (bpm == null ? "" : " · " + bpm + " BPM");
+  $("btnClean").title = "You decide what counts as clean. The app does not listen or grade your playing." +
+    (bpm != null && live.status === "complete" ? " This logs the run's highest played tempo." : "");
 }
 function onClean() {
   var bpm = claimableBpm();
@@ -1176,8 +1184,8 @@ function onClean() {
   saveProgress();
   renderBest();
   $("cleanNote").textContent = r.improved
-    ? "New best: " + bpm + " BPM clean, " + (lead === "R" ? "right" : "left") + " lead."
-    : "Logged " + bpm + " BPM clean. Your best is still " + r.best.bpm + ".";
+    ? "You logged a new best: " + bpm + " BPM clean, " + (lead === "R" ? "right" : "left") + " lead."
+    : "You logged " + bpm + " BPM clean. Your best is still " + r.best.bpm + ".";
 }
 
 function today() {
@@ -1195,7 +1203,7 @@ function renderBest() {
   var one = function (e) { return e ? "best clean " + e.bpm + " BPM (" + fmtDay(e.date) + ")" : "not logged yet"; };
   $("bestLine").textContent = rec
     ? "Right lead: " + one(rec.R) + "\nLeft lead: " + one(rec.L)
-    : "Best clean: not logged yet. While you are playing it cleanly, press \u201cClean at\u201d.";
+    : "Best clean: not logged yet. When a repetition meets your standard, press \u201cLog clean rep\u201d.";
   $("btnClearBest").hidden = !rec && !hasHistory(settings.rudimentId);
   renderGoal();
   renderProgress();
@@ -1420,6 +1428,9 @@ function syncHandListening() {
   if (!enabled) settings.listeningHand = "both";
   $("handListening").hidden = !enabled;
   setSeg("segListeningHand", settings.listeningHand);
+  $("listeningStatus").hidden = settings.listeningHand === "both";
+  $("listeningStatus").textContent = settings.listeningHand === "both" ? "" :
+    "Listening: " + (settings.listeningHand === "R" ? "right" : "left") + " hand only";
   $("handListeningHint").textContent = settings.listeningHand === "both"
     ? "Hear the complete rudiment. Choose one hand to study its part."
     : (settings.listeningHand === "R" ? "Right" : "Left") + " hand only, including its grace notes. The full sticking and timing stay visible; the other hand is quiet. Pulse and count-in are unchanged.";
@@ -2229,22 +2240,49 @@ function hydrateControls() {
   $("modeHint").textContent = MODE_HINT[settings.mode];
 }
 
-/* The rudiment list and the settings each float over the page from their own bar, so each panel
-   closes the way a popover does: Escape (focus returns to its bar), a tap outside, or full screen.
+/* The chooser is a native modal dialog: background content is inert while browsing.
+   Settings remain a popover. Both close on Escape or full screen.
    From 1700px the settings are a column beside the practice; the CSS shows it and hides its bar. */
 function wireSetupPanel() {
   var toggle = $("setupToggle"), panel = $("setupPanel");
   var sToggle = $("settingsToggle"), sBody = $("settingsBody");
   function isOpen(el) { return el.getAttribute("data-open") === "true"; }
   function setOpen(open) {
-    panel.setAttribute("data-open", open ? "true" : "false");
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (!open) { if (panel.open) panel.close(); return; }
+    panel.setAttribute("data-open", "true");
+    toggle.setAttribute("aria-expanded", "true");
+    panel.showModal();
   }
   function setSettingsOpen(open) {
     sBody.setAttribute("data-open", open ? "true" : "false");
     sToggle.setAttribute("aria-expanded", open ? "true" : "false");
   }
-  toggle.addEventListener("click", function () { setOpen(!isOpen(panel)); });
+  toggle.addEventListener("click", function () {
+    var open = !isOpen(panel);
+    setOpen(open);
+    if (open) $("closePicker").focus();
+  });
+  panel.addEventListener("close", function () {
+    panel.setAttribute("data-open", "false");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.focus();
+  });
+  panel.addEventListener("cancel", function (e) { e.preventDefault(); setOpen(false); });
+  panel.addEventListener("click", function (e) {
+    if (e.target !== panel) return;
+    var bounds = panel.getBoundingClientRect();
+    if (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom) setOpen(false);
+  });
+  panel.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab") return;
+    var controls = Array.prototype.filter.call(panel.querySelectorAll("button,input,select,textarea,a[href],summary,[tabindex]"), function (node) {
+      return !node.disabled && node.tabIndex >= 0 && node.getClientRects().length;
+    });
+    var first = controls[0], last = controls[controls.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  $("closePicker").addEventListener("click", function () { setOpen(false); });
   sToggle.addEventListener("click", function () { setSettingsOpen(!isOpen(sBody)); });
   document.addEventListener("click", function (e) {
     if (isOpen(panel) && !(panel.contains(e.target) || toggle.contains(e.target))) setOpen(false);
@@ -2361,7 +2399,7 @@ function wireEvents() {
   // focused control (buttons must stay activatable by keyboard).
   document.addEventListener("keydown", function (e) {
     var tag = document.activeElement ? document.activeElement.tagName : "";
-    var onControl = /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(tag);
+    var onControl = /^(INPUT|TEXTAREA|SELECT|BUTTON|A|SUMMARY)$/.test(tag);
     if (e.code === "Space" && !onControl) {
       e.preventDefault();
       onStartButton();
