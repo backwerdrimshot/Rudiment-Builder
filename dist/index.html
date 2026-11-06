@@ -729,6 +729,17 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     .dock{position:static}
     .area-sticking #sticking{overflow:visible;flex:none}
   }
+  .notation-enlarge{display:block;width:100%;text-align:left;background:transparent;border:0;padding:4px;color:inherit;cursor:zoom-in;font:inherit;min-height:44px}
+  .notation-enlarge:focus-visible,.shortcut-buttons button:focus-visible{outline:3px solid var(--forest);outline-offset:3px}
+  .enlarge-label{display:block;margin-top:8px;font-size:.85rem;text-decoration:underline}
+  .shortcut-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+  .shortcut-buttons button{min-height:44px;max-width:100%;white-space:normal;text-align:left}
+  #workspace-notation{width:min(1200px,calc(100% - 24px));max-width:none}
+  .zoom-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .zoom-controls button{min-width:44px;min-height:44px}
+  #notationZoomScroll{overflow:auto;padding:10px;max-height:65dvh;border:1px solid var(--line)}
+  #notationZoomCard{width:calc(100% * var(--zoom,1));min-width:100%}
+  #notationZoomCard svg,#notationZoomCard img{width:100%;max-width:none;height:auto}
   /* Small screens: the shop line goes below 700px; the app's own tile and name stay, and the name
      shrinks to fit one row beside the nav and the monogram at 320px. The monogram is never hidden. */
   @media(max-width:699px){.brand p{display:none}}
@@ -779,6 +790,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <section class="panel area-rudiment" aria-labelledby="hRudiment">
       <div class="picker-heading"><h2 id="hRudiment">Choose the rudiment</h2><button type="button" class="btn ghost mini" id="closePicker">Close</button></div>
       <p class="picker-intro">Tap a card to practice. Notation previews show right-hand lead.</p>
+      <details class="picker-more" id="personalShortcuts"><summary id="shortcutSummary">Favorites and recent</summary>
+        <p class="hint" id="shortcutStorageNote">Saved on this device only.</p>
+        <h3>Favorites</h3><div class="shortcut-buttons" id="favoriteShortcuts"></div>
+        <h3>Recently opened</h3><div class="shortcut-buttons" id="recentShortcuts"></div>
+      </details>
       <div class="rud-filters">
         <input id="rudSearch" type="search" placeholder="Search all 40 rudiments…" aria-label="Search rudiments" autocomplete="off" />
         <div class="filter-chips" id="familyFilter" role="group" aria-label="Filter by family">
@@ -1058,10 +1074,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
           <p class="stick-title" id="stickName"></p>
           <span class="stick-sub" id="stickSub"></span>
           <button class="btn ghost mini" id="btnRudimentHelp" type="button" data-dialog-open="workspace-help">How to play</button>
+          <button class="btn ghost mini" id="btnFavorite" type="button" aria-pressed="false">Favorite</button>
         </div>
       </div>
       <figure class="notation" id="notation">
-        <div class="notation-card" id="notationCard"></div>
+        <button type="button" class="notation-enlarge" id="btnEnlargeNotation" aria-haspopup="dialog" aria-controls="workspace-notation"><span class="notation-card" id="notationCard"></span><span class="enlarge-label">Enlarge notation</span></button>
         <figcaption class="notation-cap" id="notationCap"></figcaption>
       </figure>
       <div id="handListening" hidden>
@@ -1200,6 +1217,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <div class="build-stamp">Build <span data-build></span></div>
   </footer>
 </div>
+
+<dialog id="workspace-notation" class="workspace-dialog" aria-labelledby="notationZoomTitle">
+  <div class="workspace-dialog-heading"><h2 id="notationZoomTitle">Notation</h2><button type="button" data-close-dialog aria-label="Close enlarged notation">Close</button></div>
+  <p id="notationZoomCaption"></p>
+  <div class="zoom-controls" role="group" aria-label="Notation size">
+    <button class="btn ghost" id="notationZoomOut" type="button" aria-label="Smaller notation">−</button>
+    <span id="notationZoomLevel" role="status">100%</span>
+    <button class="btn ghost" id="notationZoomIn" type="button" aria-label="Larger notation">+</button>
+    <button class="btn ghost" id="notationZoomFit" type="button">Fit width</button>
+  </div>
+  <p class="hint" id="notationZoomHelp">Swipe or scroll across the score when enlarged. The drawing stays complete; it does not highlight isolated hands.</p>
+  <div id="notationZoomScroll" tabindex="0" role="region" aria-label="Enlarged notation" aria-describedby="notationZoomHelp"><div class="notation-card" id="notationZoomCard"></div></div>
+</dialog>
 
 <dialog id="workspace-help" class="workspace-dialog" aria-labelledby="workspace-help-title">
   <div class="workspace-dialog-heading"><h2 id="workspace-help-title">How to use Rudiment Room</h2><button type="button" data-close-dialog aria-label="Close help">Close</button></div>

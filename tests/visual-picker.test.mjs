@@ -22,7 +22,7 @@ test('picker uses lazy decorative previews and preserves selected button semanti
   assert.match(html, /Notation previews show right-hand lead/);
 });
 test('choosing even the current card closes the chooser and restores focus', () => {
-  const handler = app.match(/b\.addEventListener\("click", function \(\) \{([\s\S]*?)\n    \}\);/)[1];
+  const handler = app.slice(app.indexOf("function buildCards()" )).match(/b\.addEventListener\("click", function \(\) \{([\s\S]*?)\n    \}\);/)[1];
   const calls = [];
   vm.runInNewContext(handler, { r: { id: 'single-paradiddle' }, selectRudiment(id) { calls.push(id); }, $(id) { assert.equal(id, 'setupPanel'); return { getAttribute() { return "modal"; }, close() { calls.push('close'); } }; } });
   assert.deepEqual(calls, ['single-paradiddle', 'close']);
@@ -55,7 +55,7 @@ test('picker keyboard boundaries wrap visible controls, excluding hidden and dis
 });
 
 test('sidebar selection stays open so the player can compare another rudiment', () => {
-  const handler = app.match(/b\.addEventListener\("click", function \(\) \{([\s\S]*?)\n    \}\);/)[1];
+  const handler = app.slice(app.indexOf("function buildCards()" )).match(/b\.addEventListener\("click", function \(\) \{([\s\S]*?)\n    \}\);/)[1];
   const calls = [];
   vm.runInNewContext(handler, { r: { id: 'single-paradiddle' }, selectRudiment(id) { calls.push(id); }, $() { return { getAttribute() { return 'sidebar'; }, close() { calls.push('close'); } }; } });
   assert.deepEqual(calls, ['single-paradiddle']);

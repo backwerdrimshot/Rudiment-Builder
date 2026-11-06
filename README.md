@@ -507,3 +507,8 @@ Below 980 CSS pixels, playback and sound controls follow the sticking in normal 
 
 ### Notation and hand listening
 The original full notation appears above the animated sticking. Listen Both / Right / Left is beside it for the existing 18 supported rudiments; other rudiments explain that both hands play. Isolation affects audio only, not the reference drawing or timing. Right-lead artwork retains an explicit caveat when left lead is selected.
+
+### Larger notation and personal shortcuts
+Tap the score or Enlarge notation to open the original vector card in a modal. Fit width and 100–300% controls preserve the full score; enlarged cards scroll inside their own region. The right-lead reference caveat remains explicit. Opening the score does not pause playback.
+
+Favorite the selected rudiment beside its name. The chooser's Favorites and recent section keeps favorites plus the eight most recently opened rudiments on this device. Only validated stable rudiment IDs are stored in a separate versioned key; existing settings/progress are untouched. Unavailable storage falls back to the current visit with a visible explanation. This is not cross-device sync; a future native app would need explicit data migration.

@@ -789,6 +789,66 @@ function mountCard(host, file, label, wanted) {
   });
 }
 
+/* Personal shortcuts use stable rudiment IDs only; no account or progress data. */
+var SHORTCUTS_KEY = "rudiment-room-shortcuts-v1";
+var shortcuts = { version: 1, favorites: [], recent: [] };
+function normalizeShortcuts(raw) {
+  function ids(list, limit) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (id, i) { return typeof id === "string" && Object.prototype.hasOwnProperty.call(Core.RUDIMENT_MAP, id) && list.indexOf(id) === i; }).slice(0, limit);
+  }
+  return { version: 1, favorites: ids(raw && raw.version === 1 && raw.favorites, 40), recent: ids(raw && raw.version === 1 && raw.recent, 8) };
+}
+function loadShortcuts() {
+  try { shortcuts = normalizeShortcuts(JSON.parse(localStorage.getItem(SHORTCUTS_KEY))); } catch (e) { shortcuts = normalizeShortcuts(null); }
+}
+function saveShortcuts() {
+  try { localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts)); $("shortcutStorageNote").textContent = "Saved on this device only."; }
+  catch (e) { $("shortcutStorageNote").textContent = "Storage is unavailable. Shortcuts are kept for this visit only."; }
+}
+function rememberRudiment(id) {
+  if (!Object.prototype.hasOwnProperty.call(Core.RUDIMENT_MAP, id)) return;
+  shortcuts.recent = [id].concat(shortcuts.recent.filter(function (old) { return old !== id; })).slice(0, 8);
+  saveShortcuts(); renderShortcuts();
+}
+function renderShortcuts() {
+  var favorite = shortcuts.favorites.indexOf(settings.rudimentId) !== -1;
+  $("btnFavorite").setAttribute("aria-pressed", favorite ? "true" : "false");
+  $("btnFavorite").textContent = favorite ? "★ Favorited" : "☆ Favorite";
+  $("btnFavorite").setAttribute("aria-label", (favorite ? "Remove " : "Add ") + Core.RUDIMENT_MAP[settings.rudimentId].name + (favorite ? " from favorites" : " to favorites"));
+  $("shortcutSummary").textContent = "Favorites (" + shortcuts.favorites.length + ") and recent (" + shortcuts.recent.length + ")";
+  [["favoriteShortcuts", shortcuts.favorites, "Favorite a rudiment beside its name to keep it here."], ["recentShortcuts", shortcuts.recent, "Rudiments you open will appear here."]].forEach(function (row) {
+    var host = $(row[0]); host.textContent = "";
+    if (!row[1].length) { var note = el("p", "hint"); note.textContent = row[2]; host.appendChild(note); }
+    row[1].forEach(function (id) {
+      var b = el("button", "btn ghost mini"); b.type = "button"; b.textContent = Core.RUDIMENT_MAP[id].name;
+      b.setAttribute("aria-pressed", id === settings.rudimentId ? "true" : "false");
+      b.addEventListener("click", function () {
+        selectRudiment(id);
+        if ($("setupPanel").getAttribute("data-presentation") !== "sidebar") $("setupPanel").close();
+        else $("closePicker").focus(); // the shortcut list may have reordered
+      }); host.appendChild(b);
+    });
+  });
+}
+var notationZoom = 1;
+function setNotationZoom(value) {
+  notationZoom = Math.max(1, Math.min(3, value));
+  $("notationZoomCard").style.setProperty("--zoom", notationZoom);
+  $("notationZoomLevel").textContent = Math.round(notationZoom * 100) + "%";
+  $("notationZoomOut").disabled = notationZoom === 1;
+  $("notationZoomIn").disabled = notationZoom === 3;
+}
+function openNotationZoom() {
+  var r = Core.RUDIMENT_MAP[settings.rudimentId], dialog = $("workspace-notation");
+  $("notationZoomTitle").textContent = r.name + " notation";
+  $("notationZoomCaption").textContent = $("notationCap").textContent;
+  $("notationZoomCard").textContent = ""; setNotationZoom(1);
+  dialog.showModal();
+  mountCard($("notationZoomCard"), Core.notationCard(r), r.name + " written in notation, right-hand lead", function () { return dialog.open && settings.rudimentId === r.id; });
+  $("notationZoomScroll").scrollLeft = 0;
+}
+
 /* ---------------- rudiment info + cards ----------------
    40 rudiments are grouped by family (PAS order within each) and filtered by
    a search box + family/level chips, so the catalog stays scannable. */
@@ -894,6 +954,7 @@ function paintCards() {
 function renderRudimentInfo() {
   var r = Core.RUDIMENT_MAP[settings.rudimentId];
   paintCards();
+  renderShortcuts();
   $("rudChips").innerHTML =
     '<span class="chip family">' + r.family + " rudiment</span>" +
     '<span class="chip">PAS #' + r.pas + "</span>" +
@@ -917,6 +978,7 @@ function renderRudimentInfo() {
 }
 
 function selectRudiment(id) {
+  rememberRudiment(id);
   if (id === settings.rudimentId) return;
   stopIfActive();
   settings.rudimentId = id;
@@ -2316,6 +2378,16 @@ function wireSetupPanel() {
 
 /* ---------------- events ---------------- */
 function wireEvents() {
+  $("btnFavorite").addEventListener("click", function () {
+    var id = settings.rudimentId, at = shortcuts.favorites.indexOf(id);
+    if (at < 0) shortcuts.favorites.push(id); else shortcuts.favorites.splice(at, 1);
+    saveShortcuts(); renderShortcuts();
+  });
+  $("btnEnlargeNotation").addEventListener("click", openNotationZoom);
+  $("notationZoomIn").addEventListener("click", function () { setNotationZoom(notationZoom + 0.5); });
+  $("notationZoomOut").addEventListener("click", function () { setNotationZoom(notationZoom - 0.5); });
+  $("notationZoomFit").addEventListener("click", function () { setNotationZoom(1); $("notationZoomScroll").scrollLeft = 0; });
+  $("workspace-notation").addEventListener("close", function () { $("btnEnlargeNotation").focus(); });
   $("btnStart").addEventListener("click", onStartButton);
   $("btnReset").addEventListener("click", resetPractice);
   $("btnShare").addEventListener("click", copyShareLink);
@@ -2477,6 +2549,7 @@ function initOffline() {
   loadBest();
   loadProgress();
   loadRoutine();
+  loadShortcuts();
   buildCards();
   applyFilters();
   hydrateControls();
