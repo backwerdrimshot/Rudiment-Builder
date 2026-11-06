@@ -20,6 +20,7 @@ var DEFAULTS = {
   pulse: false,
   muted: false,
   sound: "marching",
+  listeningHand: "both",
   turn: 0,
   dynamics: "full",
   bpm: 80,
@@ -496,10 +497,10 @@ function scheduleEntry(en, t, st, pb) {
     if (ev.graces.length) {
       var lead = Core.graceLeadSeconds(st.bpm, live.pattern.slotsPerBeat);
       Core.graceTimes(t, ev.graces.length, lead).forEach(function (gt, i) {
-        playStroke(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, Core.scaleVelocity(ev.graces[i].velocity, scale), false, 0);
+        if (Core.handIsAudible(ev.graces[i].hand, effectiveListeningHand())) playStroke(Math.max(gt, audio.currentTime + 0.001), ev.graces[i].hand, Core.scaleVelocity(ev.graces[i].velocity, scale), false, 0);
       });
     }
-    playStroke(t, ev.hand, Core.scaleVelocity(ev.velocity, scale), ev.accent,
+    if (Core.handIsAudible(ev.hand, effectiveListeningHand())) playStroke(t, ev.hand, Core.scaleVelocity(ev.velocity, scale), ev.accent,
       ev.buzz ? ev.lengthBeats * Core.beatSeconds(st.bpm) : 0);
     live.visualQ.push(Object.assign(
       { t: t, type: "stroke", strokeIndex: ev.strokeIndex, beat: Math.floor(ev.beatPos) }, snap));
@@ -630,6 +631,7 @@ function renderNow(ev) {
 /* ---------------- sticking display ---------------- */
 var WIDE_STAGE = window.matchMedia("(min-width: 1180px)");
 function renderSticking() {
+  syncHandListening();
   live.pattern = Core.withLead(Core.RUDIMENT_MAP[settings.rudimentId], settings.lead);
   live.events = Core.expandPattern(live.pattern);
   live.layerEventsCache = {};
@@ -1054,7 +1056,7 @@ function finishSession() {
   // played. The best clean tempo is read when copying: the student may press
   // "Clean at" after the run ends.
   var plan = live.runPlan;
-  live.lastRun = plan ? { rudimentId: settings.rudimentId, lead: effectiveLead(), mode: plan.mode,
+  live.lastRun = plan ? { rudimentId: settings.rudimentId, lead: effectiveLead(), mode: plan.mode, listeningHand: effectiveListeningHand(),
     rungs: plan.rungs.slice(), layers: plan.mode === "build" ? plan.stages.filter(function (s) { return s.kind === "play"; }).map(function (s) { return s.layerLabel; }) : undefined,
     reps: plan.mode === "oco" ? settings.oco.repsPerStep : plan.mode === "build" ? settings.build.repsPerStep
       : plan.mode === "fixed" ? plan.stages[1].blocks / (1 + plan.turn) : settings.ladder.repsPerStep,
@@ -1409,6 +1411,27 @@ function applyDynamics(val) {
   $("dynHint").textContent = DYNAMICS_HINT[val];
   syncPlanPreview();
 }
+// Session-only listening aid, independent of lead, shared drills and the quiz.
+function effectiveListeningHand() {
+  return Core.supportsHandListening(Core.RUDIMENT_MAP[settings.rudimentId]) ? settings.listeningHand : "both";
+}
+function syncHandListening() {
+  var enabled = Core.supportsHandListening(Core.RUDIMENT_MAP[settings.rudimentId]);
+  if (!enabled) settings.listeningHand = "both";
+  $("handListening").hidden = !enabled;
+  setSeg("segListeningHand", settings.listeningHand);
+  $("handListeningHint").textContent = settings.listeningHand === "both"
+    ? "Hear the complete rudiment. Choose one hand to study its part."
+    : (settings.listeningHand === "R" ? "Right" : "Left") + " hand only, including its grace notes. The full sticking and timing stay visible; the other hand is quiet. Pulse and count-in are unchanged.";
+}
+function applyListeningHand(part) {
+  if (["both", "R", "L"].indexOf(part) === -1) return;
+  stopIfActive(); // discard already scheduled audio, including a paused queue
+  settings.listeningHand = part;
+  syncHandListening();
+  renderSummary();
+  primeDisplay();
+}
 function applyLead(lead) {
   stopIfActive();
   settings.lead = lead;
@@ -1443,6 +1466,7 @@ function renderSummary() {
   else mode = "Open\u2011Close\u2011Open " + settings.oco.startBpm + "\u2192" + settings.oco.peakBpm + " BPM";
   $("summaryTop").textContent = (r ? r.name : "Rudiment") + " \u00b7 " + (settings.lead === "L" ? "Left" : "Right") + " lead";
   $("summarySub").textContent = mode + " \u00b7 " + (SOUND_NAME[settings.sound] || "") +
+    (effectiveListeningHand() !== "both" ? " \u00b7 " + (effectiveListeningHand() === "R" ? "Right" : "Left") + " hand only" : "") +
     (settings.turn ? " \u00b7 Your turn x" + settings.turn : "") +
     (settings.dynamics !== "full" ? " \u00b7 " + DYNAMICS_NAME[settings.dynamics] : "");
   $("bpmQuick").textContent = settings.bpm;
@@ -1508,7 +1532,7 @@ function syncPlanPreview() {
 var STORE_KEY = "rudimentbuilder-settings";
 function persistSettings() {
   if (routineRun) return; // a routine borrows the settings; the student's own are restored when it ends
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(settings)); } catch (e) { /* private mode */ }
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(Object.assign({}, settings, { listeningHand: "both" }))); } catch (e) { /* private mode */ }
 }
 function loadSaved() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { return null; }
@@ -2278,6 +2302,7 @@ function wireEvents() {
   });
 
   wireSeg("segLead", applyLead);
+  wireSeg("segListeningHand", applyListeningHand);
   wireSeg("segMode", applyMode);
   wireSeg("segSound", applySound);
   wireSeg("segTurn", applyTurn);

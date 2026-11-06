@@ -299,6 +299,18 @@ function withLayer(pattern, layer) {
   return out;
 }
 
+// Hand listening is offered for paradiddles and the Flam family only.
+// Drag paradiddles and dragadiddles are included; other Drag entries are not.
+function supportsHandListening(r) {
+  return !!r && r.family !== "Roll" &&
+    (r.family === "Flam" || /paradiddle|dragadiddle/.test(r.id));
+}
+// Test each individual hit, including grace hits, without changing its time.
+// Unknown hands are not guessed into a solo part. Both preserves legacy audio.
+function handIsAudible(hand, part) {
+  return part !== "R" && part !== "L" ? true : hand === part;
+}
+
 /* ---------------- expansion ----------------
    Pattern -> ordered playable events, positioned in BEATS from the cycle
    start (tempo-free: changing BPM rescales seconds, never this list).
@@ -1015,6 +1027,8 @@ function logLines(run) {
       ? run.best.bpm + " BPM (marked " + run.best.date + ")"
       : "not marked yet"),
   ];
+  if (run.listeningHand === "R" || run.listeningHand === "L")
+    lines.push("Listening: " + (run.listeningHand === "R" ? "Right" : "Left") + " hand only (shared link opens both hands)");
   if (Number.isInteger(run.goal) && run.goal >= BPM_MIN && run.goal <= BPM_MAX)
     lines.push("Assigned goal tempo: " + run.goal + " BPM");
   if (run.link) lines.push("Drill link: " + run.link);
@@ -1166,6 +1180,8 @@ const RudimentCore = {
   withLead: withLead,
   notationCard: notationCard,
   expandPattern: expandPattern,
+  supportsHandListening: supportsHandListening,
+  handIsAudible: handIsAudible,
   describePattern: describePattern,
   countingFor: countingFor,
   beatSeconds: beatSeconds,

@@ -116,6 +116,23 @@ function getCases(core) {
   }
 
   return [
+    { name: "hand listening is limited to paradiddles, flams and dragadiddles", fn: function (a) {
+      const eligible = core.RUDIMENTS.filter(core.supportsHandListening);
+      a.equal(eligible.length, 18);
+      a.ok(eligible.every(function (r) { return r.family !== "Roll"; }));
+      ["single-paradiddle", "flam-drag", "single-dragadiddle", "drag-paradiddle-1", "drag-paradiddle-2"].forEach(function (id) { a.ok(core.supportsHandListening(MAP[id]), id); });
+      ["drag", "lesson-25", "single-ratamacue", "double-stroke-open-roll"].forEach(function (id) { a.equal(core.supportsHandListening(MAP[id]), false, id); });
+      a.equal(core.supportsHandListening(null), false);
+    } },
+    { name: "hand listening tests individual hits without guessing unknown hands", fn: function (a) {
+      ["R", "L"].forEach(function (part) {
+        a.equal(core.handIsAudible(part, part), true);
+        a.equal(core.handIsAudible(part === "R" ? "L" : "R", part), false);
+        a.equal(core.handIsAudible(undefined, part), false);
+        a.equal(core.handIsAudible("RL", part), false);
+      });
+      a.equal(core.handIsAudible(undefined, "both"), true);
+    } },
 
   /* ================= data validation ================= */
 

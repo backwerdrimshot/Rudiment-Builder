@@ -2,7 +2,7 @@
   "schemaVersion": "praxis-capabilities/v1",
   "app": "rudiment-builder",
   "title": "Rudiment Room",
-  "version": "2026-10-31.3",
+  "version": "2026-11-06.1",
   "launchUrl": "https://rudiment-builder.backwerdrhythmshop.com/",
   "guideUrl": "https://guides.backwerdrhythmshop.com/rudiment-builder/"
 }
