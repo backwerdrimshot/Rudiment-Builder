@@ -1,6 +1,28 @@
 # REVIEW.md — hybrid rudiment proofing worksheet
 
 
+### Taylor's triplet ten-stroke interpretation (2026-11-06)
+
+Taylor specified `RllrrllrrL RllrrllrrL` and clarified "Triplets."
+The selected version is now two beats of eighth-note-triplet positions:
+`R | ll | rr / ll | rr | L`. The opening/closing singles are accented;
+the four middle positions each contain an even double. It repeats without
+a rest. Left lead is `L | rr | ll / rr | ll | R`.
+
+[The Vic Firth ten-stroke lesson](https://ae.vicfirth.com/education/40-essential-rudiments/40-essential-rudiments-ten-stroke-roll/)
+shows exactly this interpretation in its primary notation image, visually
+checked on 2026-11-06. Its application exercise also distinguishes duple and
+triple readings. PAS #11 and the supplied packet pages 2 and 11 show a different,
+ending-accent interpretation. That remains a valid reference version, but it
+is not Taylor's chosen app version. The earlier correction below is superseded.
+
+The app encodes six sixteenth-triplet slots per quarter-note beat. Accents
+span two slots; each double fills two slots. The regenerated card explicitly
+marks each mixed-duration beat as an eighth-note triplet group (3), not an
+unmarked compound figure. Original prose and licensed Bravura engraving are
+used; no third-party notation image is redistributed.
+
+
 ### Ten Stroke Roll correction (2026-11-06)
 
 Taylor approved replacing the former three-beat reading with the rhythm in

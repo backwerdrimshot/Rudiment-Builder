@@ -34,3 +34,12 @@ commit `5492787` (two-beat thirty-second/sixteenth reading), using
 praxis-platform notation commit `1f03f0d7`. The ten-stroke
 SVG and manifest are copied byte-for-byte from that composer output; the
 other 39 cards are unchanged. See `REVIEW.md` for the musical correction.
+
+
+The later Taylor triplet correction supersedes the earlier #11 reading above.
+The canonical composer now explicitly marks #11's mixed-duration triplet beats
+with 3; the data snapshot and card use the six-position R ll rr / ll rr L figure.
+See REVIEW.md and docs/ten-stroke-bookend-proposal.md for sources and timing.
+
+Canonical triplet engraving source: praxis-platform commit `faa1d8b7`, using
+Rudiment Builder data commit `a26a806`.
