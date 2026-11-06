@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-11-06.2`
+- **Build:** `2026-11-06.3`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -498,3 +498,6 @@ re-sticking or a reproduction of a packet's progressive breakdown exercises.
 
 ### Local practice usability update
 The visual chooser uses the existing original notation cards. Notation / How to play opens the selected rudiment’s existing teaching. Sound and listening controls sit above Start; other settings are grouped. Log clean rep is explicitly student self-assessment, not automatic grading.
+
+### Responsive rudiment browser
+At wide desktop widths, the collapsible right browser stays available alongside practice. Smaller screens use a full-height modal chooser. Settings returns to its top control while the wide browser is open. The ten-stroke roll now uses the reviewed two-beat rhythm and regenerated original notation.

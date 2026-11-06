@@ -86,14 +86,16 @@ try {
   assert.equal(await page.evaluate(() => live.status), 'playing');
   await page.evaluate(() => resetPractice());
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.locator('#settingsToggle').click();
+  await page.locator('.dock-tools > summary').click();
+  assert.equal(await page.locator('.dock-tools').evaluate(e => e.open), true);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   for (const b of await page.locator('#segListeningHand button').all()) {
     const box = await b.boundingBox(); assert.ok(box && box.height >= 44 && box.width >= 44);
   }
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.keyboard.press('Tab');
-  await page.locator('#segListeningHand button[data-val="both"]').focus();
+  for (let i = 0; i < 20 && !(await page.locator('#segListeningHand button[data-val="both"]').evaluate(e => e === document.activeElement)); i++) await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#segListeningHand button[data-val="both"]').evaluate(e => e === document.activeElement), true);
   assert.equal(await page.locator('#segListeningHand button[data-val="both"]').evaluate(e => e.matches(':focus-visible')), true);
   await page.reload();
   assert.equal(await page.evaluate(() => settings.listeningHand), 'both');
