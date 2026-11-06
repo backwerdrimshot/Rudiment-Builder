@@ -26,7 +26,7 @@ No account. No backend. No notation software feel.
 
 ## Release information
 
-- **Build:** `2026-10-31.3`
+- **Build:** `2026-11-06.1`
 - **Status:** MVP built and publicly available
 - **Live app:** <https://rudiment-builder.backwerdrhythmshop.com/>
 - **Public app guide:** <https://guides.backwerdrhythmshop.com/rudiment-builder/>
@@ -479,3 +479,19 @@ These three links also appear as icon buttons in the app footer.
 ## Compact practice workspace
 
 The laptop view keeps the main instrument or exercise and its practice controls together. Help contains the instructions, and About contains the app name, its build, More apps, the guide and the copyright. The support links are in the footer and the Feedback dialog. Long reference material and exercise grids scroll inside their own panels; narrow and zoomed windows retain normal page scrolling.
+
+## Listen to one hand
+
+For paradiddles, Flam-family rudiments, and dragadiddles, **Hear the hand part**
+offers Both (default), Right only, and Left only. Drag Paradiddles #1 and #2
+are included; Roll-family rudiments and the remaining Drag-family entries are
+not. This is separate from Leading hand: it silences the other hand's hits,
+including grace notes, without moving notes, shortening rests, or changing
+accents. The complete sticking remains visible. Build-up layers and Your turn
+still apply; count-in, pulse and downbeat cues are unchanged.
+
+Changing the listening part stops the current run so no queued sound leaks
+from the previous choice. It is a session-only listening aid: reloads and
+shared links open with both hands, and quizzes keep their complete audio.
+Completed practice logs identify single-hand listening. This is not a new
+re-sticking or a reproduction of a packet's progressive breakdown exercises.

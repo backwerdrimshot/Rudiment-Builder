@@ -928,6 +928,17 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         <input type="checkbox" id="cueToggle" checked />
         <label for="cueToggle">Downbeat cue — a soft tick on beat one of every cycle (covered while the pulse is on)</label>
       </div>
+      <div id="handListening" hidden>
+        <div class="lead-row">
+          <span class="lbl" id="handListeningLbl">Hear the hand part</span>
+          <div class="seg" role="group" aria-labelledby="handListeningLbl" aria-describedby="handListeningHint" id="segListeningHand">
+            <button type="button" data-val="both" aria-pressed="true">Both</button>
+            <button type="button" data-val="R" aria-pressed="false">Right only</button>
+            <button type="button" data-val="L" aria-pressed="false">Left only</button>
+          </div>
+        </div>
+        <p class="hint" id="handListeningHint" aria-live="polite"></p>
+      </div>
       <div class="lead-row sound-row">
         <span class="lbl" id="soundLbl">Stroke sound</span>
         <div class="seg" role="group" aria-labelledby="soundLbl" aria-describedby="soundHint" id="segSound">
@@ -1218,7 +1229,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    each one is set to its form, and it fills in the app and the page when followed. */
 (function () {
   // Update this ISO date whenever the shipped app changes.
-  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-10-31.3";
+  var build = (window.__BUILD__ && String(window.__BUILD__)) || "2026-11-06.1";
 
   document.querySelectorAll("[data-build]").forEach(function (el) { el.textContent = build; });
 
