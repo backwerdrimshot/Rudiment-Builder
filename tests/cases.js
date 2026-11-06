@@ -116,6 +116,28 @@ function getCases(core) {
   }
 
   return [
+  { name: "Ten Stroke Roll: PAS two-beat rhythm, both leads and final eighth rest", fn: function (assert) {
+    const r = MAP["ten-stroke-roll"];
+    assert.equal(r.cycleBeats, 2);
+    assert.equal(r.slotsPerBeat, 8);
+    for (const lead of ["R", "L"]) {
+      const p = core.withLead(r, lead);
+      const events = core.expandPattern(p);
+      assert.deepEqual(events.map(function (e) { return e.beatPos; }),
+        [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.25]);
+      assert.deepEqual(events.map(function (e) { return e.lengthBeats; }),
+        [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.25, 0.25]);
+      assert.equal(events.map(function (e) { return e.hand; }).join(""),
+        lead === "R" ? "RRLLRRLLRL" : "LLRRLLRRLR");
+      assert.deepEqual(events.filter(function (e) { return e.accent; }).map(function (e) { return e.beatPos; }), [1, 1.25]);
+      assert.equal(p.cycleBeats - (events[9].beatPos + events[9].lengthBeats), 0.5);
+      assert.equal(p.counting[8], "2");
+      assert.equal(p.counting[10], "e");
+      assert.equal(p.counting[12], "&");
+      assert.equal(core.cycleSeconds(p, 60), 2);
+    }
+  } },
+
     { name: "hand listening is limited to paradiddles, flams and dragadiddles", fn: function (a) {
       const eligible = core.RUDIMENTS.filter(core.supportsHandListening);
       a.equal(eligible.length, 18);
