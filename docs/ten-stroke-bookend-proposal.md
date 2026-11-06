@@ -24,4 +24,4 @@ source. No third-party notation artwork or lesson text is copied into the app.
 
 Local verification and review precede publication. Upstream composer supports
 an explicit triplet numeral for this mixed-duration figure; all other cards
-must remain unchanged. No build bump or publication is included in this branch.
+must remain unchanged. Taylor approved publication after review. Release build: 2026-11-06.6.
